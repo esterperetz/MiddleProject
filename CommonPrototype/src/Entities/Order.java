@@ -2,7 +2,7 @@ package Entities;
 
 import java.io.Serializable;
 import java.util.Date;
-//ssssssssssssssss
+//ssssssssssssssssadadada
 public class Order implements Serializable {
 	
 	private int order_number; 
