@@ -1,6 +1,6 @@
 package server;
 
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Scanner;
 
-import logic.Order;
-import logic.ParkingSpot;
-import logic.Role;
-import logic.subscriber;
+//import logic.Order;
+//import logic.ParkingSpot;
+//import logic.Role;
+//import logic.subscriber;
 
 /**
  * The class handles any SQL query needed
