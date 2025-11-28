@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="ClientPrototype/src"/>
+	<classpathentry kind="src" path="CommonPrototype/src"/>
+	<classpathentry kind="src" path="ServerPrototype/src"/>
+	<classpathentry kind="lib" path="/jdbc/lib/mysql-connector-j-9.5.0.jar"/>
+	<classpathentry kind="output" path="ClientPrototype/bin"/>
+</classpath>
