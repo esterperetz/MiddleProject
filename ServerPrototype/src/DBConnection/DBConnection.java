@@ -14,20 +14,21 @@ import java.util.ArrayList;
 
 public class DBConnection {
 	private Connection con;
-
-	public DBConnection() {
-		con = connectToDB();
+	
+	public DBConnection(String user,String pass,String scheme) throws SQLException{
+		con = connectToDB(user, pass, scheme);
+		
 	}
 
-	private Connection connectToDB() {
+	private Connection connectToDB(String user,String pass,String scheme) throws SQLException {
 		try {
 			Connection conn = DriverManager.getConnection(
-					"jdbc:mysql://localhost:3306/prototype?serverTimezone=Asia/Jerusalem&useSSL=false", "root", "1234");
+					"jdbc:mysql://localhost:3306/"+scheme+"?serverTimezone=Asia/Jerusalem&useSSL=false", user, pass);
 			return conn;
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			return null;
+			throw e;
 		}
 	}
 
