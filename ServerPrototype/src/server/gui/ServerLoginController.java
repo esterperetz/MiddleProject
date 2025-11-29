@@ -30,7 +30,6 @@ public class ServerLoginController {
     @FXML
     private Label lblStatus;
 
-    // כפתור שליחה
     @FXML
     private void onSend(ActionEvent event) {
     	
@@ -45,6 +44,7 @@ public class ServerLoginController {
         try {
             DBConnection dbConector= new DBConnection(user,pass,scheme);
             lblStatus.setText("WellDone! We are connecting to your DB");
+            //we need to called to methods that open the second screen
         }
         catch(Exception e)
         {
@@ -54,6 +54,7 @@ public class ServerLoginController {
         	alert.setHeaderText("Something went wrong");
         	alert.setContentText("Unable to process your request.");
         	alert.showAndWait();
+        	
         }
 
       
@@ -62,7 +63,6 @@ public class ServerLoginController {
         //lblStatus.setText("Login sent to server");
     }
 
-    // כפתור יציאה
     @FXML
     private void onExit(ActionEvent event) {
         System.out.println("Exit from Server Login");
@@ -70,7 +70,6 @@ public class ServerLoginController {
         
     }
 
-    // אם אתה צריך start כמו במחלקה של הפורט:
     public void start(Stage primaryStage) throws Exception {
         javafx.fxml.FXMLLoader loader =
                 new javafx.fxml.FXMLLoader(getClass().getResource("ServerLogin.fxml"));
