@@ -4,7 +4,6 @@ import javafx.stage.Stage;             // עבור Stage primaryStage
 import javafx.scene.Scene;             // עבור Scene scene
 import javafx.fxml.FXMLLoader;         // עבור FXMLLoader loader
 
-import java.sql.Connection;          // עבור Connection con
 
 // ייבוא המחלקות שנוצרו בפרויקט שלך:
 import DBConnection.DBConnection;          // עבור ServerModel
@@ -15,7 +14,8 @@ public class ServerApp extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/server/view/server_view.fxml"));
+    	// שינוי הנתיב: שימוש ב-ClassLoader כדי לחפש את הקובץ מה-Root
+    	FXMLLoader loader = new FXMLLoader(getClass().getResource("connections_to_server.fxml"));    	
         Scene scene = new Scene(loader.load());
         ServerViewController viewController = loader.getController();
         DBConnection model = new DBConnection("root","159357","mid_project_prototype");

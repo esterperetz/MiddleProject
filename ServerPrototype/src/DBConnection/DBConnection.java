@@ -32,6 +32,13 @@ public class DBConnection {
 			throw e;
 		}
 	}
+	public Connection getConnection() throws SQLException{
+		if (con !=null) {
+			return con;
+		}
+		else {
+			throw new SQLException("Database connection is not established or has failed to initialize.");		}
+	}
 
 	/**
 	 * get the full orders from DB
