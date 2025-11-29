@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Uicontrollers.OrderUi_controller">
+
+    <children>
+        <VBox spacing="10.0"
+              AnchorPane.topAnchor="10.0"
+              AnchorPane.bottomAnchor="10.0"
+              AnchorPane.leftAnchor="10.0"
+              AnchorPane.rightAnchor="10.0">
+
+            <children>
+
+                <TableView fx:id="orderTable" editable="true" prefHeight="250.0">
+                    <columns>
+                        <TableColumn fx:id="Order_numberColumn"
+                                     text="Order #"
+                                     prefWidth="120.0"/>
+                        <TableColumn fx:id="DateColumn"
+                                     text="Order Date"
+                                     prefWidth="150.0"/>
+                        <TableColumn fx:id="itemColumn"
+                                     text="Guests"
+                                     prefWidth="100.0"/>
+                    </columns>
+                </TableView>
+
+                <HBox spacing="10.0">
+                    <children>
+                        <Button text="Add Order"
+                                onAction="#handleAddOrder"/>
+                        <Button text="Update Order"
+                                onAction="#handleUpdateOrder"/>
+                        <Button text="Delete Selected"
+                                onAction="#handleDeleteOrder"/>
+                    </children>
+                </HBox>
+
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
