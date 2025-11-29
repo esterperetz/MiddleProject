@@ -39,7 +39,7 @@ public class DBConnection {
 
 		List<Order> list = new ArrayList<>();
 		try {
-			PreparedStatement ps = con.prepareStatement("SELECT * FROM order");
+			PreparedStatement ps = con.prepareStatement("SELECT * FROM `order`");
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
 				int order_number = rs.getInt("order_number");
@@ -67,7 +67,7 @@ public class DBConnection {
 	public Order getOrder(int order_Number) {
 		Order o = new Order(order_Number, null, order_Number, order_Number, order_Number, null);
 		try {
-			PreparedStatement ps = con.prepareStatement("SELECT *  FROM order WHERE order_number= ");
+			PreparedStatement ps = con.prepareStatement("SELECT *  FROM `order` WHERE order_number=? ");
 			ps.setString(1, order_Number + "");// change the ?
 			ResultSet rs = ps.executeQuery();
 			while (rs.next()) {
@@ -97,7 +97,7 @@ public class DBConnection {
 
 		try {
 			PreparedStatement ps = con
-					.prepareStatement("UPDATE order SET order_date = ?, number_of_guests = ? WHERE order_number = ?");
+					.prepareStatement("UPDATE `order` SET order_date = ?, number_of_guests = ? WHERE order_number = ?");
 			ps.setDate(1, new java.sql.Date(newDate.getTime()));
 			// ps.setDate(1, newDate);
 			ps.setInt(2, newGuests);
