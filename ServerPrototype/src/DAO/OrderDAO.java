@@ -51,7 +51,7 @@ public class OrderDAO {
         }
     }
 
-    public void updateOrder(int orderNumber, Date newDate, int newGuests) throws SQLException {
+    public void updateOrder(Order order) throws SQLException {
         String sql = "UPDATE `order` " +
                      "SET order_date = ?, number_of_guests = ? " +
                      "WHERE order_number = ?";
@@ -59,12 +59,31 @@ public class OrderDAO {
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setDate(1, new java.sql.Date(newDate.getTime()));
-            ps.setInt(2, newGuests);
-            ps.setInt(3, orderNumber);
+            ps.setDate(1, new java.sql.Date(order.getOrder_date().getTime()));
+            ps.setInt(2, order.getNumber_of_guests());
+            ps.setInt(3, order.getOrder_number());
             ps.executeUpdate();
         }
     }
+    public void addOrder(Order order) throws SQLException {
+        String sql = "INSERT INTO `order` " +
+                     "(order_number, order_date, number_of_guests, confirmation_code, subscriber_id, date_of_placing_order) " +
+                     "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, order.getOrder_number());
+            ps.setDate(2, new java.sql.Date(order.getOrder_date().getTime()));
+            ps.setInt(3, order.getNumber_of_guests());
+            ps.setInt(4, order.getConfirmation_code());
+            ps.setInt(5, order.getSubscriber_id());
+            ps.setDate(6, new java.sql.Date(order.getDate_of_placing_order().getTime()));
+
+            ps.executeUpdate();
+        }
+    }
+
 
     //gets row from DB and creates Order object//
     private Order mapRowToOrder(ResultSet rs) throws SQLException {

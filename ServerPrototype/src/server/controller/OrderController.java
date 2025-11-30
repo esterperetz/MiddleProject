@@ -14,6 +14,8 @@ public class OrderController {
     public OrderController(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
     }
+    
+
 
     public List<Order> getAllOrders() throws SQLException {
         return orderDAO.getAllOrders();
@@ -23,30 +25,62 @@ public class OrderController {
         return orderDAO.getOrder(orderNumber);
     }
 
-    public void updateOrder(int orderNumber, Date newDate, int newGuests)
+    public void updateOrder(Order order)
             throws IllegalArgumentException, SQLException {
+    	validateOrder(order);
+        orderDAO.updateOrder(order);
+    }
+    
+   
+    public void addOrder(Order order) throws SQLException {
+        validateOrder(order);       
+        orderDAO.addOrder(order);  
+    }
 
-        // VALIDATIONS//
-        if (newDate == null) {
-            throw new IllegalArgumentException("Order date cannot be null");
+    //validate order
+    private void validateOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order cannot be null");
         }
 
-        Date now = new Date();
-        if (!newDate.after(now)) {
-            throw new IllegalArgumentException("Order date must be in the future");
+        if (order.getOrder_number() <= 0) {
+            throw new IllegalArgumentException("Order number is invalid");
         }
 
-        if (newGuests <= 0) {
+        if (order.getNumber_of_guests() <= 0) {
             throw new IllegalArgumentException("Number of guests must be positive");
         }
 
-        // making sure order exists
-        Order existing = orderDAO.getOrder(orderNumber);
-        if (existing == null) {
-            throw new IllegalArgumentException("Order " + orderNumber + " does not exist");
+        if (order.getNumber_of_guests() > 100) {
+            throw new IllegalArgumentException("Number of guests is too large");
         }
 
-        //Updating order
-        orderDAO.updateOrder(orderNumber, newDate, newGuests);
-    }
+        if (order.getConfirmation_code() <= 0) {
+            throw new IllegalArgumentException("Confirmation code is invalid");
+        }
+
+        if (order.getSubscriber_id() <= 0) {
+            throw new IllegalArgumentException("Subscriber id must be positive");
+        }
+
+        
+        Date orderDate = order.getOrder_date();
+        Date placingDate = order.getDate_of_placing_order();
+        Date now = new Date();
+
+        if (orderDate == null) {
+            throw new IllegalArgumentException("Order date cannot be null");
+        }
+        if (!orderDate.after(now)) {
+            throw new IllegalArgumentException("Order date must be in the future");
+        }
+
+        if (placingDate == null) {
+            throw new IllegalArgumentException("Placing date cannot be null");
+        }
+        if (placingDate.after(orderDate)) {
+            throw new IllegalArgumentException("Placing date cannot be after order date");
+        }
+
+}
 }
