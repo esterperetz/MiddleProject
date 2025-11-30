@@ -60,7 +60,7 @@ public class ServerController extends AbstractServer {
                     java.sql.Date newDate = java.sql.Date.valueOf(orderDateFromMsg);
                     int newGuests = Integer.parseInt(guestsFromMsg);
 
-                    orderController.updateOrder(orderNumber, newDate, newGuests);
+                    orderController.updateOrder(order);
 
                     order = orderController.getOrder(orderNumber);
 

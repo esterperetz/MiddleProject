@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
-//ORDER DATA LAYER, interfaces with DB for orders//
+// ORDER DATA LAYER – interfaces with DB for orders //
 public class OrderDAO {
 
     private final DBConnection db;
@@ -22,6 +21,7 @@ public class OrderDAO {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM `order`";
 
+        
         try (Connection con = db.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
@@ -65,6 +65,7 @@ public class OrderDAO {
             ps.executeUpdate();
         }
     }
+
     public void addOrder(Order order) throws SQLException {
         String sql = "INSERT INTO `order` " +
                      "(order_number, order_date, number_of_guests, confirmation_code, subscriber_id, date_of_placing_order) " +
@@ -84,15 +85,14 @@ public class OrderDAO {
         }
     }
 
-
-    //gets row from DB and creates Order object//
+    // gets row from DB and creates Order object //
     private Order mapRowToOrder(ResultSet rs) throws SQLException {
-        int orderNumber       = rs.getInt("order_number");
-        Date orderDate        = rs.getDate("order_date");
-        int numberOfGuests    = rs.getInt("number_of_guests");
-        int confirmationCode  = rs.getInt("confirmation_code");
-        int subscriberId      = rs.getInt("subscriber_id");
-        Date dateOfPlacing    = rs.getDate("date_of_placing_order");
+        int orderNumber      = rs.getInt("order_number");
+        Date orderDate       = rs.getDate("order_date");
+        int numberOfGuests   = rs.getInt("number_of_guests");
+        int confirmationCode = rs.getInt("confirmation_code");
+        int subscriberId     = rs.getInt("subscriber_id");
+        Date dateOfPlacing   = rs.getDate("date_of_placing_order");
 
         return new Order(orderNumber, orderDate, numberOfGuests,
                          confirmationCode, subscriberId, dateOfPlacing);
