@@ -70,7 +70,7 @@ public class DBConnection {
 
 	/**
 	 * @param order_Number, he is the key in the table order
-	 * @return the order with this order number
+	 * @return the order with this order number...
 	 */
 	public Order getOrder(int order_Number) {
 		Order o = new Order(order_Number, null, order_Number, order_Number, order_Number, null);
