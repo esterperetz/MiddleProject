@@ -26,10 +26,15 @@ public class DBConnection {
     }
 
     public Connection getConnection() throws SQLException {
+    	
         if (con == null || con.isClosed()) {
             throw new SQLException("Connection is not available");
         }
         return con;
+        
+    	//when we close Connection we dont have active connection check if we need to close
+    	
+    	
     }
 
     public void close() {

@@ -57,5 +57,11 @@ public class Order implements Serializable {
 	public void setDate_of_placing_order(Date date_of_placing_order) {
 		this.date_of_placing_order = date_of_placing_order;
 	}
+	@Override
+	public String toString() {
+	    return order_number + " " + order_date + " " + number_of_guests + " " +
+	           confirmation_code + " " + subscriber_id + " " + date_of_placing_order;
+	}
+
 
 }
