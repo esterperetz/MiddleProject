@@ -1,4 +1,11 @@
 /Uicontrollers/
 /client/
 /clientUi/
+<<<<<<< Upstream, based on branch 'main' of https://github.com/esterperetz/MiddleProject.git
 /ocsf/
+=======
+/Uicontrollers/
+/ClientGui/
+/clientController/
+/clientGui/
+>>>>>>> 2bbde2b init update gui and update controller
