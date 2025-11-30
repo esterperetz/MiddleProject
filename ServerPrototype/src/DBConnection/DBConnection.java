@@ -4,8 +4,7 @@ import java.sql.Connection;
 //import java.sql.Date;
 import java.util.Date;
 import java.util.List;
-import java.time.ZoneId;
-import java.time.LocalDate;
+
 import Entities.Order;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -21,7 +20,7 @@ public class DBConnection {
 		
 	}
 
-	public Connection connectToDB(String user,String pass,String scheme) throws SQLException {
+	private Connection connectToDB(String user,String pass,String scheme) throws SQLException {
 		try {
 			Connection conn = DriverManager.getConnection(
 					"jdbc:mysql://localhost:3306/"+scheme+"?serverTimezone=Asia/Jerusalem&useSSL=false", user, pass);
@@ -31,13 +30,6 @@ public class DBConnection {
 			e.printStackTrace();
 			throw e;
 		}
-	}
-	public Connection getConnection() throws SQLException{
-		if (con !=null) {
-			return con;
-		}
-		else {
-			throw new SQLException("Database connection is not established or has failed to initialize.");		}
 	}
 
 	/**
@@ -104,16 +96,6 @@ public class DBConnection {
 	public void updateOrder(int orderNumber, Date newDate, int newGuests) {
 
 		try {
-			//parameters check
-			Date now = new Date();
-			
-			//LocalDate today = LocalDate.now();
-			//LocalDate oneMonthFromNow = today.plusMonths(1);
-			
-			if (newDate.before(now) || newDate.equals(now)) {
-				throw new IllegalArgumentException("new-date don't match");
-			}
-					
 			PreparedStatement ps = con
 					.prepareStatement("UPDATE `order` SET order_date = ?, number_of_guests = ? WHERE order_number = ?");
 			ps.setDate(1, new java.sql.Date(newDate.getTime()));
