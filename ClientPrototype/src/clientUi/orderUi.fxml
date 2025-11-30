@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <AnchorPane xmlns="http://javafx.com/javafx/21"
             xmlns:fx="http://javafx.com/fxml/1"
@@ -20,30 +19,39 @@
 
                 <TableView fx:id="orderTable" editable="true" prefHeight="250.0">
                     <columns>
+
                         <TableColumn fx:id="Order_numberColumn"
-                                     text="Order #"
-                                     prefWidth="120.0"/>
+                                     text="Order #" prefWidth="120.0"/>
+
                         <TableColumn fx:id="DateColumn"
-                                     text="Order Date"
-                                     prefWidth="150.0"/>
+                                     text="Order Date" prefWidth="150.0"/>
+
                         <TableColumn fx:id="itemColumn"
-                                     text="Guests"
-                                     prefWidth="100.0"/>
+                                     text="Guests" prefWidth="100.0"/>
+
+                        <TableColumn fx:id="ConfirmationColumn"
+                                     text="Confirmation" prefWidth="120.0"/>
+
+                        <TableColumn fx:id="SubscriberColumn"
+                                     text="Subscriber" prefWidth="120.0"/>
+
+                        <TableColumn fx:id="PlacingDateColumn"
+                                     text="Date Placed" prefWidth="150.0"/>
+
                     </columns>
                 </TableView>
 
                 <HBox spacing="10.0">
                     <children>
-                        <Button text="Add Order"
-                                onAction="#handleAddOrder"/>
-                        <Button text="Update Order"
-                                onAction="#handleUpdateOrder"/>
-                        <Button text="Delete Selected"
-                                onAction="#handleDeleteOrder"/>
+                        <Button text="Add Order" onAction="#handleAddOrder"/>
+                        <Button text="Update Order" onAction="#handleUpdateOrder"/>
+                        <Button text="Delete Selected" onAction="#handleDeleteOrder"/>
                     </children>
                 </HBox>
 
             </children>
+
         </VBox>
     </children>
+
 </AnchorPane>

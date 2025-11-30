@@ -1,7 +1,6 @@
-<<<<<<< HEAD
 /Uicontrollers/
+/UpdateOrderWindow.fxml
 /clientUi/
 /ocsf/
-=======
-/clientUi/
->>>>>>> branch 'main' of https://github.com/esterperetz/MiddleProject.git
+/clientController/
+/client/

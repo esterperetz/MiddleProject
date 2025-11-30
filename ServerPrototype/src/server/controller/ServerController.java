@@ -41,30 +41,49 @@ public class ServerController extends AbstractServer {
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {
         System.out.println("Message received: " + msg + " from " + client);
 
-        String str = (String) msg;
+        String str = msg.toString().trim();  // המרה למחרוזת וביטול רווחים מיותרים
         int flag = 0;
 
         String[] parts = str.split(" ");
+
+        if (parts.length == 0) {
+            sendErrorToAllClients();
+            return;
+        }
 
         String orderNumFromMsg = parts[0];                  // order_number
         String orderDateFromMsg = (parts.length > 1) ? parts[1] : null;  // order_date (אופציונלי)
         String guestsFromMsg    = (parts.length > 2) ? parts[2] : null;  // number_of_guests (אופציונלי)
 
+        int orderNumber;
         try {
-            int orderNumber = Integer.parseInt(orderNumFromMsg);
+            orderNumber = Integer.parseInt(orderNumFromMsg);  // כאן יכול לזרוק NumberFormatException
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid order number: " + orderNumFromMsg);
+            sendErrorToAllClients();
+            return;
+        }
+
+        try {
             Order order = orderController.getOrder(orderNumber);
 
-            if (order != null) { // Found
+            if (order != null) { // נמצא
                 if (orderDateFromMsg != null && guestsFromMsg != null) {
+                    try {
+                        java.sql.Date newDate = java.sql.Date.valueOf(orderDateFromMsg);
+                        int newGuests = Integer.parseInt(guestsFromMsg);
+                        order.setOrder_date(newDate);
+                        order.setNumber_of_guests(newGuests);
+                        // עדכון ההזמנה (צריך למלא את הפונקציה updateOrder עם הערכים)
+                        orderController.updateOrder(order);
 
-                    java.sql.Date newDate = java.sql.Date.valueOf(orderDateFromMsg);
-                    int newGuests = Integer.parseInt(guestsFromMsg);
-
-                    orderController.updateOrder(orderNumber, newDate, newGuests);
-
-                    order = orderController.getOrder(orderNumber);
-
-                    System.out.println("Server Found (after save)");
+                        order = orderController.getOrder(orderNumber); // קבלת ההזמנה אחרי העדכון
+                        System.out.println("Server Found (after save)");
+                    } catch (Exception ex) {
+                        System.out.println("Invalid date or guests number: " + ex.getMessage());
+                        sendErrorToAllClients();
+                        return;
+                    }
                 } else {
                     System.out.println("Server Found (search only)");
                 }
@@ -76,17 +95,22 @@ public class ServerController extends AbstractServer {
 
         } catch (Exception e) {
             e.printStackTrace();
-            try {
-                this.sendToAllClients("Error");
-            } catch (Exception ignore) {}
+            sendErrorToAllClients();
             return;
         }
 
         if (flag != 1) {
             System.out.println("Not Found");
-            this.sendToAllClients("Error");
+            sendErrorToAllClients();
         }
     }
+
+    private void sendErrorToAllClients() {
+        try {
+            this.sendToAllClients("Order Was not found, try again.");
+        } catch (Exception ignore) {}
+    }
+
 
 
 
