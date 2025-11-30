@@ -14,8 +14,6 @@ public class OrderController {
     public OrderController(OrderDAO orderDAO) {
         this.orderDAO = orderDAO;
     }
-    
-
 
     public List<Order> getAllOrders() throws SQLException {
         return orderDAO.getAllOrders();
@@ -27,17 +25,20 @@ public class OrderController {
 
     public void updateOrder(Order order)
             throws IllegalArgumentException, SQLException {
-    	validateOrder(order);
+        validateOrder(order);
+        // אפשר להוסיף כאן בדיקה שההזמנה קיימת אם תרצה:
+        // if (orderDAO.getOrder(order.getOrder_number()) == null) { ... }
         orderDAO.updateOrder(order);
     }
-    
-   
+
     public void addOrder(Order order) throws SQLException {
-        validateOrder(order);       
-        orderDAO.addOrder(order);  
+        validateOrder(order);
+        // ליצירה אפשר לוודא שאין כבר order_number כזה:
+        // if (orderDAO.getOrder(order.getOrder_number()) != null) { ... }
+        orderDAO.addOrder(order);
     }
 
-    //validate order
+    // validate order
     private void validateOrder(Order order) {
         if (order == null) {
             throw new IllegalArgumentException("Order cannot be null");
@@ -63,10 +64,9 @@ public class OrderController {
             throw new IllegalArgumentException("Subscriber id must be positive");
         }
 
-        
-        Date orderDate = order.getOrder_date();
+        Date orderDate   = order.getOrder_date();
         Date placingDate = order.getDate_of_placing_order();
-        Date now = new Date();
+        Date now         = new Date();
 
         if (orderDate == null) {
             throw new IllegalArgumentException("Order date cannot be null");
@@ -81,6 +81,5 @@ public class OrderController {
         if (placingDate.after(orderDate)) {
             throw new IllegalArgumentException("Placing date cannot be after order date");
         }
-
-}
+    }
 }

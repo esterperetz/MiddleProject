@@ -34,8 +34,9 @@ public class DBConnection {
         if (con == null || con.isClosed()) {
             throw new SQLException("Connection is not available");
         }
-        return DriverManager.getConnection(url + scheme + 
-        		"?serverTimezone=Asia/Jerusalem&useSSL=false",user, pass);
+        return DriverManager.getConnection(url + scheme +
+                "?serverTimezone=Asia/Jerusalem&useSSL=false",
+                user, pass);
         
     	//when we close Connection we dont have active connection check if we need to close
     	
