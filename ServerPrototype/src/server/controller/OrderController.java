@@ -1,49 +1,52 @@
 package server.controller;
 
-import DBConnection.DBConnection;  // מחלקת החיבור ל-DB
-import Entities.Order;             // ישות Order (מה-project של ה-Entities)
+import Entities.Order;
+import DAO.OrderDAO;
+
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-/**
- * OrderController - לוגיקה עסקית להזמנות.
- * משתמש ב-DBConnection כדי לבצע את ה-SQL בפועל.
- */
 public class OrderController {
 
-    private DBConnection dbConnector;
+    private final OrderDAO orderDAO;
 
-    public OrderController(DBConnection dbConnector) {
-        this.dbConnector = dbConnector;
+    public OrderController(OrderDAO orderDAO) {
+        this.orderDAO = orderDAO;
     }
 
-    // ------------------------------------------------------------------
-    // מתודות גישה לנתונים: מעבירות את העבודה ל-DBConnection
-    // ------------------------------------------------------------------
-
-    public List<Order> getAllOrders() {
-        return dbConnector.getAllOrders();
+    public List<Order> getAllOrders() throws SQLException {
+        return orderDAO.getAllOrders();
     }
 
-    public Order getOrder(int orderNumber) {
-        return dbConnector.getOrder(orderNumber);
+    public Order getOrder(int orderNumber) throws SQLException {
+        return orderDAO.getOrder(orderNumber);
     }
 
-    /**
-     * מעדכן הזמנה, כולל ולידציה עסקית.
-     */
-    public void updateOrder(int orderNumber, Date newDate, int newGuests) throws IllegalArgumentException {
+    public void updateOrder(int orderNumber, Date newDate, int newGuests)
+            throws IllegalArgumentException, SQLException {
 
-        // *** שלב 1: ולידציה עסקית ***
-        Date now = new Date(System.currentTimeMillis());
-
-        if (newDate.before(now) || newDate.equals(now)) {
-            throw new IllegalArgumentException(
-                "שגיאת ולידציה: תאריך ההזמנה החדש אינו תקין (בעבר או בהווה)."
-            );
+        // VALIDATIONS//
+        if (newDate == null) {
+            throw new IllegalArgumentException("Order date cannot be null");
         }
 
-        // *** שלב 2: ביצוע ה-SQL דרך DBConnection ***
-        dbConnector.updateOrder(orderNumber, newDate, newGuests);
+        Date now = new Date();
+        if (!newDate.after(now)) {
+            throw new IllegalArgumentException("Order date must be in the future");
+        }
+
+        if (newGuests <= 0) {
+            throw new IllegalArgumentException("Number of guests must be positive");
+        }
+
+        // making sure order exists
+        Order existing = orderDAO.getOrder(orderNumber);
+        if (existing == null) {
+            throw new IllegalArgumentException("Order " + orderNumber + " does not exist");
+        }
+
+        //Updating order
+        orderDAO.updateOrder(orderNumber, newDate, newGuests);
     }
 }
