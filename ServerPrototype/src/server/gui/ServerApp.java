@@ -26,7 +26,7 @@ public class ServerApp extends Application {
         primaryStage.setTitle("Server");
         primaryStage.show();
 
-        viewController.log("Server listening on port 5555");
+        viewController.log("Server listening on port 5555!");
     }
 
     public static void main(String[] args) {
