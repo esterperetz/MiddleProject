@@ -1,3 +1,4 @@
+<<<<<<< Upstream, based on branch 'main' of https://github.com/esterperetz/MiddleProject.git
 /Uicontrollers/
 /client/
 /clientUi/
@@ -9,3 +10,10 @@
 /clientController/
 /clientGui/
 >>>>>>> 2bbde2b init update gui and update controller
+=======
+/clientUi/
+/Uicontrollers/
+/ClientGui/
+/clientController/
+/clientGui/
+>>>>>>> 8d372bf Revert "init update order gui and update order controller"
