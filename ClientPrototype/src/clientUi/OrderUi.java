@@ -9,6 +9,7 @@ public class OrderUi extends Application{
 	    public void start(Stage primaryStage) throws Exception {
 		  Parent root = FXMLLoader.load(getClass().getResource("/clientGui/orderUi.fxml"));
 
+		  
 	        Scene scene = new Scene(root);
 	        primaryStage.setTitle("Orders Management");
 	        primaryStage.setScene(scene);
