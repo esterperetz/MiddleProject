@@ -20,12 +20,18 @@ public class ChatClient extends AbstractClient {
     // Handle messages from server
     @Override
     public void handleMessageFromServer(Object msg) {
+    	
+    	if (msg.toString().equals("quit")) {
+    		quit();
+    	}
         // JavaFX thread safety
         Platform.runLater(() -> clientUI.displayMessage(msg.toString()));
+        
     }
 
     // Handle messages from UI
     public void handleMessageFromClientUI(String message) {
+    	
         try {
             sendToServer(message);
         } catch (IOException e) {

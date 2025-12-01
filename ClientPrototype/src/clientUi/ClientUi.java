@@ -17,6 +17,12 @@ public class ClientUi extends Application {
     private TextArea messagesArea;
     private TextField inputField;
     private Button sendButton;
+    private String prompt = "Please enter your command number:"
+    		+ "\n" + "1. Add_An_Order"
+    		+ "\n" + "2. Edit_An Order"
+    		+ "\n" + "3. Delete_An_Order"
+    		+ "\n" + "4. Show_All_Orders"
+    		+ "\n" + "5. quit";
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -24,11 +30,12 @@ public class ClientUi extends Application {
         messagesArea = new TextArea();
         messagesArea.setEditable(false);
         messagesArea.setWrapText(true);
+        messagesArea.appendText(prompt + "\n");
 
         inputField = new TextField();
-        inputField.setPromptText("Enter Your Order ID...");
+        inputField.setPromptText("Enter your number of the selected command.");
 
-        sendButton = new Button("Search");
+        sendButton = new Button("Send");
         sendButton.setDefaultButton(true);
 
         // Layout
@@ -70,6 +77,7 @@ public class ClientUi extends Application {
     public void displayMessage(String msg) {
         Platform.runLater(() -> {
             messagesArea.appendText(msg + "\n");
+            messagesArea.appendText(prompt + "\n");
         });
     }
 
