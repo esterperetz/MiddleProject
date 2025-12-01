@@ -1,87 +1,46 @@
 package clientUi;
 
-import client.ChatClient;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.geometry.Insets;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ClientUi extends Application {
+import client.ChatClient;
+import clientGui.MessageListener;
+
+//public class ClientUi extends Application {
+public class ClientUi {
 
     private ChatClient chatClient;
-    private TextArea messagesArea;
-    private TextField inputField;
-    private Button sendButton;
-    private String prompt = "Please enter your command number:"
-    		+ "\n" + "1. Add_An_Order"
-    		+ "\n" + "2. Edit_An Order"
-    		+ "\n" + "3. Delete_An_Order"
-    		+ "\n" + "4. Show_All_Orders"
-    		+ "\n" + "5. quit";
+    private List<MessageListener> listeners;
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        // UI setup
-        messagesArea = new TextArea();
-        messagesArea.setEditable(false);
-        messagesArea.setWrapText(true);
-        messagesArea.appendText(prompt + "\n");
-
-        inputField = new TextField();
-        inputField.setPromptText("Enter your number of the selected command.");
-
-        sendButton = new Button("Send");
-        sendButton.setDefaultButton(true);
-
-        // Layout
-        VBox root = new VBox(10, messagesArea, inputField, sendButton);
-        root.setPadding(new Insets(10));
-
-        Scene scene = new Scene(root, 400, 300);
-        primaryStage.setTitle("Chat Client");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        // Connect to server
-        try {
-            chatClient = new ChatClient("localhost", 5555, this); // Change host/port if needed
-        } catch (Exception e) {
-            displayMessage("Cannot connect to server: " + e.getMessage());
-            e.printStackTrace();
-        }
-
-        // Send message on button click
-        sendButton.setOnAction(event -> sendMessage());
-
-        // Send message on Enter key
-        inputField.setOnAction(event -> sendMessage());
+    private String data;
+    public ClientUi() throws IOException {
+    	chatClient = new ChatClient("localhost", 5555, this);	
+    	this.listeners = new ArrayList<>();
     }
 
-    /**
-     * 
-     */
-    private void sendMessage() {
-        String message = inputField.getText().trim();
-        if (!message.isEmpty() && chatClient != null) {
-            chatClient.handleMessageFromClientUI(message);
-            inputField.clear();
-        }
+    public void sendMessage(String message) {
+
+      if (!message.isEmpty() && chatClient != null) {
+          chatClient.send_a_Message_From_Client_to_server(message);
+      }
     }
 
     // Method called by ChatClient to display messages from server
     public void displayMessage(String msg) {
-        Platform.runLater(() -> {
-            messagesArea.appendText(msg + "\n");
-            messagesArea.appendText(prompt + "\n");
-        });
+    	for(MessageListener listener: this.listeners) {
+    		listener.onMessageReceive(msg);
+    	}
+    }
+    
+    public String getMessage() {
+    	System.out.println("get "+data);
+    	return data;
+    	
+    }
+    
+    public void addListener(MessageListener listener) {
+    	this.listeners.add(listener);
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

@@ -17,20 +17,29 @@ public class ChatClient extends AbstractClient {
         openConnection();
     }
 
-    // Handle messages from server
+
     @Override
     public void handleMessageFromServer(Object msg) {
-    	
-    	if (msg.toString().equals("quit")) {
-    		quit();
-    	}
-        // JavaFX thread safety
-        Platform.runLater(() -> clientUI.displayMessage(msg.toString()));
-        
+        String text = msg.toString();
+        this.clientUI.displayMessage(text);
     }
 
-    // Handle messages from UI
-    public void handleMessageFromClientUI(String message) {
+//  // Handle messages from server
+//  @Override
+//  public void handleMessageFromServer(Object msg) {
+//  	System.out.println(msg.toString());
+//  	
+//  	if (msg.toString().equals("quit")) {
+//  		quit();
+//  	}
+//  	
+////      Platform.runLater(() -> clientUI.displayMessage(msg.toString()));
+//  	 clientUI.displayMessage(msg.toString());
+//      
+//  }
+// Handle messages from server
+//    // Handle messages from UI
+    public void send_a_Message_From_Client_to_server(String message) {
     	
         try {
             sendToServer(message);
@@ -50,4 +59,6 @@ public class ChatClient extends AbstractClient {
         }
         System.exit(0);
     }
+    
+    
 }
