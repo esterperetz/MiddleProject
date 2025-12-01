@@ -12,7 +12,14 @@ import server.controller.ServerController;  // עבור ServerController
 // עבור DBConnectionFactory/DBConnection
 // נניח ש-DBConnectionFactory היא מחלקה באחת החבילות שראינו קודם:
 public class ServerApp extends Application {
-
+	 /**
+     * The start() method is called automatically when the program begins.
+     * Its job is to:
+     * 1. Load the login screen (FXML file)
+     * 2. Create a window for it
+     * 3. Display the window to the user
+     * This is the first function that runs in a JavaFX application.
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
     	// שינוי הנתיב: שימוש ב-ClassLoader כדי לחפש את הקובץ מה-Root

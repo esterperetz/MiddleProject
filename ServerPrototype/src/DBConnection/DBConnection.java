@@ -30,18 +30,27 @@ public class DBConnection {
     }
 
     public Connection getConnection() throws SQLException {
-    	
         if (con == null || con.isClosed()) {
             throw new SQLException("Connection is not available");
         }
         return DriverManager.getConnection(url + scheme +
                 "?serverTimezone=Asia/Jerusalem&useSSL=false",
                 user, pass);
-        
-    	//when we close Connection we dont have active connection check if we need to close
-    	
     	
     }
+    /*
+     when we close Connection we dont have active connection check if we need to close
+    public Connection getConnection() throws SQLException {
+        if (con == null || con.isClosed()) {
+            con = DriverManager.getConnection(
+                    url + scheme + "?serverTimezone=Asia/Jerusalem&useSSL=false",
+                    user,
+                    pass
+            );
+        }
+        return con;
+    }
+    */
 
     public void close() {
         if (con != null) {

@@ -6,7 +6,7 @@ import Entities.Order;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import server.gui.ServerViewController;
-
+//This class handles the server. It talks with clients and manages orders
 public class ServerController extends AbstractServer {
 
     private DBConnection model;
@@ -22,6 +22,9 @@ public class ServerController extends AbstractServer {
         this.orderController = new OrderController(orderDao);
     }
 
+    /**
+     * add Clients to the GUI table and Logs the connection
+     */
     @Override
     protected void clientConnected(ConnectionToClient client) {
         String ip = client.getInetAddress().getHostAddress();
@@ -30,6 +33,9 @@ public class ServerController extends AbstractServer {
         view.log("Client connected: " + ip + " (" + host + ")");
     }
 
+    /**
+     * removes the client from the GUI table and logs the disconnection
+     */
     @Override
     protected void clientDisconnected(ConnectionToClient client) {
         String ip = client.getInetAddress().getHostAddress();
@@ -37,6 +43,11 @@ public class ServerController extends AbstractServer {
         view.log("Client disconnected: " + ip);
     }
 
+    /**
+     *Handles messages received from clients, supports:
+     * 1. Search order by ID
+     * 2. Update order (date + number of guests)
+     */
     @Override
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {
         System.out.println("Message received: " + msg + " from " + client);
@@ -104,6 +115,9 @@ public class ServerController extends AbstractServer {
             sendErrorToAllClients();
         }
     }
+    /**
+     * Sends an error message to all connected clients.
+     */
 
     private void sendErrorToAllClients() {
         try {

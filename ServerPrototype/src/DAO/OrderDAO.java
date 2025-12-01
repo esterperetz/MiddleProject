@@ -17,6 +17,10 @@ public class OrderDAO {
         this.db = db;
     }
 
+    /**
+     * @return all the orders in DB as a List
+     * @throws SQLException , when we were unable to connect to DB
+     */
     public List<Order> getAllOrders() throws SQLException {
         List<Order> list = new ArrayList<>();
         String sql = "SELECT * FROM `order`";
@@ -30,10 +34,19 @@ public class OrderDAO {
                 list.add(mapRowToOrder(rs));
             }
         }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
 
         return list;
     }
 
+    /**
+     * @param orderNumbr is the primary key in DB of the order that we want to return
+     * @return the order according to the orderNumber
+     * @throws SQLException, when we were unable to connect to DB
+     */
     public Order getOrder(int orderNumber) throws SQLException {
         String sql = "SELECT * FROM `order` WHERE order_number = ?";
 
@@ -49,9 +62,21 @@ public class OrderDAO {
                 }
                 return null;
             }
+            catch (SQLException e) {
+                e.printStackTrace();
+                throw e;
+            }
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+            throw ex;
         }
     }
 
+    /**
+     * @param order that we want to update the orde_date,number_of_guests
+     * @throws SQLException, when we were unable to connect to DB
+     */
     public void updateOrder(Order order) throws SQLException {
         String sql = "UPDATE `order` " +
                      "SET order_date = ?, number_of_guests = ? " +
@@ -65,8 +90,16 @@ public class OrderDAO {
             ps.setInt(3, order.getOrder_number());
             ps.executeUpdate();
         }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
+    /**
+     * @param order that we want to add to DB
+     * @throws SQLException, when we were unable to connect to DB
+     */
     public void addOrder(Order order) throws SQLException {
         String sql = "INSERT INTO `order` " +
                      "(order_number, order_date, number_of_guests, confirmation_code, subscriber_id, date_of_placing_order) " +
@@ -84,9 +117,18 @@ public class OrderDAO {
 
             ps.executeUpdate();
         }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     // gets row from DB and creates Order object //
+    /**
+     * @param row from DB
+     * @return  row from DB and creates Order object
+     * @throws SQLException
+     */
     private Order mapRowToOrder(ResultSet rs) throws SQLException {
         int orderNumber      = rs.getInt("order_number");
         Date orderDate       = rs.getDate("order_date");

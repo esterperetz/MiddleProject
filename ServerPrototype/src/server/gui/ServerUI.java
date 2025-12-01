@@ -1,5 +1,5 @@
 package server.gui;
-
+/*
 import java.util.Vector;
 import javafx.application.Application;
 
@@ -27,3 +27,4 @@ public class ServerUI extends Application {
 
 
 }
+*/
