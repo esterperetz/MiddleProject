@@ -106,9 +106,10 @@ public class Order implements Serializable {
 				+ ", date_of_placing_order=" + date_of_placing_order + "]";
 	}
 	
+	
 	public static Order parseOrder(String str) throws ParseException {
 	    // Remove "Order [" and "]"
-	    str = str.substring(str.indexOf("[") + 1, str.lastIndexOf("]"));
+//	    str = str.substring(str.indexOf("[") + 1, str.lastIndexOf("]"));
 
 	    // Split into fields by ", "
 	    String[] parts = str.split(", ");
