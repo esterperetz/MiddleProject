@@ -67,6 +67,7 @@ public class ChatClient extends AbstractClient {
 	// Quit client
 	public void quit() {
 		try {
+			send(new RequestPath("quit",null));
 			closeConnection();
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -3,7 +3,7 @@ package server.gui;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-
+import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.*;
 
@@ -28,6 +28,24 @@ public class ServerViewController {
         colIp.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getIp()));
         colHost.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getHost()));
         tblClients.setItems(clients);
+        
+     // יש להמתין מעט כדי שה-Stage ייווצר על ידי JavaFX
+	    Platform.runLater(() -> {
+	        // 1. קבלת Stage (החלון הראשי)
+	        Stage stage = (Stage) tblClients.getScene().getWindow();
+	        
+	        // 2. הוספת מאזין לאירוע סגירת חלון (ה-X)
+	        stage.setOnCloseRequest(event -> {
+	            // זהו קוד שרץ כאשר המשתמש לוחץ על 'X'
+	            
+	            System.out.println("User has been closed the window (X button).");
+	            
+//	            // מנע את הסגירה המיידית של JavaFX
+//	            event.consume(); 
+	            System.exit(0);
+	        	
+	        });
+	    });
     }
 
     public void addClient(String ip, String host) {
@@ -49,4 +67,6 @@ public class ServerViewController {
         public String getIp() { return ip; }
         public String getHost() { return host; }
     }
+    
+    
 }

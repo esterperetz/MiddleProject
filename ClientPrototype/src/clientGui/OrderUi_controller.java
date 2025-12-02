@@ -53,7 +53,7 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 //	private ObservableSet<Order> orderData = FXCollections.observableSet();
 
 	private String data;
-	private ClientUi c;
+
 
 	private ClientUi clientUi; // שכבת תקשורת בצד לקוח
 	private OrderLogic orderLogic; // לוגיקה של הזמנות בצד לקוח
@@ -87,14 +87,36 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 			e.printStackTrace();
 		}
 
-		// 3. לחבר את ה־ObservableList לטבלה
-		orderTable.setItems(orderData);
-
-		// 4. להגדיר עמודות כ־editable וכו'
-		setupEditableColumns();
+		
 
 		// (האזהרה / confirmation – אופציונלי, תלוי בדרישה)
 		showAlert("Load all reservations", "Generate all orders?", Alert.AlertType.CONFIRMATION);
+	
+		// 3. לחבר את ה־ObservableList לטבלה
+		orderTable.setItems(orderData);
+		
+		// 4. להגדיר עמודות כ־editable וכו'
+		setupEditableColumns();
+		
+		// יש להמתין מעט כדי שה-Stage ייווצר על ידי JavaFX
+	    Platform.runLater(() -> {
+	        // 1. קבלת Stage (החלון הראשי)
+	        Stage stage = (Stage) orderTable.getScene().getWindow();
+	        
+	        // 2. הוספת מאזין לאירוע סגירת חלון (ה-X)
+	        stage.setOnCloseRequest(event -> {
+	            // זהו קוד שרץ כאשר המשתמש לוחץ על 'X'
+	            
+	            System.out.println("User has been closed the window (X button).");
+	            
+//	            // מנע את הסגירה המיידית של JavaFX
+//	            event.consume(); 
+	            
+	        	clientUi.DisconnectClient();
+	        });
+	    });
+	
+
 	}
 
 
@@ -214,11 +236,18 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 		alert.setContentText(content);
 		alert.showAndWait();
 		ButtonType res = alert.getResult();
-		if (res == ButtonType.CANCEL) {
-			
-			RequestPath rq = new RequestPath(null,"quit");
+		if (res.equals(ButtonType.CANCEL)) {
+			RequestPath rq = new RequestPath("quit",null);
 			clientUi.sendRequest(rq);
-			System.out.println("helppppp");
+			
+			Platform.runLater(() -> {
+	            Stage stage = (Stage) orderTable.getScene().getWindow();
+	            stage.close();
+	            
+	            // אם זוהי האפליקציה היחידה, ניתן גם:
+	            // Platform.exit(); 
+	        });
+	        
 //			Stage stage = (Stage) orderTable.getScene().getWindow(); 
 //		    stage.close();
 
@@ -237,14 +266,13 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 		System.out.println("----------- Received message from server: " + msg);
 
 		if (msg.equals("Disconnecting the client from the server.")) {
-			System.out.println("I am in");
-			c.DisconnectClient();
-			Stage stage = (Stage) orderTable.getScene().getWindow(); 
-		    stage.close();
+
+			clientUi.DisconnectClient();
+		    return;
 			
 		}
 
-		if (msg == null || msg.trim().isEmpty() || !msg.startsWith("[")) {
+		else if (msg == null || msg.trim().isEmpty() || !msg.startsWith("[")) {
 			System.out.println("Message is not a valid list format.");
 			return;
 		}
@@ -287,9 +315,10 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 			if (!orderData.isEmpty()) {
 				orderTable.getSelectionModel().selectFirst();
 				orderTable.scrollTo(0);
+				System.out.println("Successfully loaded " + orderData.size() + " orders.");
+
 
 			}
-			System.out.println("Successfully loaded " + orderData.size() + " orders.");
 		});
 	}
 }

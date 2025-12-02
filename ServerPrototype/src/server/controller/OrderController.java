@@ -24,8 +24,10 @@ public class OrderController {
 	}
 
 	public void handle(String method, List<String> params, ConnectionToClient client) {
+		
 		switch (method) {
 		case "GET":
+		
 			try {
 				handleGet(method, params, client);
 			} catch (Exception e) {
@@ -35,7 +37,15 @@ public class OrderController {
 			break;
 		}
 	}
-
+	
+//	public void handleQuit(ConnectionToClient client) {
+//		try {
+//			client.sendToClient("Disconnecting the client from the server.");
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 	private void handleGet(String method, List<String> params, ConnectionToClient client) throws Exception {
 
 		if (!params.isEmpty()) {
@@ -76,6 +86,7 @@ public class OrderController {
 			Order order = orderDAO.getOrder(orderNumber);
 			client.sendToClient(order);
 		} else {
+//			handleQuit(client);
 		}
 	}
 
