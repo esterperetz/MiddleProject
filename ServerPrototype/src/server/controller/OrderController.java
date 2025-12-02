@@ -63,6 +63,16 @@ public class OrderController {
         // if (orderDAO.getOrder(order.getOrder_number()) != null) { ... }
         orderDAO.addOrder(order);
     }
+    /**
+     * Delete exist order from the database.We also check that the order is valid before deleting.
+     * @param order  to delete
+     * @throws IllegalArgumentException if the order data is invalid
+     * @throws SQLException if the DB insert fails
+     */
+    public void deleteOrder(Order order) throws SQLException {
+        validateOrder(order);
+        orderDAO.deleteOrder(order);
+    }
 
     /**
      * Checks that the order is valid.

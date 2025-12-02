@@ -122,6 +122,25 @@ public class OrderDAO {
             throw e;
         }
     }
+    /**
+     * Deletes an order from the database by its order number.
+     * @param order that we want to delet from DB 
+     * @throws SQLException if the delete query fails
+     */
+    public void deleteOrder(Order order) throws SQLException {
+        String sql = "DELETE FROM `order` WHERE order_number = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, order.getOrder_number());
+            ps.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
 
     // gets row from DB and creates Order object //
     /**
