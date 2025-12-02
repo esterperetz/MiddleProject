@@ -137,68 +137,7 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 
 	}
 
-//	public Order parseOrder(String str) {
-//		// מסירים "Order{" בהתחלה ו- "}" בסוף
-//
-//		//
-////		System.out.println(str);
-//		str = str.substring(str.indexOf("[") + 1, str.lastIndexOf("]"));
-//		String[] parts = str.split(", ");
-//
-//		int id = 0;
-//		Date date = null;
-//		int price = 0;
-//		int amount = 0;
-//		int status = 0;
-//		Date deliveryDate = null;
-//
-//		// פורמט תאריך כמו שמגיע ב-String
-//		SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
-//
-//		for (String part : parts) {
-//			String[] keyValue = part.split("=");
-//			String key = keyValue[0];
-//			String value = keyValue[1];
-//
-//			switch (key) {
-//			case "":
-//				id = Integer.parseInt(value);
-//				break;
-//
-//			case "date":
-//				try {
-//					date = sdf.parse(value);
-//				} catch (ParseException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				break;
-//
-//			case "price":
-//				price = Integer.parseInt(value);
-//				break;
-//
-//			case "amount":
-//				amount = Integer.parseInt(value);
-//				break;
-//
-//			case "status":
-//				status = Integer.parseInt(value);
-//				break;
-//
-//			case "deliveryDate":
-//				try {
-//					deliveryDate = sdf.parse(value);
-//				} catch (ParseException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				break;
-//			}
-//		}
-//
-//		return new Order(id, date, price, amount, status, deliveryDate);
-//	}
+
 	
 	// שינוי שם המתודה לפונקציית עזר (כדי למנוע בלבול)
 	public Order parseOrderFromKeyValue(String contentString) { 
