@@ -1,19 +1,7 @@
-<<<<<<< Upstream, based on branch 'main' of https://github.com/esterperetz/MiddleProject.git
+/clientUi/
 /Uicontrollers/
+/ClientGui/
+/clientController/
+/clientGui/
 /client/
-/clientUi/
-<<<<<<< Upstream, based on branch 'main' of https://github.com/esterperetz/MiddleProject.git
-/ocsf/
-=======
-/Uicontrollers/
-/ClientGui/
-/clientController/
-/clientGui/
->>>>>>> 2bbde2b init update gui and update controller
-=======
-/clientUi/
-/Uicontrollers/
-/ClientGui/
-/clientController/
-/clientGui/
->>>>>>> 8d372bf Revert "init update order gui and update order controller"
+/clientLogic/
