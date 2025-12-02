@@ -48,45 +48,23 @@ public class ServerController extends AbstractServer {
 		view.log("Client disconnected: " + ip);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void handleMessageFromClient(Object msg, ConnectionToClient client) {
 		System.out.println("Message received: " + msg + " from " + client);
 		RequestPath rq;
 		try {
 			rq = RequestPath.parse((String)msg);
-			System.out.println(rq.getPath());
-			switch (rq.getPath()) {
-			case "Order":
-				String str = msg.toString().trim();
-				// המרה למחרוזת וביטול רווחים מיותרים
-				System.out.println("in Order");
-				if (str.equals(rq.getItems().get(0))) {
-					try {
-						List<Order> allOrders = orderController.getAllOrders();
-						if (allOrders != null) {
+			String path = rq.getPath();
+			String method = rq.getMethod();
+			Router router = new Router(orderDao);
+			if(method.equals("quit")) {
+	        	this.clientDisconnected(client);
+	        	this.sendToAllClients("Disconnecting the client from the server.");
+			}else
+			    router.route(path, method, rq.getItems(), client);
 
-							System.out.println("Server Found (search only)");
-							this.sendToAllClients(allOrders.toString());
-							return;
-
-						} else {
-							System.out.println("Not Found");
-							sendErrorToAllClients();
-							return;
-						}
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} else if (str.equals("quit")) {
-					clientDisconnected(client);
-					sendToAllClients("Disconnecting the client from the server.");
-
-				}
-
-			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
