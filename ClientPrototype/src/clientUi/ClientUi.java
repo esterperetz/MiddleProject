@@ -42,5 +42,9 @@ public class ClientUi {
     public void addListener(MessageListener listener) {
     	this.listeners.add(listener);
     }
+    
+    public void DisconnectClient() {
+    	chatClient.quit();
+    }
 
 }

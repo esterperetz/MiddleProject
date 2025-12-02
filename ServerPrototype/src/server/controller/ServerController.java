@@ -1,5 +1,8 @@
 package server.controller;
 
+import java.sql.SQLException;
+import java.util.List;
+
 import DAO.OrderDAO;
 import DBConnection.DBConnection;
 import Entities.Order;
@@ -54,6 +57,32 @@ public class ServerController extends AbstractServer {
 
         String str = msg.toString().trim();  // המרה למחרוזת וביטול רווחים מיותרים
         int flag = 0;
+        
+        if (str.equals("GET_ALL_ORDERS")) {
+        	try {
+				List<Order> allOrders = orderController.getAllOrders();
+				if(allOrders != null) {
+					
+					System.out.println("Server Found (search only)");
+					this.sendToAllClients(allOrders.toString());
+					return;
+					
+				}
+				else {
+					System.out.println("Not Found");
+		            sendErrorToAllClients();
+		            return;
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+        }
+        else if(str.equals("quit")) {
+        	clientDisconnected(client);
+        	sendToAllClients("Disconnecting the client from the server.");
+        	
+        }
 
         String[] parts = str.split(" ");
 
