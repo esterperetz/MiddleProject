@@ -5,7 +5,7 @@ import java.text.ParseException;
 
 import Entities.Order;
 import Entities.RequestPath;
-import clientUi.ClientUi;
+import clientGui.ClientUi;
 import javafx.application.Platform;
 import ocsf.client.AbstractClient;
 
@@ -40,22 +40,29 @@ public class ChatClient extends AbstractClient {
 //      
 //  }
 // Handle messages from server
-//    // Handle messages from UI
-	public void send_a_Message_From_Client_to_server(String message) {
-
-		RequestPath o = new RequestPath();
-		o.setPath("Order");
-		o.setMethod("get");
-		o.addItem(message);
-
-		try {
-
-			sendToServer(o.toString());
-		} catch (IOException e) {
-			Platform.runLater(() -> clientUI.displayMessage("Could not send message to server. Terminating client."));
-			quit();
-		}
-	}
+    // Handle messages from UI
+	  public void send(RequestPath rq) {
+	        try {
+	            sendToServer(rq.toString());
+	        } catch (IOException e) {
+	            Platform.runLater(() -> clientUI.displayMessage("Error sending request to server."));
+	        }
+	    }
+//	public void send_a_Message_From_Client_to_server(RequestPath message) {
+//
+//		RequestPath o = new RequestPath();
+//		o.setPath("Order");
+//		o.setMethod("GET");
+//		o.addItem(message);
+//
+//		try {
+//
+//			sendToServer(o.toString());
+//		} catch (IOException e) {
+//			Platform.runLater(() -> clientUI.displayMessage("Could not send message to server. Terminating client."));
+//			quit();
+//		}
+//	}
 
 	// Quit client
 	public void quit() {
@@ -64,7 +71,7 @@ public class ChatClient extends AbstractClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.exit(0);
+//		System.exit(0);
 	}
 
 }
