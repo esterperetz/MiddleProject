@@ -73,5 +73,16 @@ public class OrderLogic {
         rq.addItem(String.valueOf(orderId));
         client.sendRequest(rq);
     }
+    
+    public  boolean isNumeric(String s) {
+        if (s == null || s.isEmpty()) return false;
+
+        for (char c : s.toCharArray()) {
+            if (!Character.isDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 

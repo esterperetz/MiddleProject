@@ -36,12 +36,16 @@ public class RequestPath {
         this.method = method;
     }
 
-    public List getItems() {
+    public List<String> getItems() {
         return items;
     }
 
     public void setItems(List<String> items) {
         this.items = items;
+    }
+    
+    public void setItem(int index , String value) {
+        items.set(index, value);
     }
 
     public void addItem(String item) {

@@ -16,6 +16,8 @@ public class Order implements Serializable {
 	private int confirmation_code;
 	private int subscriber_id;
 	private Date date_of_placing_order;
+	
+	
 
 	public Order(int order_number, Date order_date, int number_of_guests, int confirmation_code, int subscriber_id,
 			Date date_of_placing_order) {

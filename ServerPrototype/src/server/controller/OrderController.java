@@ -7,8 +7,11 @@ import DAO.OrderDAO;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This controller manages the logic for orders. It uses the OrderDAO to
@@ -35,7 +38,25 @@ public class OrderController {
 				e.printStackTrace();
 			}
 			break;
+			
+		case "PUT":
+
+			try {
+
+			updateOrder(new Order(Integer.parseInt(params.get(0)),stringToMySqlDate(params.get(1)),Integer.parseInt(params.get(2)),33,22, stringToMySqlDate(params.get(1))));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			
 		}
+			}
+	}
+	
+
+	public java.sql.Date stringToMySqlDate(String str) throws ParseException {
+	    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+	    Date utilDate = sdf.parse(str);
+	    return new java.sql.Date(utilDate.getTime());
 	}
 	
 //	public void handleQuit(ConnectionToClient client) {

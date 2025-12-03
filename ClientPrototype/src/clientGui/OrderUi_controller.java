@@ -5,7 +5,6 @@ import client.MessageListener;
 import clientLogic.OrderLogic;
 
 import java.awt.Dialog;
-import java.io.IOException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -66,26 +65,18 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 		itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
 		DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
 
-		// 2. אתחול התקשורת עם השרת
-		try {
-			// א. ליצור ClientUi אחד
-			clientUi = new ClientUi();
+		// א. ליצור ClientUi אחד
+		clientUi = new ClientUi();
 
-			// ב. להירשם כמאזין להודעות מהשרת
-			clientUi.addListener(this);
+		// ב. להירשם כמאזין להודעות מהשרת
+		clientUi.addListener(this);
 
-			// ג. ליצור את OrderLogic שעובד מול ClientUi
-			orderLogic = new OrderLogic(clientUi);
+		// ג. ליצור את OrderLogic שעובד מול ClientUi
+		orderLogic = new OrderLogic(clientUi);
 
-			System.out.println("Sending request: GET_ALL_ORDERS");
-			// ד. לבקש את כל ההזמנות מהשרת
-			orderLogic.getAllOrders();
-
-		} catch (IOException e) {
-			showAlert("Connection Error", "Could not connect to server or send initial request.",
-					Alert.AlertType.ERROR);
-			e.printStackTrace();
-		}
+		System.out.println("Sending request: GET_ALL_ORDERS");
+		// ד. לבקש את כל ההזמנות מהשרת
+		orderLogic.getAllOrders();
 
 		
 
@@ -94,6 +85,12 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 	
 		// 3. לחבר את ה־ObservableList לטבלה
 		orderTable.setItems(orderData);
+		
+		Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
+		alert2.setTitle("Loading all orders...");
+		alert2.setHeaderText(null);
+		alert2.setContentText("Successfully loaded all orders!");
+		alert2.showAndWait();
 		
 		// 4. להגדיר עמודות כ־editable וכו'
 		setupEditableColumns();
@@ -229,7 +226,7 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 
 	}
 
-	private void showAlert(String title, String content, Alert.AlertType type) {
+	public void showAlert(String title, String content, Alert.AlertType type) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);
 		alert.setHeaderText(null);
@@ -243,23 +240,20 @@ public class OrderUi_controller implements Initializable, MessageListener<String
 			Platform.runLater(() -> {
 	            Stage stage = (Stage) orderTable.getScene().getWindow();
 	            stage.close();
-	            
-	            // אם זוהי האפליקציה היחידה, ניתן גם:
-	            // Platform.exit(); 
+
 	        });
-	        
-//			Stage stage = (Stage) orderTable.getScene().getWindow(); 
-//		    stage.close();
 
-		} else {
-			Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-			alert2.setTitle("Loading all orders...");
-			alert2.setHeaderText(null);
-			alert2.setContentText("Successfully loaded all orders!");
-			alert2.showAndWait();
 		}
+//		} else {
+//			Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
+//			alert2.setTitle("Loading all orders...");
+//			alert2.setHeaderText(null);
+//			alert2.setContentText("Successfully loaded all orders!");
+//			alert2.showAndWait();
+//		}
 	}
-
+	
+	
 	@Override
 	public void onMessageReceive(String msg) {
 

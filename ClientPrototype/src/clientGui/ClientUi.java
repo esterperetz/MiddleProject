@@ -1,6 +1,7 @@
 package clientGui;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,14 +16,22 @@ public class ClientUi {
     @SuppressWarnings({ "rawtypes" })
 	private List<MessageListener> listeners;
 
-    public ClientUi() throws IOException {
-    	chatClient = new ChatClient("localhost", 5555, this);	
+    public ClientUi() {
+    	try {
+			chatClient = new ChatClient("localhost", 5555, this);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
     	this.listeners = new ArrayList<>();
     }
 
     public void sendRequest(RequestPath message) {
 
       if (message != null && chatClient != null) {
+
+    	
+    	  System.out.println(message.toString());
           chatClient.send(message);
       }
     }
