@@ -1,236 +1,197 @@
 package server.controller;
 
-import Entities.Order;
-import Entities.RequestPath;
-import ocsf.server.ConnectionToClient;
 import DAO.OrderDAO;
+import Entities.ActionType;
+import Entities.Order;
+import Entities.Request;
+import ocsf.server.ConnectionToClient;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
-/**
- * This controller manages the logic for orders. It uses the OrderDAO to
- * communicate with the database.
- */
 public class OrderController {
 
-	private final OrderDAO orderDAO;
-	private ServerController s;
+    private final OrderDAO orderDAO;
 
-	public OrderController(OrderDAO orderDAO) {
-		this.orderDAO = orderDAO;
-	}
+    public OrderController(OrderDAO orderDAO) {
+        this.orderDAO = orderDAO;
+    }
 
-	public void handle(String method, List<String> params, ConnectionToClient client) {
-		
-		switch (method) {
-		case "GET":
-		
-			try {
-				handleGet(method, params, client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			break;
-			
-		case "PUT":
+    /**
+     * נקודת הכניסה העיקרית – השרת קורא ל־handle כשמגיעה בקשה שקשורה ל־ORDER.
+     */
+    public void handle(Request request, ConnectionToClient client) {
+        try {
+            ActionType action = request.getAction();
 
-			try {
+            switch (action) {
+                case GET_ALL:
+                    handleGetAll(client);
+                    break;
 
-			updateOrder(new Order(Integer.parseInt(params.get(0)),stringToMySqlDate(params.get(1)),Integer.parseInt(params.get(2)),33,22, stringToMySqlDate(params.get(1))));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			
-		}
-			}
-	}
-	
+                case GET_BY_ID:
+                    handleGetById(request, client);
+                    break;
 
-	public java.sql.Date stringToMySqlDate(String str) throws ParseException {
-	    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
-	    Date utilDate = sdf.parse(str);
-	    return new java.sql.Date(utilDate.getTime());
-	}
-	
-//	public void handleQuit(ConnectionToClient client) {
-//		try {
-//			client.sendToClient("Disconnecting the client from the server.");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-	private void handleGet(String method, List<String> params, ConnectionToClient client) throws Exception {
+                case CREATE:
+                    handleCreate(request, client);
+                    break;
 
-		if (!params.isEmpty()) {
-			if (params.get(0).equals("GET_ALL_ORDERS")) {
-				try {
-					
-					List<Order> allOrders = orderDAO.getAllOrders();
-					if (allOrders != null) {
+                case UPDATE:
+                    handleUpdate(request, client);
+                    break;
 
-						System.out.println("Server Found (search only)");
-						client.sendToClient(allOrders.toString());
-						return;
+                case DELETE:
+                    handleDelete(request, client);
+                    break;
 
-					}
-					 
-					else {
-						System.out.println("Not Found");
-						sendErrorToAllClients(client);
-						return;
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	        }
-			// GET /Order -> Get All Orders
-//            List<Order> allOrders = orderDAO.getAllOrders();
-//            try {
-//                // ... לוגיקה לעטיפת התגובה (לדוגמה: HashMap עם "status":"SUCCESS")
-//                client.sendToClient(allOrders);
-//            } catch (IOException e) {
-//                // ... טיפול בשגיאת שליחה
-//            }
-//            sendResponse(client, allOrders);
-		} else if (params.size() == 1) {
-			// GET /Order/123 -> Get specific Order by ID
-			int orderNumber = Integer.parseInt(params.get(1));
-			Order order = orderDAO.getOrder(orderNumber);
-			client.sendToClient(order);
-		} else {
-//			handleQuit(client);
-		}
-	}
+                default:
+                    sendError(client, "Unsupported action for ORDER: " + action);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                sendError(client, "Internal server error: " + e.getMessage());
+            } catch (IOException ignore) {}
+        }
+    }
 
+    /* ===== פעולות ===== */
 
+    private void handleGetAll(ConnectionToClient client) throws SQLException, IOException {
+        List<Order> allOrders = orderDAO.getAllOrders();
 
-	/**
-	 * Gets all orders from the database
-	 * 
-	 * @return List of all orders
-	 * @throws SQLException if the DB query fails //
-	 */
-//    public List<Order> getAllOrders() throws SQLException {
-//        return orderDAO.getAllOrders();
-//    }
+        if (allOrders == null || allOrders.isEmpty()) {
+            sendError(client, "No orders found.");
+            return;
+        }
 
-	/**
-	 * Gets a single order from the database by its ID.
-	 * 
-	 * @param orderNumber the ID of the order we want to find
-	 * @return the order, or null if it does not exist
-	 * @throws SQLException if the DB query fails
-	 */
-	public Order getOrder(int orderNumber) throws SQLException {
-		return orderDAO.getOrder(orderNumber);
-	}
+        client.sendToClient(allOrders);
+    }
 
-	/**
-	 * Updates an order in the database.Before updating, we check that the order is
-	 * valid.
-	 * 
-	 * @param order the updated order object
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB update fails
-	 */
-	public void updateOrder(Order order) throws IllegalArgumentException, SQLException {
-		validateOrder(order);
-		// אפשר להוסיף כאן בדיקה שההזמנה קיימת אם תרצה:
-		// if (orderDAO.getOrder(order.getOrder_number()) == null) { ... }
-		orderDAO.updateOrder(order);
-	}
+    private void handleGetById(Request request, ConnectionToClient client)
+            throws SQLException, IOException {
 
-	/**
-	 * Adds a new order to the database.We also check that the order is valid before
-	 * inserting.
-	 * 
-	 * @param order the new order to save
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB insert fails
-	 */
-	public void addOrder(Order order) throws SQLException {
-		validateOrder(order);
-		// ליצירה אפשר לוודא שאין כבר order_number כזה:
-		// if (orderDAO.getOrder(order.getOrder_number()) != null) { ... }
-		orderDAO.addOrder(order);
-	}
+        Integer id = request.getId();
+        if (id == null) {
+            sendError(client, "Order id is required.");
+            return;
+        }
 
-	/**
-	 * Delete exist order from the database.We also check that the order is valid
-	 * before deleting.
-	 * 
-	 * @param order to delete
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB insert fails
-	 */
-	public void deleteOrder(Order order) throws SQLException {
-		validateOrder(order);
-		orderDAO.deleteOrder(order);
-	}
+        Order order = orderDAO.getOrder(id);
+        if (order == null) {
+            sendError(client, "Order " + id + " not found.");
+            return;
+        }
 
-	/**
-	 * Checks that the order is valid.
-	 * 
-	 * @param order the order to check
-	 * @throws IllegalArgumentException if something is wrong in the order data
-	 */
-	private void validateOrder(Order order) {
-		if (order == null) {
-			throw new IllegalArgumentException("Order cannot be null");
-		}
+        client.sendToClient(order);
+    }
 
-		if (order.getOrder_number() <= 0) {
-			throw new IllegalArgumentException("Order number is invalid");
-		}
+    private void handleCreate(Request request, ConnectionToClient client)
+            throws SQLException, IOException {
 
-		if (order.getNumber_of_guests() <= 0) {
-			throw new IllegalArgumentException("Number of guests must be positive");
-		}
+        if (!(request.getPayload() instanceof Order)) {
+            sendError(client, "Invalid payload for CREATE ORDER.");
+            return;
+        }
 
-		if (order.getNumber_of_guests() > 100) {
-			throw new IllegalArgumentException("Number of guests is too large");
-		}
+        Order order = (Order) request.getPayload();
+        validateOrder(order);
 
-		if (order.getConfirmation_code() <= 0) {
-			throw new IllegalArgumentException("Confirmation code is invalid");
-		}
+        orderDAO.addOrder(order);
+        client.sendToClient("Order created successfully: " + order.getOrder_number());
+    }
 
-		if (order.getSubscriber_id() <= 0) {
-			throw new IllegalArgumentException("Subscriber id must be positive");
-		}
+    private void handleUpdate(Request request, ConnectionToClient client)
+            throws SQLException, IOException {
 
-		Date orderDate = order.getOrder_date();
-		Date placingDate = order.getDate_of_placing_order();
-		Date now = new Date();
+        if (!(request.getPayload() instanceof Order)) {
+            sendError(client, "Invalid payload for UPDATE ORDER.");
+            return;
+        }
 
-		if (orderDate == null) {
-			throw new IllegalArgumentException("Order date cannot be null");
-		}
-		if (!orderDate.after(now)) {
-			throw new IllegalArgumentException("Order date must be in the future");
-		}
+        Order order = (Order) request.getPayload();
+        validateOrder(order);
 
-		if (placingDate == null) {
-			throw new IllegalArgumentException("Placing date cannot be null");
-		}
-		if (placingDate.after(orderDate)) {
-			throw new IllegalArgumentException("Placing date cannot be after order date");
-		}
-	}
-	
-	private void sendErrorToAllClients(ConnectionToClient client) {
-		try {
-			client.sendToClient("Order Was not found, try again.");
-		} catch (Exception ignore) {
-		}
-	}
+        // אפשר לוודא שקיימת הזמנה כזו
+        if (orderDAO.getOrder(order.getOrder_number()) == null) {
+            sendError(client, "Order " + order.getOrder_number() + " does not exist.");
+            return;
+        }
+
+        orderDAO.updateOrder(order);
+        client.sendToClient("Order updated successfully: " + order.getOrder_number());
+    }
+
+    private void handleDelete(Request request, ConnectionToClient client)
+            throws SQLException, IOException {
+
+        Integer id = request.getId();
+        if (id == null) {
+            sendError(client, "Order id is required for delete.");
+            return;
+        }
+
+        Order existing = orderDAO.getOrder(id);
+        if (existing == null) {
+            sendError(client, "Order " + id + " not found.");
+            return;
+        }
+
+        orderDAO.deleteOrder(existing);
+        client.sendToClient("Order deleted successfully: " + id);
+    }
+
+    /* ===== לוגיקת עזר ===== */
+
+    private void validateOrder(Order order) {
+        if (order == null) {
+            throw new IllegalArgumentException("Order cannot be null");
+        }
+
+        if (order.getOrder_number() <= 0) {
+            throw new IllegalArgumentException("Order number is invalid");
+        }
+
+        if (order.getNumber_of_guests() <= 0) {
+            throw new IllegalArgumentException("Number of guests must be positive");
+        }
+
+        if (order.getNumber_of_guests() > 100) {
+            throw new IllegalArgumentException("Number of guests is too large");
+        }
+
+        if (order.getConfirmation_code() <= 0) {
+            throw new IllegalArgumentException("Confirmation code is invalid");
+        }
+
+        if (order.getSubscriber_id() <= 0) {
+            throw new IllegalArgumentException("Subscriber id must be positive");
+        }
+
+        Date orderDate = order.getOrder_date();
+        Date placingDate = order.getDate_of_placing_order();
+        Date now = new Date();
+
+        if (orderDate == null) {
+            throw new IllegalArgumentException("Order date cannot be null");
+        }
+        if (!orderDate.after(now)) {
+            throw new IllegalArgumentException("Order date must be in the future");
+        }
+
+        if (placingDate == null) {
+            throw new IllegalArgumentException("Placing date cannot be null");
+        }
+        if (placingDate.after(orderDate)) {
+            throw new IllegalArgumentException("Placing date cannot be after order date");
+        }
+    }
+
+    private void sendError(ConnectionToClient client, String msg) throws IOException {
+        client.sendToClient("ERROR: " + msg);
+    }
 }
+

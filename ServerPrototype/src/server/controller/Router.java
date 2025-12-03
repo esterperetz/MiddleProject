@@ -1,33 +1,40 @@
 package server.controller;
 
-import java.util.List;
-
-import DAO.OrderDAO;
+import Entities.Request;
+import Entities.ResourceType;
 import ocsf.server.ConnectionToClient;
 
 public class Router {
-	 private OrderController orderController;
 
-	 	public Router(OrderDAO orderDao) {
-	 		this.orderController = new OrderController(orderDao);
-	    }
+    private final OrderController orderController;
+    // later: private final UserController userController;
+    // later: private final WaitingListController waitingListController;
 
+    public Router(OrderController orderController) {
+        this.orderController = orderController;
+        // when you have more controllers, add them to ctor as params
+        // this.userController = userController;
+        // this.waitingListController = waitingListController;
+    }
 
-		public void route(String path, String method, List<String> params, ConnectionToClient client) {
-			switch (path) {
-			case "Order":
-				try {
-					
-					orderController.handle(method, params, client);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				break;
+    public void route(Request request, ConnectionToClient client) {
+        ResourceType resource = request.getResource();
 
-			default:
-				System.out.println("Unknown path");
-			}
-		}
+        switch (resource) {
+            case ORDER:
+                orderController.handle(request, client);
+                break;
 
+            // case USER:
+            //     userController.handle(request, client);
+            //     break;
+
+            // case WAITING_LIST:
+            //     waitingListController.handle(request, client);
+            //     break;
+
+            default:
+                System.out.println("Unknown resource: " + resource);
+        }
+    }
 }
