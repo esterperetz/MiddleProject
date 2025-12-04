@@ -6,20 +6,14 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.*;
+import server.controller.ServerController; // הוספתי את הייבוא
 
 public class ServerViewController {
 
-    @FXML
-    private TableView<ClientRow> tblClients;
-
-    @FXML
-    private TableColumn<ClientRow, String> colIp;
-
-    @FXML
-    private TableColumn<ClientRow, String> colHost;
-
-    @FXML
-    private TextArea txtLog;
+    @FXML private TableView<ClientRow> tblClients;
+    @FXML private TableColumn<ClientRow, String> colIp;
+    @FXML private TableColumn<ClientRow, String> colHost;
+    @FXML private TextArea txtLog;
 
     private ObservableList<ClientRow> clients = FXCollections.observableArrayList();
 
@@ -29,23 +23,16 @@ public class ServerViewController {
         colHost.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getHost()));
         tblClients.setItems(clients);
         
-     // יש להמתין מעט כדי שה-Stage ייווצר על ידי JavaFX
-	    Platform.runLater(() -> {
-	        // 1. קבלת Stage (החלון הראשי)
-	        Stage stage = (Stage) tblClients.getScene().getWindow();
-	        
-	        // 2. הוספת מאזין לאירוע סגירת חלון (ה-X)
-	        stage.setOnCloseRequest(event -> {
-	            // זהו קוד שרץ כאשר המשתמש לוחץ על 'X'
-	            
-	            System.out.println("User has been closed the window (X button).");
-	            
-//	            // מנע את הסגירה המיידית של JavaFX
-//	            event.consume(); 
-	            System.exit(0);
-	        	
-	        });
-	    });
+        Platform.runLater(() -> {
+            Stage stage = (Stage) tblClients.getScene().getWindow();
+            
+            stage.setOnCloseRequest(event -> {
+                System.out.println("User has been closed the window (X button).");
+                // יציאה באמצעות System.exit(0) תפעיל את מנגנון ה-shutdown של השרת
+                // ב-ServerController, שיסגור את החיבור הקבוע (closeConnection).
+                System.exit(0); 
+            });
+        });
     }
 
     public void addClient(String ip, String host) {
@@ -67,6 +54,4 @@ public class ServerViewController {
         public String getIp() { return ip; }
         public String getHost() { return host; }
     }
-    
-    
 }

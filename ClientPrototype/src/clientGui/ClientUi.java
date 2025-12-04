@@ -1,57 +1,52 @@
 package clientGui;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import Entities.RequestPath;
+import Entities.Request;
 import client.ChatClient;
 import client.MessageListener;
 
-//public class ClientUi extends Application {
 public class ClientUi {
 
     private ChatClient chatClient;
-    @SuppressWarnings({ "rawtypes" })
-	private List<MessageListener> listeners;
+    private List<MessageListener> listeners;
 
     public ClientUi() {
-    	try {
-			chatClient = new ChatClient("localhost", 5555, this);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}	
-    	this.listeners = new ArrayList<>();
+        this.listeners = new ArrayList<>();
+        try {
+            chatClient = new ChatClient("localhost", 5555, this);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            System.err.println("CRITICAL: Could not connect to server!");
+        }
     }
 
-    public void sendRequest(RequestPath message) {
-
-      if (message != null && chatClient != null) {
-
-    	
-    	  System.out.println(message.toString());
-          chatClient.send(message);
-      }
+    public void sendRequest(Request req) {
+        if (chatClient != null) {
+            System.out.println("Sending request: " + req.toString());
+            chatClient.send(req);
+        } else {
+            System.err.println("ChatClient is null - cannot send request.");
+        }
     }
 
-    // Method called by ChatClient to display messages from server
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-	public void displayMessage(String msg) {
-    	for(MessageListener listener: this.listeners) {
-    		listener.onMessageReceive(msg);
-    	}
+    // הלקוח (ChatClient) קורא לזה כשיש הודעה חדשה
+    public void notifyListeners(Object msg) {
+        for (MessageListener listener : listeners) {
+            listener.onMessageReceive(msg);
+        }
     }
 
-    @SuppressWarnings("rawtypes")
-	public void addListener(MessageListener listener) {
-    	this.listeners.add(listener);
+    public void addListener(MessageListener listener) {
+        this.listeners.add(listener);
     }
     
-    public void DisconnectClient() {
-    	
-    	chatClient.quit();
+    public void disconnectClient() {
+        if (chatClient != null) {
+            chatClient.quit();
+        }
     }
-
 }

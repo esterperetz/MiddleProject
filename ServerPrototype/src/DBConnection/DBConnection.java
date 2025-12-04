@@ -4,64 +4,76 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-//CONNECTION TO DB ONLY//
 public class DBConnection {
 
-    private Connection con;
-    private String user , pass , scheme;
-    private String url = "jdbc:mysql://localhost:3306/"; // כאן "orders" הוא schema/database
+    private static DBConnection instance;
+    private final String url;
+    private final String user;
+    private final String pass;
+    
+    // החיבור הבודד והקבוע נשמר כאן
+    private Connection connection; 
 
-
-    public DBConnection(String user, String pass, String scheme) throws SQLException {
-        this.con = connectToDB(user, pass, scheme);
-    }
-
-    private Connection connectToDB(String user, String pass, String scheme) throws SQLException {
+    private DBConnection() {
+        this.url = "jdbc:mysql://localhost:3306/MidProject?serverTimezone=Asia/Jerusalem&useSSL=false";
+        this.user = "root";      
+        this.pass = "159357";
+        
+        // יצירת החיבור בפעם הראשונה
         try {
-        	this.user = user;
-        	this.pass = pass;
-        	this.scheme = scheme;
-            return DriverManager.getConnection(url + scheme + 
-            		"?serverTimezone=Asia/Jerusalem&useSSL=false",user, pass);
-        } catch (SQLException e) {
+            // טעינת הדרייבר
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            this.connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("Single persistent DB Connection established.");
+        }
+        catch (SQLException | ClassNotFoundException e) {
+            System.err.println("FATAL: Could not establish a single persistent DB connection.");
             e.printStackTrace();
-            throw e;
+            // זורק שגיאת זמן ריצה כדי לעצור אם אין חיבור לבסיס נתונים
+            throw new RuntimeException("Database connection failed during initialization.", e);
         }
     }
 
-    public Connection getConnection() throws SQLException {
-        if (con == null || con.isClosed()) {
-            throw new SQLException("Connection is not available");
+    public static synchronized DBConnection getInstance() {
+        if (instance == null) {
+            instance = new DBConnection();
         }
-        return DriverManager.getConnection(url + scheme +
-                "?serverTimezone=Asia/Jerusalem&useSSL=false",
-                user, pass);
-    	
+        return instance;
     }
-    /*
-     when we close Connection we dont have active connection check if we need to close
-    public Connection getConnection() throws SQLException {
-        if (con == null || con.isClosed()) {
-            con = DriverManager.getConnection(
-                    url + scheme + "?serverTimezone=Asia/Jerusalem&useSSL=false",
-                    user,
-                    pass
-            );
-        }
-        return con;
-    }
-    */
 
-    public void close() {
-        if (con != null) {
+    /**
+     * מחזיר את החיבור הבודד והקבוע.
+     * מוודא שהחיבור תקף, ואם לא - מנסה ליצור אותו מחדש.
+     */
+    public Connection getConnection() throws SQLException {
+        // בדיקה אם החיבור נסגר מבחוץ או פג תוקפו.
+        // isValid(10) בודק את תקינות החיבור עם Timeout של 10 שניות.
+        if (connection == null || connection.isClosed() || !connection.isValid(10)) { 
+            System.out.println("Connection is stale or closed. Re-establishing connection.");
             try {
-                con.close();
-            } catch (SQLException ignored) {
+                // יצירה מחדש של החיבור
+                this.connection = DriverManager.getConnection(url, user, pass);
+                System.out.println("Connection re-established successfully.");
+            } catch (SQLException e) {
+                 System.err.println("Could not re-establish DB connection.");
+                 throw e; 
+            }
+        }
+        return connection;
+    }
+    
+    /**
+     * סוגר את החיבור היחיד (יש לקרוא בעת כיבוי השרת).
+     */
+    public void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.close();
+                System.out.println("Single persistent DB connection closed.");
+            } catch (SQLException e) {
+                System.err.println("Error closing the single DB connection.");
+                e.printStackTrace();
             }
         }
     }
 }
-
-	
-
-

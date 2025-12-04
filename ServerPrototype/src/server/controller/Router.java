@@ -1,5 +1,7 @@
 package server.controller;
 
+import java.io.IOException;
+
 import Entities.Request;
 import Entities.ResourceType;
 import ocsf.server.ConnectionToClient;
@@ -7,34 +9,35 @@ import ocsf.server.ConnectionToClient;
 public class Router {
 
     private final OrderController orderController;
-    // later: private final UserController userController;
-    // later: private final WaitingListController waitingListController;
+    // private final UserController userController; 
+    // private final WaitingListController waitingListController; ו
 
-    public Router(OrderController orderController) {
-        this.orderController = orderController;
-        // when you have more controllers, add them to ctor as params
-        // this.userController = userController;
-        // this.waitingListController = waitingListController;
+    public Router() {
+    	
+        this.orderController = new OrderController();
+        // this.userController = new UserController();
+        // this.waitingListController = new WaitingListController();
     }
 
-    public void route(Request request, ConnectionToClient client) {
-        ResourceType resource = request.getResource();
+    public void route(Request req, ConnectionToClient client) throws IOException {
+        ResourceType resource = req.getResource(); 
 
         switch (resource) {
             case ORDER:
-                orderController.handle(request, client);
+                orderController.handle(req, client);
                 break;
 
-            // case USER:
-            //     userController.handle(request, client);
-            //     break;
+            case USER:
+                // userController.handle(req, client);
+                break;
 
-            // case WAITING_LIST:
-            //     waitingListController.handle(request, client);
-            //     break;
+            case WAITING_LIST:
+                // waitingListController.handle(req, client);
+                break;
 
             default:
-                System.out.println("Unknown resource: " + resource);
+            	//if unknown
+                client.sendToClient("Unknown resource type: " + resource);
         }
     }
 }

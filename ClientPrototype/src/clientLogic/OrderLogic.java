@@ -1,14 +1,11 @@
 package clientLogic;
 
-import client.ChatClient;
 import clientGui.ClientUi;
+import Entities.ActionType;
 import Entities.Order;
-import Entities.RequestPath;
+import Entities.Request;
+import Entities.ResourceType;
 
-/**
- * שירות צד לקוח עבור פעולות על הזמנות (Order).
- * כל המתודות כאן רק בונות RequestPath ושולחות לשרת דרך ChatClient.
- */
 public class OrderLogic {
 
     private final ClientUi client;
@@ -18,71 +15,46 @@ public class OrderLogic {
     }
 
     /**
-     * בקשה: GET /Order
-     * מבקש מהשרת את כל ההזמנות.
+     * בקשה: קבלת כל ההזמנות
+     * Request: Resource=ORDER, Action=GET_ALL
      */
     public void getAllOrders() {
-        RequestPath rq = new RequestPath("Order", "GET");
-        rq.addItem("GET_ALL_ORDERS");
-        client.sendRequest(rq);   // מחלקת ChatClient צריכה להכיל מתודה send(RequestPath)
+        Request req = new Request(ResourceType.ORDER, ActionType.GET_ALL, null, null);
+        client.sendRequest(req);
     }
 
     /**
-     * בקשה: GET /Order/{id}
-     * מבקש מהשרת הזמנה ספציפית לפי מספר הזמנה.
+     * בקשה: קבלת הזמנה לפי ID
      */
     public void getOrderById(int orderId) {
-        RequestPath rq = new RequestPath("Order", "GET");
-        rq.addItem(String.valueOf(orderId));  // items[0] = id
-        client.sendRequest(rq);
+        Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_ID, orderId, null);
+        client.sendRequest(req);
     }
 
     /**
-     * בקשה: POST /Order
-     * יצירת הזמנה חדשה בצד שרת.
-     * (איך בדיוק למפות את השדות ל-items תלוי איך תחליטי בפרוטוקול שלך)
+     * בקשה: יצירת הזמנה חדשה
+     * Payload = אובייקט ה-Order
      */
     public void createOrder(Order order) {
-        RequestPath rq = new RequestPath("Order", "POST");
-        rq.addItem(String.valueOf(order.getOrder_number()));
-        rq.addItem(order.getOrder_date().toString());
-        rq.addItem(String.valueOf(order.getNumber_of_guests()));
-        // אפשר להוסיף עוד שדות לפי הצורך
-        client.sendRequest(rq);
+        Request req = new Request(ResourceType.ORDER, ActionType.CREATE, null, order);
+        client.sendRequest(req);
     }
 
     /**
-     * בקשה: PUT /Order
-     * עדכון הזמנה קיימת.
+     * בקשה: עדכון הזמנה
      */
     public void updateOrder(Order order) {
-        RequestPath rq = new RequestPath("Order", "PUT");
-        rq.addItem(String.valueOf(order.getOrder_number()));
-        rq.addItem(order.getOrder_date().toString());
-        rq.addItem(String.valueOf(order.getNumber_of_guests()));
-        // שוב – אפשר להוסיף עוד שדות
-        client.sendRequest(rq);
+        // נניח שמעבירים את ה-ID בנפרד, או בתוך האובייקט, תלוי איך השרת בנוי.
+        // לפי השרת שבנינו: הוא מצפה ל-Payload שהוא Order.
+        Request req = new Request(ResourceType.ORDER, ActionType.UPDATE, order.getOrder_number(), order);
+        client.sendRequest(req);
     }
 
     /**
-     * בקשה: DELETE /Order/{id}
-     * מחיקת הזמנה לפי מזהה.
+     * בקשה: מחיקת הזמנה
      */
     public void deleteOrder(int orderId) {
-        RequestPath rq = new RequestPath("Order", "DELETE");
-        rq.addItem(String.valueOf(orderId));
-        client.sendRequest(rq);
-    }
-    
-    public  boolean isNumeric(String s) {
-        if (s == null || s.isEmpty()) return false;
-
-        for (char c : s.toCharArray()) {
-            if (!Character.isDigit(c)) {
-                return false;
-            }
-        }
-        return true;
+        Request req = new Request(ResourceType.ORDER, ActionType.DELETE, orderId, null);
+        client.sendRequest(req);
     }
 }
-
