@@ -7,52 +7,62 @@ import java.sql.SQLException;
 public class DBConnection {
 
     private static DBConnection instance;
-    private final String url;
-    private final String user;
-    private final String pass;
-    
-    // החיבור הבודד והקבוע נשמר כאן
     private Connection connection; 
+    
+    private static String dbUrl; 
+    private static String dbUser; 
+    private static String dbPass; 
 
-    private DBConnection() {
-        this.url = "jdbc:mysql://localhost:3306/mid_project_prototype?serverTimezone=Asia/Jerusalem&useSSL=false";
-        this.user = "root";      
-        this.pass = "159357";
+    // Private constructor to enforce Singleton pattern.
+    private DBConnection() {} 
+
+    /**
+     * Initializes the Singleton instance and establishes the DB connection using provided credentials.
+     * MUST be called once before any call to getInstance().
+     */
+    public static synchronized void initializeConnection(String host, String schema, String user, String pass) throws SQLException, ClassNotFoundException {
+        if (instance != null) {
+            System.out.println("DBConnection already initialized. Re-initialization ignored.");
+            return; 
+        }
         
-        // יצירת החיבור בפעם הראשונה
-        try {
-            // טעינת הדרייבר
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            this.connection = DriverManager.getConnection(url, user, pass);
-            System.out.println("Single persistent DB Connection established.");
-        }
-        catch (SQLException | ClassNotFoundException e) {
-            System.err.println("FATAL: Could not establish a single persistent DB connection.");
-            e.printStackTrace();
-            // זורק שגיאת זמן ריצה כדי לעצור אם אין חיבור לבסיס נתונים
-            throw new RuntimeException("Database connection failed during initialization.", e);
-        }
+        // Build the JDBC URL.
+        String url = String.format("jdbc:mysql://%s:3306/%s?serverTimezone=Asia/Jerusalem&useSSL=false", host, schema);
+        
+        // Store credentials statically for potential reconnection.
+        dbUrl = url;
+        dbUser = user;
+        dbPass = pass;
+        
+        instance = new DBConnection();
+        
+        // Establish connection.
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+        System.out.println("Single persistent DB Connection established successfully.");
     }
-
+    
+    /**
+     * Returns the single instance of DBConnection. Throws an exception if not initialized.
+     */
     public static synchronized DBConnection getInstance() {
         if (instance == null) {
-            instance = new DBConnection();
+            // Fails safe if called before initialization in ServerLoginController.
+            throw new IllegalStateException("DBConnection is not initialized. Call initializeConnection() first.");
         }
         return instance;
     }
 
     /**
-     * מחזיר את החיבור הבודד והקבוע.
-     * מוודא שהחיבור תקף, ואם לא - מנסה ליצור אותו מחדש.
+     * Retrieves the persistent connection, attempting to re-establish it if closed or invalid.
      */
     public Connection getConnection() throws SQLException {
-        // בדיקה אם החיבור נסגר מבחוץ או פג תוקפו.
-        // isValid(10) בודק את תקינות החיבור עם Timeout של 10 שניות.
+        // Check if connection is closed or invalid.
         if (connection == null || connection.isClosed() || !connection.isValid(10)) { 
             System.out.println("Connection is stale or closed. Re-establishing connection.");
             try {
-                // יצירה מחדש של החיבור
-                this.connection = DriverManager.getConnection(url, user, pass);
+                // Re-establish connection using stored credentials.
+                this.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
                 System.out.println("Connection re-established successfully.");
             } catch (SQLException e) {
                  System.err.println("Could not re-establish DB connection.");
@@ -63,7 +73,7 @@ public class DBConnection {
     }
     
     /**
-     * סוגר את החיבור היחיד (יש לקרוא בעת כיבוי השרת).
+     * Closes the single connection (called on server shutdown).
      */
     public void closeConnection() {
         if (connection != null) {
@@ -71,8 +81,7 @@ public class DBConnection {
                 connection.close();
                 System.out.println("Single persistent DB connection closed.");
             } catch (SQLException e) {
-                System.err.println("Error closing the single DB connection.");
-                e.printStackTrace();
+                System.err.println("Error closing DB connection: " + e.getMessage());
             }
         }
     }

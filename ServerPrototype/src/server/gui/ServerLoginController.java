@@ -1,6 +1,6 @@
 package server.gui;
 
-import DBConnection.DBConnection; // הייבוא של הסינגלטון
+import DBConnection.DBConnection; 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -14,12 +14,16 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import server.controller.ServerController;
-import server.gui.ServerViewController;
+import java.sql.SQLException;
+import java.io.IOException;
 
 public class ServerLoginController {
 
+    // ודא ששדה זה קיים ב-ServerLogin.fxml (עבור DB Host/IP)
+    @FXML private TextField txtHost; 
+    
     @FXML private TextField txtUserName;
-    @FXML private TextField Scheme;
+    @FXML private TextField Scheme; // DB Schema (Database Name)
     @FXML private PasswordField txtPassword;
     @FXML private Button btnSend;
     @FXML private Button btnConnect;
@@ -27,79 +31,101 @@ public class ServerLoginController {
     @FXML private TextField txtPort;
     @FXML private Label lblStatus;
 
-    // db הוסר כי הוא סינגלטון
     private ServerController server; 
 
     @FXML
     void onConnect(ActionEvent event) {
+        // קליטת פרטי חיבור לבסיס הנתונים (שדות ה-GUI)
+        String host = txtHost != null ? txtHost.getText().trim() : "localhost"; 
         String user = txtUserName.getText().trim();
         String pass = txtPassword.getText().trim();
         String schema = Scheme.getText().trim();
-        // פורט קבוע, כיוון שאין שדה txtPort ב-FXML ששלחת
+        
+        // קליטת פורט השרת
         int port = 5555; 
+        try {
+            if (txtPort != null && !txtPort.getText().trim().isEmpty()) {
+                port = Integer.parseInt(txtPort.getText().trim());
+            }
+        } catch (NumberFormatException e) {
+            lblStatus.setText("Port must be a valid number.");
+            return;
+        }
+
+        // ודא שכל שדות ההתחברות ל-DB מולאו
+        if (user.isEmpty() || pass.isEmpty() || schema.isEmpty() || host.isEmpty()) {
+            lblStatus.setText("All DB connection fields are required.");
+            return;
+        }
 
         try {
-            // *** 1. התיקון: קריאה ל-getConnection() שמפעילה את לוגיקת החיבור ***
-            // אם החיבור נכשל, הוא יזרוק SQLException (או RuntimeException אם זה כשל קריטי)
-            // ה-getConnection() ינסה ליצור את החיבור הקבוע אם הוא עדיין לא נוצר.
-            DBConnection.getInstance().getConnection(); 
-            
-            lblStatus.setText("WellDone! We are connecting to your DB (using internal parameters)");
+            // 1. אתחול חיבור ל-DB באמצעות הקלט מהמשתמש (חייב להיות הצעד הראשון!)
+            DBConnection.initializeConnection(host, schema, user, pass); 
 
-            // 2. טוענים את ה־FXML של השרת
+            // 2. טעינת מסך ה-GUI הראשי של השרת
             FXMLLoader loader = new FXMLLoader(getClass().getResource("connections_to_server.fxml"));
             Parent root = loader.load();
-            ServerViewController view = loader.getController();
-
-            // *** 3. התיקון: יוצרים את השרת ללא ארגומנט DBConnection ***
+            
+            // 3. קבלת הבקר של מסך השרת (ServerViewController)
+            ServerViewController view = loader.getController(); 
+            
+            // 4. יצירת בקר השרת והאזנה לחיבורים
             server = new ServerController(port, view);
-            server.listen();
-            view.log("Server listening on port " + port + "!");
+            server.listen(); // התחלת האזנה ללקוחות
+            
+            // 5. ✅ מעבר למסך הראשי של השרת: החלפת ה-Scene בחלון הקיים
+            Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            primaryStage.setTitle("Server Control Panel - Listening on Port " + port);
+            primaryStage.setScene(new Scene(root));
+            primaryStage.show();
 
-            // 4. מחליפים את ה־Scene
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setTitle("Server");
-            stage.setScene(new Scene(root));
-            stage.show();
-
-        } catch (Exception e) {
+        } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
             Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setHeaderText("Connection failed");
-            // שיניתי את הודעת השגיאה שתשקף את השימוש בפרמטרים הפנימיים
-            alert.setContentText("Check internal DB parameters in DBConnection or server port\n" + e.getMessage());
+            alert.setHeaderText("DB Connection Failed");
+            alert.setContentText("Could not connect to the database. Check credentials and schema: \n" + e.getMessage());
+            alert.showAndWait();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("GUI Load Error");
+            alert.setContentText("Could not load 'connections_to_server.fxml'. Check file path:\n" + e.getMessage());
+            alert.showAndWait();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setHeaderText("Server Startup Failed");
+            alert.setContentText("An unexpected error occurred during server startup:\n" + e.getMessage());
             alert.showAndWait();
         }
     }
 
     @FXML
     private void onSend(ActionEvent event) {
-        String user = txtUserName.getText();
-        String pass = txtPassword.getText();
-        String scheme = Scheme.getText();
-
-        if (user.trim().isEmpty() || pass.trim().isEmpty() || scheme.trim().isEmpty()) {
-            lblStatus.setText("You must enter user name and password");
-            return;
-        }
-        
-        // קריאה ל-onConnect שמטפל בהכל
-        onConnect(event);
-
-        System.out.println("Login send: user=" + user + ", pass=" + pass + ", scheme=" + scheme);
+        // קריאה ל-onConnect שמבצע את לוגיקת החיבור בפועל
+        onConnect(event); 
     }
 
     @FXML
     private void onExit(ActionEvent event) {
         System.out.println("Exit from Server Login");
+        // אם השרת פעיל, כדאי לסגור אותו לפני היציאה
+        if (server != null && server.isListening()) {
+             try {
+                server.close();
+            } catch (Exception ignored) {}
+        }
         ((Node) event.getSource()).getScene().getWindow().hide();
     }
 
+    // מתודת start נדרשת כדי להפעיל את המסך ההתחלתי
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ServerLogin.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        primaryStage.setTitle("Server Login");
+        primaryStage.setTitle("Server Configuration");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
