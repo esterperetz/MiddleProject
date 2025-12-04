@@ -1,6 +1,8 @@
 package clientGui;
 
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -8,84 +10,103 @@ import Entities.Order;
 import clientLogic.OrderLogic;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
 public class UpdateOrder implements Initializable {
+	
+	private Order o;
+	@FXML
+	private TextField txtId;
+	@FXML
+	private TextField txtName;
+	@FXML
+	private TextField txtName1;
 
-    @FXML private TextField txtId;
-    @FXML private TextField txtName; // Guests
-    @FXML private TextField txtName1; // Date
+	private OrderUi_controller mainController; // Field to hold the main controller reference
+	private OrderLogic ol;
+	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
+	@Override
+	public void initialize(URL arg0, ResourceBundle arg1) {
+		// Initialization is done in initData
+	}
+	
+	/**
+	 * Initializes data, OrderLogic, and the main controller reference.
+	 * @param order The Order object to be updated.
+	 * @param orderLogic The logic object for server communication.
+	 * @param mainController The reference to the main UI controller for data refresh.
+	 */
+	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController) { // FIXED SIGNATURE
+	    this.o = order;
+	    this.ol = orderLogic; 
+	    this.mainController = mainController; // Store main controller reference
+	    
+	    txtId.setText(String.valueOf(o.getOrder_number()));
+	    txtName.setText(String.valueOf(o.getNumber_of_guests()));
+	    txtId.setEditable(false);
+	    if (o.getOrder_date() != null) {
+	    	txtName1.setText(dateFormat.format(o.getOrder_date()));
+	    }
+	}
 
-    private Order currentOrder;
-    private OrderLogic orderLogic;
-    private ClientUi clientUi;
+	public void loadStudent(Order o1) {
+		this.o = o1;
+	}
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // אתחול רגיל
-    }
+	@FXML
+	private void onUpdate(ActionEvent event)  {
+		try {
+			String OrderNum = txtId.getText().trim();
+			String Number_Of_Guests = txtName.getText().trim();
+			String OrderDate = txtName1.getText();
+			System.out.println("heree");
+			
+			Date date = dateFormat.parse(OrderDate);
 
-    // פונקציה לקבלת המידע מהחלון הקודם
-    public void initData(Order o, ClientUi clientUi) {
-        this.currentOrder = o;
-        this.clientUi = clientUi;
-        this.orderLogic = new OrderLogic(clientUi);
+			if (OrderNum.isEmpty()) {
+				showAlert("Input Error", "Please Enter Order ID (This field is now locked).", Alert.AlertType.ERROR);
+			}
+			else {
 
-        // הצגת הנתונים בשדות
-        txtId.setText(String.valueOf(o.getOrder_number()));
-        txtId.setEditable(false); // בדרך כלל לא משנים ID
-        txtName.setText(String.valueOf(o.getNumber_of_guests()));
-        txtName1.setText(o.getOrder_date().toString()); // או פורמט תאריך מתאים
-    }
-
-    @FXML
-    private void onUpdate(ActionEvent event) {
-        try {
-            int guests = Integer.parseInt(txtName.getText().trim());
-            // המרת תאריך - לצורך הדוגמה נשתמש בתאריך הנוכחי או נפרסר (תלוי בפורמט)
-            // Date date = new SimpleDateFormat("yyyy-MM-dd").parse(txtName1.getText());
-            Date date = new Date(); // זמני
-
-            // עדכון האובייקט
-            currentOrder.setNumber_of_guests(guests);
-            currentOrder.setOrder_date(date);
-            
-            // שליחת בקשת עדכון לשרת
-            orderLogic.updateOrder(currentOrder);
-
-            // חזרה למסך הראשי
-            goBackToMain(event);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Input Error: " + e.getMessage());
-            alert.showAndWait();
-        }
-    }
-    
-    private void goBackToMain(ActionEvent event) {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/orderUi.fxml"));
-            Parent root = loader.load();
-            
-            // אנחנו צריכים לוודא שהקונטרולר הראשי מקבל את ה-ClientUi הקיים
-            // אבל מכיוון ש-OrderUi_controller יוצר חדש ב-initialize, זה עלול ליצור כפילות.
-            // לפתרון מושלם: צריך להעביר את ה-ClientUi גם לקונטרולר הראשי בחזרה, 
-            // או להשתמש ב-Singleton ל-ClientUi.
-            
-            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
-            stage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+				// Re-create the Order object with new data and old uneditable data
+				Order updatedOrder = new Order(
+				    Integer.parseInt(OrderNum), 
+				    date, 
+				    Integer.parseInt(Number_Of_Guests), 
+				    o.getConfirmation_code(), 
+				    o.getSubscriber_id(), 
+				    o.getDate_of_placing_order()
+				);
+				
+				if (ol != null) { 
+				    ol.updateOrder(updatedOrder);
+				}
+				
+				// Explicitly refresh the table in the main controller
+				if (mainController != null) {
+					mainController.refreshTableData();
+				}
+				
+				// Close the update window and return to the main screen
+				((Node) event.getSource()).getScene().getWindow().hide(); 
+			}
+		} catch (NumberFormatException | ParseException e) {
+			showAlert("Format Error", "Please verify that Order ID and Guests are valid numbers, and Date is 'yyyy-MM-dd'.", Alert.AlertType.ERROR);
+			e.printStackTrace();
+		} catch (Exception e) {
+			showAlert("Error", "An unexpected error occurred during update.", Alert.AlertType.ERROR);
+			e.printStackTrace();
+		}
+	}
+	
+    public void showAlert(String title, String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
     }
 }

@@ -15,7 +15,7 @@ public class DBConnection {
     private Connection connection; 
 
     private DBConnection() {
-        this.url = "jdbc:mysql://localhost:3306/MidProject?serverTimezone=Asia/Jerusalem&useSSL=false";
+        this.url = "jdbc:mysql://localhost:3306/mid_project_prototype?serverTimezone=Asia/Jerusalem&useSSL=false";
         this.user = "root";      
         this.pass = "159357";
         

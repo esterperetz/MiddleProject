@@ -1,5 +1,5 @@
 package client;
 
-public interface MessageListener {
-    void onMessageReceive(Object msg);
+public interface MessageListener <T> {
+	void onMessageReceive(T msg);
 }

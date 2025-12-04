@@ -27,7 +27,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
-public class OrderUi_controller implements Initializable, MessageListener {
+public class OrderUi_controller implements Initializable, MessageListener<Object> {
 
     @FXML private TableView<Order> orderTable;
     @FXML private TableColumn<Order, Integer> Order_numberColumn;
@@ -40,27 +40,21 @@ public class OrderUi_controller implements Initializable, MessageListener {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // 1. הגדרת עמודות
         Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
         itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
         DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
 
-        // הגדרת עמודות כניתנות לעריכה (אופציונלי - לפי הקוד המקורי שלך)
         setupEditableColumns();
 
-        // 2. חיבור הנתונים לטבלה
         orderTable.setItems(orderData);
 
-        // 3. יצירת קשר עם השרת
         clientUi = new ClientUi();
-        clientUi.addListener(this); // הרשמה לקבלת הודעות
+        clientUi.addListener(this); 
         orderLogic = new OrderLogic(clientUi);
 
-        // 4. שליחת בקשה ראשונית
         System.out.println("Initialization: Requesting all orders...");
         orderLogic.getAllOrders();
 
-        // 5. טיפול בסגירת חלון
         Platform.runLater(() -> {
             Stage stage = (Stage) orderTable.getScene().getWindow();
             stage.setOnCloseRequest(event -> {
@@ -71,19 +65,20 @@ public class OrderUi_controller implements Initializable, MessageListener {
         });
     }
 
-    /**
-     * זוהי הפונקציה שנקראת כשהשרת מחזיר תשובה.
-     * כעת msg הוא אובייקט אמיתי!
-     */
+    /** NEW METHOD: Refreshes table data by requesting all orders from the server. */
+    public void refreshTableData() {
+        System.out.println("LOG: Refreshing Order Table data from server.");
+        orderLogic.getAllOrders(); 
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public void onMessageReceive(Object msg) {
         Platform.runLater(() -> {
             
-            // מקרה 1: השרת החזיר רשימה של הזמנות (תשובה ל-GET_ALL)
+        	// Case 1: GET_ALL response
             if (msg instanceof List) {
                 List<?> list = (List<?>) msg;
-                // בדיקה גסה אם הרשימה מכילה Orders או שהיא ריקה
                 if (list.isEmpty() || list.get(0) instanceof Order) {
                     List<Order> incomingOrders = (List<Order>) msg;
                     orderData.clear();
@@ -94,15 +89,13 @@ public class OrderUi_controller implements Initializable, MessageListener {
                 }
             }
             
-            // מקרה 2: השרת החזיר הזמנה בודדת (תשובה ל-GET_BY_ID או CREATE)
+        	// Case 2: Single Order object
             else if (msg instanceof Order) {
                 Order o = (Order) msg;
                 System.out.println("Received single order: " + o);
-                // אפשר להוסיף לטבלה או לעדכן
-                // orderData.add(o); 
             }
             
-            // מקרה 3: השרת החזיר מחרוזת (הודעת שגיאה או ניתוק)
+        	// Case 3: String message
             else if (msg instanceof String) {
                 String text = (String) msg;
                 System.out.println("Message from server: " + text);
@@ -111,18 +104,42 @@ public class OrderUi_controller implements Initializable, MessageListener {
                 }
             }
             
-            // מקרה 4: השרת החזיר בוליאני (הצלחה/כישלון של CREATE/UPDATE)
+        	// Case 4: Boolean (Success/Failure)
             else if (msg instanceof Boolean) {
                 boolean success = (Boolean) msg;
                 if (success) {
                     showAlert("Success", "Operation completed successfully!", Alert.AlertType.INFORMATION);
-                    // רענון הטבלה אחרי עדכון
-                    orderLogic.getAllOrders();
+                    // Refresh table after success
+                    orderLogic.getAllOrders(); 
                 } else {
                     showAlert("Failure", "Operation failed.", Alert.AlertType.ERROR);
                 }
             }
         });
+    }
+
+    @FXML
+    private void handleAddOrder(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/addOrder.fxml"));
+            Parent root = loader.load();
+            
+            // To pass OrderLogic if needed:
+            // AddOrderController controller = loader.getController();
+            // controller.initData(orderLogic); 
+            
+            Stage stage = new Stage();
+            stage.setTitle("Add New Order");
+            stage.setScene(new Scene(root));
+            stage.show();
+            
+            // NOTE: Removed hiding the main window to follow standard UI pattern for modal popups.
+            // ((Node) event.getSource()).getScene().getWindow().hide(); 
+            
+        } catch (Exception e) {
+            showAlert("Navigation Error", "Could not load the Add Order screen. Check if addOrder.fxml exists.", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
     }
 
     @FXML
@@ -134,24 +151,24 @@ public class OrderUi_controller implements Initializable, MessageListener {
         }
 
         try {
-            // מעבר למסך העדכון
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/updateOrder.fxml"));
             Parent root = loader.load();
             
-            // העברת המידע לקונטרולר של מסך העדכון
             UpdateOrder controller = loader.getController();
-            controller.initData(selectedOrder, clientUi); // שים לב לפונקציה הזו שאוסיף למטה
+            // Passing the selected order, OrderLogic, AND THIS controller reference for refresh
+            controller.initData(selectedOrder, orderLogic, this); 
 
             Stage stage = new Stage();
-            stage.setTitle("Update Order");
+            stage.setTitle("Update Order #" + selectedOrder.getOrder_number());
             stage.setScene(new Scene(root));
             stage.show();
             
-            // אופציונלי: סגירת החלון הנוכחי
-             ((Node) event.getSource()).getScene().getWindow().hide();
+            // NOTE: The main window should remain open (not hidden)
+            // ((Node) event.getSource()).getScene().getWindow().hide(); 
 
         } catch (Exception e) {
             e.printStackTrace();
+            showAlert("Navigation Error", "Could not load the Update Order screen.", Alert.AlertType.ERROR);
         }
     }
 
@@ -159,27 +176,21 @@ public class OrderUi_controller implements Initializable, MessageListener {
     private void handleDeleteOrder() {
         Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
         if (selectedOrder != null) {
-            // שליחת בקשת מחיקה לשרת
-            // (הערה: השרת צריך לממש את זה, כרגע יש לנו מימוש ל-getAll, getById, create)
-            // orderLogic.deleteOrder(selectedOrder.getOrder_number());
-            
-            // כרגע רק נמחק מהתצוגה
-            orderData.remove(selectedOrder);
+            int orderIdToDelete = selectedOrder.getOrder_number();
+            orderLogic.deleteOrder(orderIdToDelete); 
         } else {
             showAlert("No Selection", "Please select an order to delete.", Alert.AlertType.WARNING);
         }
     }
 
     private void setupEditableColumns() {
-        // הגדרת עריכה בטבלה
         DateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
         itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
         
         itemColumn.setOnEditCommit(event -> {
             Order o = event.getRowValue();
             o.setNumber_of_guests(event.getNewValue());
-            // שליחת עדכון לשרת (אם רוצים עדכון בלייב)
-            // orderLogic.updateOrder(o);
+            orderLogic.updateOrder(o); 
         });
     }
 
@@ -189,6 +200,4 @@ public class OrderUi_controller implements Initializable, MessageListener {
         alert.setContentText(content);
         alert.showAndWait();
     }
-    
-    // בוטל ה-displayMessage הישן כי הכל ב-onMessageReceive
 }

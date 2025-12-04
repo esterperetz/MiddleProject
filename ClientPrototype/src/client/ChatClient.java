@@ -1,42 +1,35 @@
 package client;
 
 import java.io.IOException;
-import Entities.Request;
 import clientGui.ClientUi;
+import javafx.application.Platform;
 import ocsf.client.AbstractClient;
 
 public class ChatClient extends AbstractClient {
 
-    private ClientUi clientUI;
+	private ClientUi clientUI;
 
-    public ChatClient(String host, int port, ClientUi clientUI) throws IOException {
-        super(host, port);
-        this.clientUI = clientUI;
-        openConnection();
-    }
+	// Constructor
+	public ChatClient(String host, int port, ClientUi clientUI) throws IOException {
+		super(host, port);
+		this.clientUI = clientUI;
+		openConnection();
+	}
 
-    @Override
-    public void handleMessageFromServer(Object msg) {
-        System.out.println("ChatClient received object: " + msg.getClass().getSimpleName());
-        clientUI.notifyListeners(msg);
-    }
+	@Override
+	public void handleMessageFromServer(Object msg) {
+		// ✅ מעביר את האובייקט כפי שהוא ל-ClientUi
+		this.clientUI.displayMessage(msg);
+	}
 
-    //sends Request message
-    public void send(Request req) {
-        try {
-            sendToServer(req);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-            clientUI.notifyListeners("Error: Could not send request to server.");
-        }
-    }
-    
-    public void quit() {
-        try {
-            closeConnection();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    // Handle messages from UI
+	// ❌ הוחלף מ-send(RequestPath rq) ל-send(Object obj)
+	public void send(Object obj) { 
+	    try {
+	        // ✅ שולח את האובייקט ישירות לשרת (sendToServer מקבל Object)
+	        sendToServer(obj);
+	    } catch (IOException e) {
+	        Platform.runLater(() -> clientUI.displayMessage("Error sending request to server."));
+	    }
+	}
 }
