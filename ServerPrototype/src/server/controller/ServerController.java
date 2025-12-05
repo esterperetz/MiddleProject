@@ -17,7 +17,6 @@ public class ServerController extends AbstractServer {
         this.router = new Router();
     }
 
-    /* ===== OCSF callbacks - Handlers for client connections and disconnections ===== */
     
     /**
      * Called when a client connects to the server.
@@ -58,12 +57,10 @@ public class ServerController extends AbstractServer {
     
     @Override
     protected void serverClosed() {
-        // Calls the method we added to close the persistent connection
         DBConnection.getInstance().closeConnection();
         view.log("Server closed and single persistent DB connection closed.");
     }
     
-    /* ===== Messages from client ===== */
     
     @Override
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {
@@ -72,8 +69,6 @@ public class ServerController extends AbstractServer {
         try {
             if (msg instanceof String && "quit".equals(msg)) {
                 clientDisconnected(client);
-                // Note: The sendToAllClients method implementation should be defined elsewhere if used
-                // sendToAllClients("Disconnecting the client from the server."); 
                 return;
             }
 
@@ -91,17 +86,9 @@ public class ServerController extends AbstractServer {
             try {
                 client.sendToClient("Error: " + e.getMessage());
             } catch (Exception ex) {
-                // Ignore secondary errors
+            	view.log("failed send to client.");
             }
         }
     }
-    
-    // Add missing OCSF callbacks if they were in your original code (like listeningException)
-    // Example:
-    /*
-    @Override
-    protected void listeningException(Throwable exception) {
-        view.log("Listening exception: " + exception.getMessage());
-    }
-    */
+
 }

@@ -6,7 +6,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.*;
-import server.controller.ServerController; // הוספתי את הייבוא
+import server.controller.ServerController;  
 
 public class ServerViewController {
 
@@ -28,8 +28,7 @@ public class ServerViewController {
             
             stage.setOnCloseRequest(event -> {
                 System.out.println("User has been closed the window (X button).");
-                // יציאה באמצעות System.exit(0) תפעיל את מנגנון ה-shutdown של השרת
-                // ב-ServerController, שיסגור את החיבור הקבוע (closeConnection).
+
                 System.exit(0); 
             });
         });
@@ -50,8 +49,15 @@ public class ServerViewController {
     public static class ClientRow {
         private String ip;
         private String host;
-        public ClientRow(String ip, String host) { this.ip = ip; this.host = host; }
-        public String getIp() { return ip; }
-        public String getHost() { return host; }
+        public ClientRow(String ip, String host){
+        	this.ip = ip;
+        	this.host = host;
+        }
+        public String getIp() {
+        	return ip;
+        }
+        public String getHost() {
+        	return host;
+        }
     }
 }

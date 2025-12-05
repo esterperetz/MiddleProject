@@ -12,7 +12,7 @@ public class ServerApp extends Application {
 	 
     @Override
     public void start(Stage primaryStage) throws Exception {
-    	// טוען את מסך הלוגין
+    	//loads login screenן
     	ServerLoginController loginController = new ServerLoginController();
     	loginController.start(primaryStage);
     }

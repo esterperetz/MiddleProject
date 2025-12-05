@@ -45,18 +45,18 @@ public class OrderController {
                     client.sendToClient(created); 
                     break;
                     
-                case UPDATE: // הוספת טיפול ב-UPDATE כפי שהגדרנו בצד הלקוח
+                case UPDATE: 
                     if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
                          client.sendToClient("Error: UPDATE action requires an Order payload.");
                          break;
                     }
                     Order updatedOrder = (Order) req.getPayload();
-                    // הערה: ה-DAO צריך לממש את updateOrder(Order)
+                    
                     boolean updated = dao.updateOrder(updatedOrder); 
-                    client.sendToClient(updated); // שליחת Boolean
+                    client.sendToClient(updated); 
                     break;
 
-                case DELETE: // הוספת טיפול ב-DELETE
+                case DELETE: 
                     if (req.getId() == null) {
                          client.sendToClient("Error: DELETE requires an ID.");
                          break;
