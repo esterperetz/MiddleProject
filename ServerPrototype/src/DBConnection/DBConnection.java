@@ -4,6 +4,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * * Singleton class responsible for managing a single persistent connection
+ * to a MySQL database. 
+ *
+ * This class ensures:
+ *  - Only one Connection object exists throughout the server lifetime.
+ *  - Reconnection happens automatically if the connection becomes invalid.
+ *  - Initialization is performed once with provided credentials.
+ */
 public class DBConnection {
 
     private static DBConnection instance;
@@ -13,12 +22,27 @@ public class DBConnection {
     private static String dbUser; 
     private static String dbPass; 
 
-    // Private constructor to enforce Singleton pattern.
+    
+    /**
+     * Private constructor to enforce the Singleton pattern.
+     * Prevents creation of multiple DBConnection instances.
+     */
     private DBConnection() {} 
 
+   
     /**
-     * Initializes the Singleton instance and establishes the DB connection using provided credentials.
-     * MUST be called once before any call to getInstance().
+     *Initializes the Singleton instance and establishes the initial database connection.
+	 * This method MUST be called once when the server starts and before any call to getInstance().
+	 * @param host   The database server host/IP (e.g., "localhost").
+	 * @param schema The database schema name.
+	 * @param user   The database username.
+	 * @param pass   The database password.
+	 * @throws SQLException           If the connection to the database fails.
+	 * @throws ClassNotFoundException If the MySQL JDBC driver is not found.
+	 * Behavior:
+	 *  - Prevents re-initialization if instance already exists.
+	 *  - Builds the JDBC URL and stores credentials for possible reconnection.
+	 *  - Loads JDBC driver and creates the persistent connection.
      */
     public static synchronized void initializeConnection(String host, String schema, String user, String pass) throws SQLException, ClassNotFoundException {
         if (instance != null) {
@@ -34,7 +58,7 @@ public class DBConnection {
         dbUser = user;
         dbPass = pass;
         
-        //instance = new DBConnection();
+        
         instance=getInstance();
         // Establish connection.
         Class.forName("com.mysql.cj.jdbc.Driver");
@@ -43,18 +67,20 @@ public class DBConnection {
     }
     
     /**
-     * Returns the single instance of DBConnection. Throws an exception if not initialized.
+     * Returns the Singleton DBConnection instance.
+	 * If called before initializeConnection(), a new empty instance is created.
+	 * This fallback prevents a crash but DOES NOT automatically establish a connection..
      */
     public static synchronized DBConnection getInstance() {
         if (instance == null) {
-            // Fails safe if called before initialization in ServerLoginController.
-            //throw new IllegalStateException("DBConnection is not initialized. Call initializeConnection() first.");
         	instance=new DBConnection();	
         }
         return instance;
     }
 
     /**
+     * @return The active (or re-established) Connection object.
+	 * @throws SQLException If reconnection fails.
      * Retrieves the persistent connection, attempting to re-establish it if closed or invalid.
      */
     public Connection getConnection() throws SQLException {

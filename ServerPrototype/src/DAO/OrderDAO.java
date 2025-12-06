@@ -9,6 +9,10 @@ import Entities.Order;
 
 public class OrderDAO {
 
+	/**
+	 * @return List of all the orders
+	 * @throws SQLException
+	 */
 	public List<Order> getAllOrders() throws SQLException {
 		String sql = "SELECT * FROM `order`";
 		Connection con = null;
@@ -38,6 +42,11 @@ public class OrderDAO {
 		}
 	}
 
+	/**
+	 * @param id
+	 * @return order according the id_order(promery key in DB)
+	 * @throws SQLException
+	 */
 	public Order getOrder(int id) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE order_number = ?";
 		Connection con = null;
@@ -64,6 +73,11 @@ public class OrderDAO {
 		}
 	}
 
+	/**
+	 * @param o
+	 * @return true if we success to create new order
+	 * @throws SQLException
+	 */
 	public boolean createOrder(Order o) throws SQLException {
 		String sql = "INSERT INTO `order`(" + "order_date, number_of_guests, confirmation_code, "
 				+ "subscriber_id, date_of_placing_order" + ") VALUES (?, ?, ?, ?, ?)";
@@ -88,6 +102,11 @@ public class OrderDAO {
 	}
 
 
+	/**
+	 * @param o
+	 * @return update the order,return true if we succeeded ,false if we not 
+	 * @throws SQLException
+	 */
 	public boolean updateOrder(Order o) throws SQLException {
 		String sql = "UPDATE `order` SET " + "order_date = ?, number_of_guests = ?, confirmation_code = ?, "
 				+ "subscriber_id = ?, date_of_placing_order = ? " + "WHERE order_number = ?";
@@ -114,6 +133,11 @@ public class OrderDAO {
 	}
 
 
+	/**
+	 * @param id
+	 * @return true if we deleted,false if we dont
+	 * @throws SQLException
+	 */
 	public boolean deleteOrder(int id) throws SQLException {
 		String sql = "DELETE FROM `order` WHERE order_number = ?";
 		Connection con = null;

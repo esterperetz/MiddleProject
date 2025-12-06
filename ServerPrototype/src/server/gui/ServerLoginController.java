@@ -129,7 +129,12 @@ public class ServerLoginController {
         ((Node) event.getSource()).getScene().getWindow().hide();
     }
 
-    // start method is needed to launch the initial screen
+    
+    /**
+     * @param primaryStage
+     * @throws Exception
+     * start method is needed to launch the initial screen
+     */
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ServerLogin.fxml"));
         Parent root = loader.load();
