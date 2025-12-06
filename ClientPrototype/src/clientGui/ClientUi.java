@@ -58,6 +58,7 @@ public class ClientUi {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public void displayMessage(Object msg) { 
+    	
     	for(MessageListener listener: this.listeners) {
     		listener.onMessageReceive(msg);
     	}
@@ -78,13 +79,14 @@ public class ClientUi {
      */
     public void disconnectClient() {
         if (chatClient != null) {
-            //try {
+            try {
             	chatClient.send("quit");
                 //chatClient.closeConnection();
                 
-            //} catch (IOException e) {
+            } catch (Exception e) {
                 // Ignore
-            //}
+            	e.printStackTrace();
+            }
         }
     }
         

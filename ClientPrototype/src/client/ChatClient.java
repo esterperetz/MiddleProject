@@ -49,5 +49,9 @@ public class ChatClient extends AbstractClient {
 	    } catch (IOException e) {
 	        Platform.runLater(() -> clientUI.displayMessage("Error sending request to server."));
 	    }
+	    catch(Exception e)
+	    {
+	    	e.printStackTrace();
+	    }
 	}
 }

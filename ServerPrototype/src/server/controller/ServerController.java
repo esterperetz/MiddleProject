@@ -42,11 +42,18 @@ public class ServerController extends AbstractServer {
      */
     @Override
     protected synchronized void clientDisconnected(ConnectionToClient client) {
-        String ip = client.getInetAddress().getHostAddress();
-        view.log("Client disconnected: " + ip);
-        view.removeClient(ip); // Update the table
-        router.removeClientOffline(client);
-        super.clientDisconnected(client);//move to end
+    	try {
+    		String ip = client.getInetAddress().getHostAddress();
+            view.log("Client disconnected: " + ip);
+            view.removeClient(ip); // Update the table
+            router.removeClientOffline(client);
+            super.clientDisconnected(client);//move to end
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    	}
+        
         
 
     }
@@ -79,6 +86,7 @@ public class ServerController extends AbstractServer {
         System.out.println("Message received: " + msg + " from " + client);
 
         try {
+        	
             if (msg instanceof String && "quit".equals(msg)) {
                 clientDisconnected(client);
                 return;
