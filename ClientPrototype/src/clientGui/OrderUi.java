@@ -7,13 +7,15 @@ import javafx.stage.Stage;
 public class OrderUi extends Application{
 	  @Override
 	    public void start(Stage primaryStage) throws Exception {
-		  Parent root = FXMLLoader.load(getClass().getResource("/clientGui/orderUi.fxml"));
+		  //Parent root = FXMLLoader.load(getClass().getResource("/clientGui/orderUi.fxml"));
+		  Parent root = FXMLLoader.load(getClass().getResource("/clientGui/logInServer.fxml"));
 
 		  
 	        Scene scene = new Scene(root);
 	        primaryStage.setTitle("Orders Management");
 	        primaryStage.setScene(scene);
-	        primaryStage.show();	    }
+	        primaryStage.show();	
+	        }
 
 	    public static void main(String[] args) {
 	        launch(args);

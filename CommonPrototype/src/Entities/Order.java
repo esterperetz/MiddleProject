@@ -101,6 +101,9 @@ public class Order implements Serializable {
 				&& order_number == other.order_number && subscriber_id == other.subscriber_id;
 	}
 
+	/**
+	 *return the format that the server send back
+	 */
 	@Override
 	public String toString() {
 		return "Order [order_number=" + order_number + ", order_date=" + order_date + ", number_of_guests="
@@ -109,6 +112,11 @@ public class Order implements Serializable {
 	}
 	
 	
+	/**
+	 * @param str
+	 * @return
+	 * @throws ParseException
+	 */
 	public static Order parseOrder(String str) throws ParseException {
 	    // Remove "Order [" and "]"
 //	    str = str.substring(str.indexOf("[") + 1, str.lastIndexOf("]"));

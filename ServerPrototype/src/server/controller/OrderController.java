@@ -1,236 +1,109 @@
 package server.controller;
 
-import Entities.Order;
-import Entities.RequestPath;
-import ocsf.server.ConnectionToClient;
-import DAO.OrderDAO;
-
-import java.io.IOException;
 import java.sql.SQLException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
+import DAO.OrderDAO;
+import Entities.*;
+import ocsf.server.ConnectionToClient;
+import java.io.IOException;
 
-/**
- * This controller manages the logic for orders. It uses the OrderDAO to
- * communicate with the database.
- */
 public class OrderController {
 
-	private final OrderDAO orderDAO;
-	private ServerController s;
+    private final OrderDAO dao = new OrderDAO();
 
-	public OrderController(OrderDAO orderDAO) {
-		this.orderDAO = orderDAO;
-	}
+    public void handle(Request req, ConnectionToClient client,List<ConnectionToClient> clients) throws IOException {
+        
+        if (req.getResource() != ResourceType.ORDER) {
+            System.err.println("OrderController received request for wrong resource: " + req.getResource());
+            client.sendToClient("Error: Incorrect resource type requested. Expected ORDER.");
+            return; 
+        }
+        
+        try {
+            switch (req.getAction())//checks enum we received from the object (req)
+            {
+                case GET_ALL:
+                    List<Order> orders = dao.getAllOrders();
+                    client.sendToClient(orders);
+                    break;
 
-	public void handle(String method, List<String> params, ConnectionToClient client) {
-		
-		switch (method) {
-		case "GET":
-		
-			try {
-				handleGet(method, params, client);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			break;
-			
-		case "PUT":
+                case GET_BY_ID:
+                    if (req.getId() == null) {
+                         client.sendToClient("Error: GET_BY_ID requires an ID.");
+                         break;
+                    }
+                    Order order = dao.getOrder(req.getId());
+                    client.sendToClient(order);
+                    break;
 
-			try {
+                case CREATE:
+                    if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+                         client.sendToClient("Error: CREATE action requires an Order payload.");
+                         break;
+                    }
+                    Order o = (Order) req.getPayload();
+                    boolean created = dao.createOrder(o);
+                    client.sendToClient(created);
+                    //implements sends to all client
+                    sendToAllClients(clients);
+                    break;
+                    
+                case UPDATE: 
+                    if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+                         client.sendToClient("Error: UPDATE action requires an Order payload.");
+                         break;
+                    }
+                    Order updatedOrder = (Order) req.getPayload();
+                    
+                    boolean updated = dao.updateOrder(updatedOrder); 
+                    client.sendToClient(updated); 
+                    //implements sends to all client
+                    sendToAllClients(clients);
 
-			updateOrder(new Order(Integer.parseInt(params.get(0)),stringToMySqlDate(params.get(1)),Integer.parseInt(params.get(2)),33,22, stringToMySqlDate(params.get(1))));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			
-		}
-			}
-	}
-	
+                    break;
 
-	public java.sql.Date stringToMySqlDate(String str) throws ParseException {
-	    SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
-	    Date utilDate = sdf.parse(str);
-	    return new java.sql.Date(utilDate.getTime());
-	}
-	
-//	public void handleQuit(ConnectionToClient client) {
-//		try {
-//			client.sendToClient("Disconnecting the client from the server.");
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//	}
-	private void handleGet(String method, List<String> params, ConnectionToClient client) throws Exception {
+                case DELETE: 
+                    if (req.getId() == null) {
+                         client.sendToClient("Error: DELETE requires an ID.");
+                         break;
+                    }
+                    boolean deleted = dao.deleteOrder(req.getId()); 
+                    client.sendToClient(deleted); 
+                    //implements sends to all client
+                    sendToAllClients(clients);
+                    break;
 
-		if (!params.isEmpty()) {
-			if (params.get(0).equals("GET_ALL_ORDERS")) {
-				try {
-					
-					List<Order> allOrders = orderDAO.getAllOrders();
-					if (allOrders != null) {
-
-						System.out.println("Server Found (search only)");
-						client.sendToClient(allOrders.toString());
-						return;
-
-					}
-					 
-					else {
-						System.out.println("Not Found");
-						sendErrorToAllClients(client);
-						return;
-					}
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-	        }
-			// GET /Order -> Get All Orders
-//            List<Order> allOrders = orderDAO.getAllOrders();
-//            try {
-//                // ... לוגיקה לעטיפת התגובה (לדוגמה: HashMap עם "status":"SUCCESS")
-//                client.sendToClient(allOrders);
-//            } catch (IOException e) {
-//                // ... טיפול בשגיאת שליחה
-//            }
-//            sendResponse(client, allOrders);
-		} else if (params.size() == 1) {
-			// GET /Order/123 -> Get specific Order by ID
-			int orderNumber = Integer.parseInt(params.get(1));
-			Order order = orderDAO.getOrder(orderNumber);
-			client.sendToClient(order);
-		} else {
-//			handleQuit(client);
-		}
-	}
-
-
-
-	/**
-	 * Gets all orders from the database
-	 * 
-	 * @return List of all orders
-	 * @throws SQLException if the DB query fails //
-	 */
-//    public List<Order> getAllOrders() throws SQLException {
-//        return orderDAO.getAllOrders();
-//    }
-
-	/**
-	 * Gets a single order from the database by its ID.
-	 * 
-	 * @param orderNumber the ID of the order we want to find
-	 * @return the order, or null if it does not exist
-	 * @throws SQLException if the DB query fails
-	 */
-	public Order getOrder(int orderNumber) throws SQLException {
-		return orderDAO.getOrder(orderNumber);
-	}
-
-	/**
-	 * Updates an order in the database.Before updating, we check that the order is
-	 * valid.
-	 * 
-	 * @param order the updated order object
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB update fails
-	 */
-	public void updateOrder(Order order) throws IllegalArgumentException, SQLException {
-		validateOrder(order);
-		// אפשר להוסיף כאן בדיקה שההזמנה קיימת אם תרצה:
-		// if (orderDAO.getOrder(order.getOrder_number()) == null) { ... }
-		orderDAO.updateOrder(order);
-	}
-
-	/**
-	 * Adds a new order to the database.We also check that the order is valid before
-	 * inserting.
-	 * 
-	 * @param order the new order to save
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB insert fails
-	 */
-	public void addOrder(Order order) throws SQLException {
-		validateOrder(order);
-		// ליצירה אפשר לוודא שאין כבר order_number כזה:
-		// if (orderDAO.getOrder(order.getOrder_number()) != null) { ... }
-		orderDAO.addOrder(order);
-	}
-
-	/**
-	 * Delete exist order from the database.We also check that the order is valid
-	 * before deleting.
-	 * 
-	 * @param order to delete
-	 * @throws IllegalArgumentException if the order data is invalid
-	 * @throws SQLException             if the DB insert fails
-	 */
-	public void deleteOrder(Order order) throws SQLException {
-		validateOrder(order);
-		orderDAO.deleteOrder(order);
-	}
-
-	/**
-	 * Checks that the order is valid.
-	 * 
-	 * @param order the order to check
-	 * @throws IllegalArgumentException if something is wrong in the order data
-	 */
-	private void validateOrder(Order order) {
-		if (order == null) {
-			throw new IllegalArgumentException("Order cannot be null");
-		}
-
-		if (order.getOrder_number() <= 0) {
-			throw new IllegalArgumentException("Order number is invalid");
-		}
-
-		if (order.getNumber_of_guests() <= 0) {
-			throw new IllegalArgumentException("Number of guests must be positive");
-		}
-
-		if (order.getNumber_of_guests() > 100) {
-			throw new IllegalArgumentException("Number of guests is too large");
-		}
-
-		if (order.getConfirmation_code() <= 0) {
-			throw new IllegalArgumentException("Confirmation code is invalid");
-		}
-
-		if (order.getSubscriber_id() <= 0) {
-			throw new IllegalArgumentException("Subscriber id must be positive");
-		}
-
-		Date orderDate = order.getOrder_date();
-		Date placingDate = order.getDate_of_placing_order();
-		Date now = new Date();
-
-		if (orderDate == null) {
-			throw new IllegalArgumentException("Order date cannot be null");
-		}
-		if (!orderDate.after(now)) {
-			throw new IllegalArgumentException("Order date must be in the future");
-		}
-
-		if (placingDate == null) {
-			throw new IllegalArgumentException("Placing date cannot be null");
-		}
-		if (placingDate.after(orderDate)) {
-			throw new IllegalArgumentException("Placing date cannot be after order date");
-		}
-	}
-	
-	private void sendErrorToAllClients(ConnectionToClient client) {
+                default:
+                    client.sendToClient("Unsupported action: " + req.getAction());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            client.sendToClient("Database error: " + e.getMessage());
+        }
+        
+    }
+    /**
+     * @param list of clients
+     * @param list of orders
+     * send to all client our change in server side in DB(refresh)
+     */
+    private void sendToAllClients(List<ConnectionToClient> clients)
+    {
+    	List<Order> orders;
 		try {
-			client.sendToClient("Order Was not found, try again.");
-		} catch (Exception ignore) {
+			orders = dao.getAllOrders();
+			for(ConnectionToClient c:clients)
+	        {
+					try {
+						c.sendToClient(orders);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+	        }
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
-	}
+    	
+    }
 }

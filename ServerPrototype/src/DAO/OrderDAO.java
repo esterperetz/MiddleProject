@@ -1,162 +1,131 @@
 package DAO;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import DBConnection.DBConnection;
 import Entities.Order;
 
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-// ORDER DATA LAYER – interfaces with DB for orders //
 public class OrderDAO {
 
-    private final DBConnection db;
+	public List<Order> getAllOrders() throws SQLException {
+		String sql = "SELECT * FROM `order`";
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 
-    public OrderDAO(DBConnection db) {
-        this.db = db;
-    }
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
+			rs = stmt.executeQuery();
 
-    /**
-     * @return all the orders in DB as a List
-     * @throws SQLException , when we were unable to connect to DB
-     */
-    public List<Order> getAllOrders() throws SQLException {
-        List<Order> list = new ArrayList<>();
-        String sql = "SELECT * FROM `order`";
+			List<Order> list = new ArrayList<>();
 
-        
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+			while (rs.next()) {
+				Order o = new Order(rs.getInt("order_number"), rs.getDate("order_date"), rs.getInt("number_of_guests"),
+						rs.getInt("confirmation_code"), rs.getInt("subscriber_id"),
+						rs.getDate("date_of_placing_order"));
+				list.add(o);
+			}
 
-            while (rs.next()) {
-                list.add(mapRowToOrder(rs));
-            }
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
+			return list;
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
+		}
+	}
 
-        return list;
-    }
+	public Order getOrder(int id) throws SQLException {
+		String sql = "SELECT * FROM `order` WHERE order_number = ?";
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
 
-    /**
-     * @param orderNumbr is the primary key in DB of the order that we want to return
-     * @return the order according to the orderNumber
-     * @throws SQLException, when we were unable to connect to DB
-     */
-    public Order getOrder(int orderNumber) throws SQLException {
-        String sql = "SELECT * FROM `order` WHERE order_number = ?";
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
+			stmt.setInt(1, id);
+			rs = stmt.executeQuery();
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+			if (rs.next()) {
+				return new Order(rs.getInt("order_number"), rs.getDate("order_date"), rs.getInt("number_of_guests"),
+						rs.getInt("confirmation_code"), rs.getInt("subscriber_id"),
+						rs.getDate("date_of_placing_order"));
+			}
+			return null;
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
+		}
+	}
 
-            ps.setInt(1, orderNumber);
+	public boolean createOrder(Order o) throws SQLException {
+		String sql = "INSERT INTO `order`(" + "order_date, number_of_guests, confirmation_code, "
+				+ "subscriber_id, date_of_placing_order" + ") VALUES (?, ?, ?, ?, ?)";
+		Connection con = null;
+		PreparedStatement stmt = null;
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-             
-                    return mapRowToOrder(rs);
-                }
-                return null;
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-                throw e;
-            }
-        }
-        catch (SQLException ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
-    }
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
 
-    /**
-     * @param order that we want to update the orde_date,number_of_guests
-     * @throws SQLException, when we were unable to connect to DB
-     */
-    public void updateOrder(Order order) throws SQLException {
-        String sql = "UPDATE `order` " +
-                     "SET order_date = ?, number_of_guests = ? " +
-                     "WHERE order_number = ?";
+			stmt.setDate(1, new java.sql.Date(o.getOrder_date().getTime()));
+			stmt.setInt(2, o.getNumber_of_guests());
+			stmt.setInt(3, o.getConfirmation_code());
+			stmt.setInt(4, o.getSubscriber_id());
+			stmt.setDate(5, new java.sql.Date(o.getDate_of_placing_order().getTime()));
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+			return stmt.executeUpdate() > 0;
+		} finally {
+			if (stmt != null)
+				stmt.close();
+		}
+	}
 
-            ps.setDate(1, new java.sql.Date(order.getOrder_date().getTime()));
-            ps.setInt(2, order.getNumber_of_guests());
-            ps.setInt(3, order.getOrder_number());
-            ps.executeUpdate();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
 
-    /**
-     * @param order that we want to add to DB
-     * @throws SQLException, when we were unable to connect to DB
-     */
-    public void addOrder(Order order) throws SQLException {
-        String sql = "INSERT INTO `order` " +
-                     "(order_number, order_date, number_of_guests, confirmation_code, subscriber_id, date_of_placing_order) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+	public boolean updateOrder(Order o) throws SQLException {
+		String sql = "UPDATE `order` SET " + "order_date = ?, number_of_guests = ?, confirmation_code = ?, "
+				+ "subscriber_id = ?, date_of_placing_order = ? " + "WHERE order_number = ?";
+		Connection con = null;
+		PreparedStatement stmt = null;
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
 
-            ps.setInt(1, order.getOrder_number());
-            ps.setDate(2, new java.sql.Date(order.getOrder_date().getTime()));
-            ps.setInt(3, order.getNumber_of_guests());
-            ps.setInt(4, order.getConfirmation_code());
-            ps.setInt(5, order.getSubscriber_id());
-            ps.setDate(6, new java.sql.Date(order.getDate_of_placing_order().getTime()));
+			stmt.setDate(1, new java.sql.Date(o.getOrder_date().getTime()));
+			stmt.setInt(2, o.getNumber_of_guests());
+			stmt.setInt(3, o.getConfirmation_code());
+			stmt.setInt(4, o.getSubscriber_id());
+			stmt.setDate(5, new java.sql.Date(o.getDate_of_placing_order().getTime()));
 
-            ps.executeUpdate();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-    /**
-     * Deletes an order from the database by its order number.
-     * @param order that we want to delet from DB 
-     * @throws SQLException if the delete query fails
-     */
-    public void deleteOrder(Order order) throws SQLException {
-        String sql = "DELETE FROM `order` WHERE order_number = ?";
+			stmt.setInt(6, o.getOrder_number());
 
-        try (Connection con = db.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+			return stmt.executeUpdate() > 0;
+		} finally {
+			if (stmt != null)
+				stmt.close();
+		}
+	}
 
-            ps.setInt(1, order.getOrder_number());
-            ps.executeUpdate();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
 
-    // gets row from DB and creates Order object //
-    /**
-     * @param row from DB
-     * @return  row from DB and creates Order object
-     * @throws SQLException
-     */
-    private Order mapRowToOrder(ResultSet rs) throws SQLException {
-        int orderNumber      = rs.getInt("order_number");
-        Date orderDate       = rs.getDate("order_date");
-        int numberOfGuests   = rs.getInt("number_of_guests");
-        int confirmationCode = rs.getInt("confirmation_code");
-        int subscriberId     = rs.getInt("subscriber_id");
-        Date dateOfPlacing   = rs.getDate("date_of_placing_order");
-
-        return new Order(orderNumber, orderDate, numberOfGuests,
-                         confirmationCode, subscriberId, dateOfPlacing);
-    }
+	public boolean deleteOrder(int id) throws SQLException {
+		String sql = "DELETE FROM `order` WHERE order_number = ?";
+		Connection con = null;
+		PreparedStatement stmt = null;
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
+			stmt.setInt(1, id);
+			return stmt.executeUpdate() > 0;
+		} finally {
+			if (stmt != null)
+				stmt.close();
+		}
+	}
 }

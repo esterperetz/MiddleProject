@@ -4,64 +4,86 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-//CONNECTION TO DB ONLY//
 public class DBConnection {
 
-    private Connection con;
-    private String user , pass , scheme;
-    private String url = "jdbc:mysql://localhost:3306/"; // כאן "orders" הוא schema/database
+    private static DBConnection instance;
+    private Connection connection; 
+    
+    private static String dbUrl; 
+    private static String dbUser; 
+    private static String dbPass; 
 
+    // Private constructor to enforce Singleton pattern.
+    private DBConnection() {} 
 
-    public DBConnection(String user, String pass, String scheme) throws SQLException {
-        this.con = connectToDB(user, pass, scheme);
-    }
-
-    private Connection connectToDB(String user, String pass, String scheme) throws SQLException {
-        try {
-        	this.user = user;
-        	this.pass = pass;
-        	this.scheme = scheme;
-            return DriverManager.getConnection(url + scheme + 
-            		"?serverTimezone=Asia/Jerusalem&useSSL=false",user, pass);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw e;
+    /**
+     * Initializes the Singleton instance and establishes the DB connection using provided credentials.
+     * MUST be called once before any call to getInstance().
+     */
+    public static synchronized void initializeConnection(String host, String schema, String user, String pass) throws SQLException, ClassNotFoundException {
+        if (instance != null) {
+            System.out.println("DBConnection already initialized. Re-initialization ignored.");
+            return; 
         }
+        
+        // Build the JDBC URL.
+        String url = String.format("jdbc:mysql://%s:3306/%s?serverTimezone=Asia/Jerusalem&useSSL=false", host, schema);
+        
+        // Store credentials statically for potential reconnection.
+        dbUrl = url;
+        dbUser = user;
+        dbPass = pass;
+        
+        //instance = new DBConnection();
+        instance=getInstance();
+        // Establish connection.
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+        System.out.println("Single persistent DB Connection established successfully.");
+    }
+    
+    /**
+     * Returns the single instance of DBConnection. Throws an exception if not initialized.
+     */
+    public static synchronized DBConnection getInstance() {
+        if (instance == null) {
+            // Fails safe if called before initialization in ServerLoginController.
+            //throw new IllegalStateException("DBConnection is not initialized. Call initializeConnection() first.");
+        	instance=new DBConnection();	
+        }
+        return instance;
     }
 
+    /**
+     * Retrieves the persistent connection, attempting to re-establish it if closed or invalid.
+     */
     public Connection getConnection() throws SQLException {
-        if (con == null || con.isClosed()) {
-            throw new SQLException("Connection is not available");
-        }
-        return DriverManager.getConnection(url + scheme +
-                "?serverTimezone=Asia/Jerusalem&useSSL=false",
-                user, pass);
-    	
-    }
-    /*
-     when we close Connection we dont have active connection check if we need to close
-    public Connection getConnection() throws SQLException {
-        if (con == null || con.isClosed()) {
-            con = DriverManager.getConnection(
-                    url + scheme + "?serverTimezone=Asia/Jerusalem&useSSL=false",
-                    user,
-                    pass
-            );
-        }
-        return con;
-    }
-    */
-
-    public void close() {
-        if (con != null) {
+        // Check if connection is closed or invalid.
+        if (connection == null || connection.isClosed() || !connection.isValid(10)) { 
+            System.out.println("Connection is stale or closed. Re-establishing connection.");
             try {
-                con.close();
-            } catch (SQLException ignored) {
+                // Re-establish connection using stored credentials.
+                this.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+                System.out.println("Connection re-established successfully.");
+            } catch (SQLException e) {
+                 System.err.println("Could not re-establish DB connection.");
+                 throw e; 
+            }
+        }
+        return connection;
+    }
+    
+    /**
+     * Closes the single connection (called on server shutdown).
+     */
+    public void closeConnection() {
+        if (connection != null) {
+            try {
+                connection.close();
+                System.out.println("Single persistent DB connection closed.");
+            } catch (SQLException e) {
+                System.err.println("Error closing DB connection: " + e.getMessage());
             }
         }
     }
 }
-
-	
-
-

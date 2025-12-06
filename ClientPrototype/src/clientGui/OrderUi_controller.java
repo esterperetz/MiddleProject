@@ -1,319 +1,251 @@
 package clientGui;
 
-import client.ChatClient;
-import client.MessageListener;
-import clientLogic.OrderLogic;
-
-import java.awt.Dialog;
 import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
+
 import java.util.Date;
-import java.util.Locale;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import Entities.Order;
-import Entities.RequestPath;
+import client.MessageListener;
+import clientLogic.OrderLogic;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.DateStringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
-public class OrderUi_controller implements Initializable, MessageListener<String> {
-	private ChatClient chatClient;
+public class OrderUi_controller implements  MessageListener<Object> {
 
-	@FXML
-	private TableView<Order> orderTable;
-	@FXML
-	private TableColumn<Order, Integer> Order_numberColumn;
-	@FXML
-	private TableColumn<Order, Date> DateColumn;
-	@FXML
-	private TableColumn<Order, Integer> itemColumn;
+    @FXML private TableView<Order> orderTable;
+    @FXML private TableColumn<Order, Integer> Order_numberColumn;
+    @FXML private TableColumn<Order, Date> DateColumn;
+    @FXML private TableColumn<Order, Integer> itemColumn; // Guests
+    @FXML private TableColumn<Order, Integer> confirmation_codeColumn;
+    @FXML private TableColumn<Order, Integer> subscriber_idColumn;
+    @FXML private TableColumn<Order, Date> date_of_placing_orderColumn;
+    private ObservableList<Order> orderData = FXCollections.observableArrayList();
+    private ClientUi clientUi;
+    private OrderLogic orderLogic;
+    private String ip;
+    public OrderUi_controller() {
+    }
 
-	private ObservableList<Order> orderData = FXCollections.observableArrayList();
-//	private ObservableSet<Order> orderData = FXCollections.observableSet();
+    // 🔹 יופעל אוטומטית אחרי טעינת ה־FXML
+    @FXML
+    private void initialize() {
+        // הגדרת עמודות וטבלת GUI בלבד
+        Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
+        itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
+        DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
+        confirmation_codeColumn.setCellValueFactory(new PropertyValueFactory<>("confirmation_code"));
+        subscriber_idColumn.setCellValueFactory(new PropertyValueFactory<>("subscriber_id"));
 
-	private String data;
+        date_of_placing_orderColumn.setCellValueFactory(new PropertyValueFactory<>("date_of_placing_order"));
+        
+        setupEditableColumns();
+        orderTable.setItems(orderData);
+    }
 
+    // 🔹 את זה נקרא מתוך LoginController אחרי שיש לנו ClientUi ו־ip
+    public void initData(ClientUi clientUi, String ip) {
+        this.clientUi = clientUi;
+        this.ip = ip;
 
-	private ClientUi clientUi; // שכבת תקשורת בצד לקוח
-	private OrderLogic orderLogic; // לוגיקה של הזמנות בצד לקוח
+        clientUi.addListener(this);
+        orderLogic = new OrderLogic(clientUi);
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
+        System.out.println("Initialization: Requesting all orders...");
+        orderLogic.getAllOrders();
 
-		// 1. הגדרת העמודות בטבלה
-		Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
-		itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
-		DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
+        Platform.runLater(() -> {
+            Stage stage = (Stage) orderTable.getScene().getWindow();
+            stage.setOnCloseRequest(event -> {
+                System.out.println("Closing client...");
+                clientUi.disconnectClient();
+                System.exit(0);
+            });
+        });
+    }
+    
+    public void init() {
+        Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
+        itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
+        DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
 
-		// א. ליצור ClientUi אחד
-		clientUi = new ClientUi();
+        setupEditableColumns();
 
-		// ב. להירשם כמאזין להודעות מהשרת
-		clientUi.addListener(this);
+        orderTable.setItems(orderData);
 
-		// ג. ליצור את OrderLogic שעובד מול ClientUi
-		orderLogic = new OrderLogic(clientUi);
+        clientUi = new ClientUi(ip);
+        
+        clientUi.addListener(this); 
+        orderLogic = new OrderLogic(clientUi);
 
-		System.out.println("Sending request: GET_ALL_ORDERS");
-		// ד. לבקש את כל ההזמנות מהשרת
-		orderLogic.getAllOrders();
+        System.out.println("Initialization: Requesting all orders...");
+        orderLogic.getAllOrders();
 
-		
+        Platform.runLater(() -> {
+            Stage stage = (Stage) orderTable.getScene().getWindow();
+            stage.setOnCloseRequest(event -> {
+                System.out.println("Closing client...");
+                clientUi.disconnectClient();
+                System.exit(0);
+            });
+        });
+    }
+    public void setClient(ClientUi c)
+    {
+    	clientUi=c;
+    }
 
-		// (האזהרה / confirmation – אופציונלי, תלוי בדרישה)
-		showAlert("Load all reservations", "Generate all orders?", Alert.AlertType.CONFIRMATION);
-	
-		// 3. לחבר את ה־ObservableList לטבלה
-		orderTable.setItems(orderData);
-		
-		Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-		alert2.setTitle("Loading all orders...");
-		alert2.setHeaderText(null);
-		alert2.setContentText("Successfully loaded all orders!");
-		alert2.showAndWait();
-		
-		// 4. להגדיר עמודות כ־editable וכו'
-		setupEditableColumns();
-		
-		// יש להמתין מעט כדי שה-Stage ייווצר על ידי JavaFX
-	    Platform.runLater(() -> {
-	        // 1. קבלת Stage (החלון הראשי)
-	        Stage stage = (Stage) orderTable.getScene().getWindow();
-	        
-	        // 2. הוספת מאזין לאירוע סגירת חלון (ה-X)
-	        stage.setOnCloseRequest(event -> {
-	            // זהו קוד שרץ כאשר המשתמש לוחץ על 'X'
-	            
-	            System.out.println("User has been closed the window (X button).");
-	            
-//	            // מנע את הסגירה המיידית של JavaFX
-//	            event.consume(); 
-	            
-	        	clientUi.DisconnectClient();
-	        });
-	    });
-	
+    /** NEW METHOD: Refreshes table data by requesting all orders from the server. */
+    public void refreshTableData() {
+        System.out.println("LOG: Refreshing Order Table data from server.");
+        orderLogic.getAllOrders(); 
+    }
 
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onMessageReceive(Object msg) {
+        Platform.runLater(() -> {
+            
+        	// Case 1: GET_ALL response
+            if (msg instanceof List) {
+                List<?> list = (List<?>) msg;
+                if (list.isEmpty() || list.get(0) instanceof Order) {
+                    List<Order> incomingOrders = (List<Order>) msg;
+                    orderData.clear();
+                    orderData.addAll(incomingOrders);
+                    System.out.println("Updated table with " + incomingOrders.size() + " orders.");
+                } else {
+                    System.out.println("Received a list, but it's not orders.");
+                }
+            }
+            
+        	// Case 2: Single Order object
+            else if (msg instanceof Order) {
+                Order o = (Order) msg;
+                System.out.println("Received single order: " + o);
+            }
+            
+        	// Case 3: String message
+            else if (msg instanceof String) {
+                String text = (String) msg;
+                System.out.println("Message from server: " + text);
+                if (text.contains("Disconnecting")) {
+                    clientUi.disconnectClient();
+                }
+            }
+            
+        	// Case 4: Boolean (Success/Failure)
+            else if (msg instanceof Boolean) {
+                boolean success = (Boolean) msg;
+                if (success) {
+                    showAlert("Success", "Operation completed successfully!", Alert.AlertType.INFORMATION);
+                    // Refresh table after success
+                    orderLogic.getAllOrders(); 
+                } else {
+                    showAlert("Failure", "Operation failed.", Alert.AlertType.ERROR);
+                }
+            }
+        });
+    }
 
+    @FXML
+    private void handleAddOrder(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/addOrder.fxml"));
+            Parent root = loader.load();
+            
+            // To pass OrderLogic if needed:
+            // AddOrderController controller = loader.getController();
+            // controller.initData(orderLogic); 
+            
+            Stage stage = new Stage();
+            stage.setTitle("Add New Order");
+            stage.setScene(new Scene(root));
+            stage.show();
+            
+            // NOTE: Removed hiding the main window to follow standard UI pattern for modal popups.
+            // ((Node) event.getSource()).getScene().getWindow().hide(); 
+            
+        } catch (Exception e) {
+            showAlert("Navigation Error", "Could not load the Add Order screen. Check if addOrder.fxml exists.", Alert.AlertType.ERROR);
+            e.printStackTrace();
+        }
+    }
 
-	
-//	@Override
-//	public void initialize(URL location, ResourceBundle resources) {
-//
-//		Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
-//		itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
-//
-//		// --- Date column formatting ---
-//		DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
-//
-//		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-//		
-//	    try {
-//	        c = new ClientUi();
-//	        c.addListener(this);
-//
-//	        System.out.println("Sending request: GET_ALL_ORDERS");
-//	        OrderLogic c1 = new OrderLogic(c);
-//	        c1.getAllOrders();
-////	        c.sendMessage("GET_ALL_ORDERS"); 
-//	        
-//	        
-//	    } catch (IOException e) {
-//	        showAlert("Connection Error", "Could not connect to server or send initial request.", Alert.AlertType.ERROR);
-//	        e.printStackTrace();
-//	    }
-//
-//		// Set the data into the table
-//		orderTable.setItems(orderData);
-//		showAlert("Load all reservations", "Generate all orders?",  Alert.AlertType.CONFIRMATION);
-//
-//		setupEditableColumns();
-//
-//	}
+    @FXML
+    private void handleUpdateOrder(ActionEvent event) {
+        Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
+        if (selectedOrder == null) {
+            showAlert("No Selection", "Please select an order to update.", Alert.AlertType.WARNING);
+            return;
+        }
 
-	// Method called by ChatClient to display messages from server
-	public void displayMessage() {
-		int newId = orderData.isEmpty() ? 1 : orderData.get(orderData.size() - 1).getOrder_number() + 1;
-// 		Order newOrder = new Order(newId, new Date(), 0, 0, 1, new Date());
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/updateOrder.fxml"));
+            Parent root = loader.load();
+            
+            UpdateOrder controller = loader.getController();
+            // Passing the selected order, OrderLogic, AND THIS controller reference for refresh
+            controller.initData(selectedOrder, orderLogic, this); 
 
-	}
+            Stage stage = new Stage();
+            stage.setTitle("Update Order #" + selectedOrder.getOrder_number());
+            stage.setScene(new Scene(root));
+            stage.show();
+            
+            // NOTE: The main window should remain open (not hidden)
+            // ((Node) event.getSource()).getScene().getWindow().hide(); 
 
-	private void setupEditableColumns() {
-		// עריכת תאריך
-		DateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
-		DateColumn.setOnEditCommit(event -> {
-			event.getRowValue().setDate_of_placing_order(event.getNewValue());
-		});
-//
-//        // עריכת Guests
-//        itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
-//        itemColumn.setOnEditCommit(event -> {
-//            event.getRowValue().setNumber_of_guests(event.getNewValue());
-//        });
-		itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            showAlert("Navigation Error", "Could not load the Update Order screen.", Alert.AlertType.ERROR);
+        }
+    }
 
-		itemColumn.setOnEditCommit(event -> {
-			Integer newValue = event.getNewValue();
-			if (newValue != null) {
-				event.getRowValue().setNumber_of_guests(newValue);
-			}
-		});
-	}
+    @FXML
+    private void handleDeleteOrder() {
+        Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
+        if (selectedOrder != null) {
+            int orderIdToDelete = selectedOrder.getOrder_number();
+            orderLogic.deleteOrder(orderIdToDelete); 
+        } else {
+            showAlert("No Selection", "Please select an order to delete.", Alert.AlertType.WARNING);
+        }
+    }
 
-	@FXML
-	private void handleAddOrder() {
-		int newId = orderData.isEmpty() ? 1 : orderData.get(orderData.size() - 1).getOrder_number() + 1;
+    private void setupEditableColumns() {
+        DateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
+        itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
+        
+        itemColumn.setOnEditCommit(event -> {
+            Order o = event.getRowValue();
+            o.setNumber_of_guests(event.getNewValue());
+            orderLogic.updateOrder(o); 
+        });
+    }
 
-		Order newOrder = new Order(newId, new Date(), 0, 0, 1, new Date());
-		orderData.add(newOrder);
-
-		orderTable.getSelectionModel().select(newOrder);
-		orderTable.scrollTo(newOrder);
-	}
-
-	@FXML
-	private void handleDeleteOrder() {
-
-		Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
-		if (selectedOrder != null) {
-			orderData.remove(selectedOrder);
-		} else {
-			showAlert("No Selection", "Please select an order to delete.", Alert.AlertType.WARNING);
-		}
-
-	}
-
-	@FXML
-	private void handleUpdateOrder(ActionEvent event) throws Exception {
-		int rowIndex = orderTable.getSelectionModel().getSelectedIndex();
-		if (rowIndex < 0) {
-			showAlert("No Selection", "Please select an order to update.", Alert.AlertType.WARNING);
-			return;
-		}
-		FXMLLoader loader = new FXMLLoader();
-		((Node) event.getSource()).getScene().getWindow().hide(); // hiding primary window
-		Stage primaryStage = new Stage();
-
-		loader = new FXMLLoader(getClass().getResource("/clientGui/updateOrder.fxml"));
-
-		Pane root = loader.load();
-		Scene scene = new Scene(root);
-
-		primaryStage.setTitle("Update Order");
-		primaryStage.setScene(scene);
-		primaryStage.show();
-
-	}
-
-	public void showAlert(String title, String content, Alert.AlertType type) {
-		Alert alert = new Alert(type);
-		alert.setTitle(title);
-		alert.setHeaderText(null);
-		alert.setContentText(content);
-		alert.showAndWait();
-		ButtonType res = alert.getResult();
-		if (res.equals(ButtonType.CANCEL)) {
-			RequestPath rq = new RequestPath("quit",null);
-			clientUi.sendRequest(rq);
-			
-			Platform.runLater(() -> {
-	            Stage stage = (Stage) orderTable.getScene().getWindow();
-	            stage.close();
-
-	        });
-
-		}
-//		} else {
-//			Alert alert2 = new Alert(Alert.AlertType.INFORMATION);
-//			alert2.setTitle("Loading all orders...");
-//			alert2.setHeaderText(null);
-//			alert2.setContentText("Successfully loaded all orders!");
-//			alert2.showAndWait();
-//		}
-	}
-	
-	
-	@Override
-	public void onMessageReceive(String msg) {
-
-		System.out.println("----------- Received message from server: " + msg);
-
-		if (msg.equals("Disconnecting the client from the server.")) {
-
-			clientUi.DisconnectClient();
-		    return;
-			
-		}
-
-		else if (msg == null || msg.trim().isEmpty() || !msg.startsWith("[")) {
-			System.out.println("Message is not a valid list format.");
-			return;
-		}
-
-		String content = msg.substring(1, msg.length() - 1);
-
-		String[] orderBlocks = content.split("], Order \\[");
-
-		Platform.runLater(() -> {
-			orderData.clear();
-
-			for (int i = 0; i < orderBlocks.length; i++) {
-				String orderString = orderBlocks[i];
-
-				if (i > 0) {
-					orderString = "Order [" + orderString;
-				}
-
-				if (i < orderBlocks.length - 1) {
-					orderString = orderString + "]";
-				}
-
-				try {
-					int start = orderString.indexOf("[");
-					int end = orderString.lastIndexOf("]");
-					if (start != -1 && end != -1 && end > start) {
-						String cleanContent = orderString.substring(start + 1, end);
-						Order order = Order.parseOrder(cleanContent); // נשתמש בפונקציית העזר שלך
-						if (order != null) {
-							orderData.add(order);
-						}
-					}
-
-				} catch (Exception e) {
-					System.err.println("Error parsing Order object: " + orderString + " Error: " + e.getMessage());
-					e.printStackTrace();
-				}
-			}
-
-			if (!orderData.isEmpty()) {
-				orderTable.getSelectionModel().selectFirst();
-				orderTable.scrollTo(0);
-				System.out.println("Successfully loaded " + orderData.size() + " orders.");
-
-
-			}
-		});
-	}
+    public void showAlert(String title, String content, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+    
 }
-
