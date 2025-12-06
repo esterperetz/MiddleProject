@@ -10,5 +10,6 @@ public enum ActionType implements Serializable {
     GET_BY_ID,
     CREATE,
     UPDATE,
-    DELETE
+    DELETE,
+    GET_USER_ORDERS
 }

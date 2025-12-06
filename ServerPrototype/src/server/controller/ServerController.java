@@ -64,8 +64,11 @@ public class ServerController extends AbstractServer {
      */
     @Override
     protected void clientException(ConnectionToClient client, Throwable exception) {
+    	try {
         view.log("Client exception: " + client.getInetAddress().getHostAddress() + " - " + exception.getMessage());
         clientDisconnected(client); // Ensure cleanup
+    	}
+    	catch(Exception e) {};
     }
     
     /**
@@ -79,7 +82,7 @@ public class ServerController extends AbstractServer {
     
     
     /**
-     * recieve Object/Request from client and send to router
+     * Receive Object/Request from client and send to router
      */
     @Override
     public void handleMessageFromClient(Object msg, ConnectionToClient client) {

@@ -23,37 +23,16 @@ public class DBConnection {
     private static String dbPass; 
 
     
-    /**
-     * Private constructor to enforce the Singleton pattern.
-     * Prevents creation of multiple DBConnection instances.
-     */
     private DBConnection() {} 
-
-   
-    /**
-     *Initializes the Singleton instance and establishes the initial database connection.
-	 * This method MUST be called once when the server starts and before any call to getInstance().
-	 * @param host   The database server host/IP (e.g., "localhost").
-	 * @param schema The database schema name.
-	 * @param user   The database username.
-	 * @param pass   The database password.
-	 * @throws SQLException           If the connection to the database fails.
-	 * @throws ClassNotFoundException If the MySQL JDBC driver is not found.
-	 * Behavior:
-	 *  - Prevents re-initialization if instance already exists.
-	 *  - Builds the JDBC URL and stores credentials for possible reconnection.
-	 *  - Loads JDBC driver and creates the persistent connection.
-     */
+ 
+     //Initializes the Singleton instance and establishes the initial database connection.
     public static synchronized void initializeConnection(String host, String schema, String user, String pass) throws SQLException, ClassNotFoundException {
         if (instance != null) {
             System.out.println("DBConnection already initialized. Re-initialization ignored.");
             return; 
         }
         
-        // Build the JDBC URL.
         String url = String.format("jdbc:mysql://%s:3306/%s?serverTimezone=Asia/Jerusalem&useSSL=false", host, schema);
-        
-        // Store credentials statically for potential reconnection.
         dbUrl = url;
         dbUser = user;
         dbPass = pass;
@@ -66,11 +45,8 @@ public class DBConnection {
         System.out.println("Single persistent DB Connection established successfully.");
     }
     
-    /**
-     * Returns the Singleton DBConnection instance.
-	 * If called before initializeConnection(), a new empty instance is created.
-	 * This fallback prevents a crash but DOES NOT automatically establish a connection..
-     */
+    
+     // Returns the Singleton DBConnection instance.
     public static synchronized DBConnection getInstance() {
         if (instance == null) {
         	instance=new DBConnection();	
@@ -80,7 +56,6 @@ public class DBConnection {
 
     /**
      * @return The active (or re-established) Connection object.
-	 * @throws SQLException If reconnection fails.
      * Retrieves the persistent connection, attempting to re-establish it if closed or invalid.
      */
     public Connection getConnection() throws SQLException {
@@ -99,9 +74,8 @@ public class DBConnection {
         return connection;
     }
     
-    /**
-     * Closes the single connection (called on server shutdown).
-     */
+    
+    //Closes the single connection (called on server shutdown).
     public void closeConnection() {
         if (connection != null) {
             try {

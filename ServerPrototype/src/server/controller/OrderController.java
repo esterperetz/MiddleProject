@@ -11,27 +11,8 @@ public class OrderController {
 
     private final OrderDAO dao = new OrderDAO();
 
-    /**
-     * * Handles incoming requests related to the ORDER resource.
-	 *
-	 * This method is triggered by the server when a client sends a Request object.
-	 * It validates the request, performs the required database action using OrderDAO,
-	 * and sends the result back to the requesting client.
-	 *
-	 * Additionally, for CREATE / UPDATE / DELETE actions,
-	 * the method pushes an updated order list to all connected clients.
-	 *
-	 * @param req     The Request object sent by the client containing resource,
-	 *                action (GET, CREATE, etc.), ID, and/or payload.
-	 *
-	 * @param client  The client connection that sent the request. Used for sending
-	 *                direct responses.
-	 *
-	 * @param clients List of all currently connected clients. Used for broadcasting
-	 *                updated data after modifications to the Order table.
-	 *
-	 * @throws IOException If sending a response to the client fails.
-     */
+    
+     //Handles incoming requests related to the ORDER resource.
     public void handle(Request req, ConnectionToClient client,List<ConnectionToClient> clients) throws IOException {
         
         if (req.getResource() != ResourceType.ORDER) {

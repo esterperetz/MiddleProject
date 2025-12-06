@@ -23,7 +23,6 @@ public class ServerLoginController {
 
     // Ensure this field exists in ServerLogin.fxml (for DB Host/IP)
     @FXML private TextField txtHost;
-    
     @FXML private TextField txtUserName;
     @FXML private TextField Scheme; // DB Schema (Database Name)
     @FXML private PasswordField txtPassword;
