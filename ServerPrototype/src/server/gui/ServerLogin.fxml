@@ -29,11 +29,11 @@
                     <children>
                         <Label text="User name:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
                         <TextField fx:id="txtUserName" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-
+						<TextField fx:id="Scheme" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                 		 <Label text="Scheme:" GridPane.rowIndex="1" />
                         <Label text="Password:" GridPane.rowIndex="2" />
                         <PasswordField fx:id="txtPassword" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField fx:id="Scheme" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <Label text="Scheme:" GridPane.rowIndex="1" />
+                  
                     </children>
                <rowConstraints>
                   <RowConstraints />

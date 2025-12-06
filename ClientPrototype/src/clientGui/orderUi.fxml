@@ -21,11 +21,17 @@
 					prefHeight="250.0">
 					<columns>
 						<TableColumn fx:id="Order_numberColumn" text="Order #"
-							prefWidth="120.0" />
+							prefWidth="150.0" />
 						<TableColumn fx:id="DateColumn" text="Order Date"
 							prefWidth="150.0" />
 						<TableColumn fx:id="itemColumn" text="Guests"
-							prefWidth="100.0" />
+							prefWidth="150.0" />
+							<TableColumn fx:id="confirmation_codeColumn" text="confirmation_code"
+							prefWidth="150.0" />
+							<TableColumn fx:id="subscriber_idColumn" text="subscriber_id"
+							prefWidth="150.0" />
+							<TableColumn fx:id="date_of_placing_orderColumn" text="date_of_placing_order"
+							prefWidth="150.0" />
 					</columns>
 				</TableView>
 
