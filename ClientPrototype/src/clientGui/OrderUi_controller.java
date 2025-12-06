@@ -44,10 +44,8 @@ public class OrderUi_controller implements  MessageListener<Object> {
     public OrderUi_controller() {
     }
 
-    // 🔹 יופעל אוטומטית אחרי טעינת ה־FXML
     @FXML
     private void initialize() {
-        // הגדרת עמודות וטבלת GUI בלבד
         Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
         itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
         DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
@@ -60,7 +58,13 @@ public class OrderUi_controller implements  MessageListener<Object> {
         orderTable.setItems(orderData);
     }
 
-    // 🔹 את זה נקרא מתוך LoginController אחרי שיש לנו ClientUi ו־ip
+    /**
+     * Initializes this controller with an existing ClientUi and server IP.
+     * Registers this controller as a listener and loads all orders from the server.
+     *
+     * @param clientUi The client UI used for server communication.
+     * @param ip       The server IP address.
+     */
     public void initData(ClientUi clientUi, String ip) {
         this.clientUi = clientUi;
         this.ip = ip;
@@ -80,7 +84,7 @@ public class OrderUi_controller implements  MessageListener<Object> {
             });
         });
     }
-    
+    /*
     public void init() {
         Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
         itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
@@ -107,17 +111,37 @@ public class OrderUi_controller implements  MessageListener<Object> {
             });
         });
     }
+    */
+    /**
+     * Sets the ClientUi instance used by this controller.
+     *
+     * @param c The ClientUi to use.
+     */
     public void setClient(ClientUi c)
     {
     	clientUi=c;
     }
 
-    /** NEW METHOD: Refreshes table data by requesting all orders from the server. */
+    
+    /**
+     * Refreshes table data by requesting all orders from the server
+     * Useful after an add, update or delete action.
+     */
     public void refreshTableData() {
         System.out.println("LOG: Refreshing Order Table data from server.");
         orderLogic.getAllOrders(); 
     }
 
+    /**
+     * Called when a message is received from the server.
+     * Updates the UI based on the type of the message:
+     *  - List<Order>: refreshes the table
+     *  - Order: logs the single order
+     *  - String: prints server message or reacts to disconnect text
+     *  - Boolean: shows success/failure and refreshes on success
+     *
+     * @param msg The message object from the server.
+     */
     @SuppressWarnings("unchecked")
     @Override
     public void onMessageReceive(Object msg) {
@@ -171,17 +195,14 @@ public class OrderUi_controller implements  MessageListener<Object> {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/addOrder.fxml"));
             Parent root = loader.load();
             
-            // To pass OrderLogic if needed:
-            // AddOrderController controller = loader.getController();
-            // controller.initData(orderLogic); 
+          
             
             Stage stage = new Stage();
             stage.setTitle("Add New Order");
             stage.setScene(new Scene(root));
             stage.show();
             
-            // NOTE: Removed hiding the main window to follow standard UI pattern for modal popups.
-            // ((Node) event.getSource()).getScene().getWindow().hide(); 
+           
             
         } catch (Exception e) {
             showAlert("Navigation Error", "Could not load the Add Order screen. Check if addOrder.fxml exists.", Alert.AlertType.ERROR);
@@ -210,9 +231,7 @@ public class OrderUi_controller implements  MessageListener<Object> {
             stage.setScene(new Scene(root));
             stage.show();
             
-            // NOTE: The main window should remain open (not hidden)
-            // ((Node) event.getSource()).getScene().getWindow().hide(); 
-
+            
         } catch (Exception e) {
             e.printStackTrace();
             showAlert("Navigation Error", "Could not load the Update Order screen.", Alert.AlertType.ERROR);
@@ -230,6 +249,10 @@ public class OrderUi_controller implements  MessageListener<Object> {
         }
     }
 
+    /**
+     *  Makes some table columns editable and sends updates to the server
+     * when the user changes the number of guests in a row.
+     */
     private void setupEditableColumns() {
         DateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
         itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
@@ -241,6 +264,12 @@ public class OrderUi_controller implements  MessageListener<Object> {
         });
     }
 
+    /**
+     * @param title
+     * @param content
+     * @param type
+     * Shows a simple alert dialog with a title, content and type.
+     */
     public void showAlert(String title, String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

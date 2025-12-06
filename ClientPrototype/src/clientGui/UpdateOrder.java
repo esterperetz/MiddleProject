@@ -15,6 +15,10 @@ import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 
+/**
+ * * Controller for the "Update Order" window.
+ * Shows the selected order data and sends the updated order to the server.
+ */
 public class UpdateOrder implements Initializable {
 	
 	private Order o;
@@ -103,6 +107,12 @@ public class UpdateOrder implements Initializable {
 		}
 	}
 	
+    /**
+     * @param title
+    * @param content
+    * @param type
+    * Shows a simple alert dialog with a title, content and type.
+     */
     public void showAlert(String title, String content, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setTitle(title);

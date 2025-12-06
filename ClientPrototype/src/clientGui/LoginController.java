@@ -23,7 +23,6 @@ public class LoginController {
     @FXML
     private Label lblStatus;
 
-    // החיבור לשרת – דרך ChatClient או ClientUi, לפי מה שנוח לך
     private ClientUi clientUi;
 
     @FXML

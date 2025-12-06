@@ -10,12 +10,22 @@ import client.ChatClient;
 import client.MessageListener;
 import javafx.scene.control.Alert;
 
+/**
+ * ClientUi manages the client-side user interface.
+ * It connects to the server using ChatClient and sends/receives messages.
+ * All messages from the server are passed to registered listeners.
+ */
 public class ClientUi {
 
     private ChatClient chatClient;
     @SuppressWarnings({ "rawtypes" })
-	private List<MessageListener> listeners;
+	private List<MessageListener> listeners;//any information from screens that show information from server, be here
 
+    /**
+     * Creates the UI and connects to the server.
+     *
+     * @param ip The server IP address.
+     */
     public ClientUi(String ip) {
     	try {
 			chatClient = new ChatClient(ip, 5555, this);
@@ -29,7 +39,11 @@ public class ClientUi {
     	this.listeners = new ArrayList<>();
     }
 
-    // ✅ התיקון כאן: שינוי הטיפוס מ-RequestPath ל-Request
+    /**
+     * Sends a Request object to the server.
+     *
+     * @param message The request to send.
+     */
     public void sendRequest(Request message) { 
       if (message != null && chatClient != null) {
           System.out.println(message.toString());
@@ -37,7 +51,11 @@ public class ClientUi {
       }
     }
 
-    // המתודה הזו תוקנה כבר לקבלת Object, כנדרש לתקשורת שרת-לקוח
+    /**
+     * * Called when the server sends a message.
+     * Sends the message to all listeners.
+     * @param msg The message from the server.
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	public void displayMessage(Object msg) { 
     	for(MessageListener listener: this.listeners) {
@@ -45,11 +63,19 @@ public class ClientUi {
     	}
     }
 
+    /**
+     * Adds a listener that will receive server messages.
+     * @param listener The listener to add.
+     */
     @SuppressWarnings("rawtypes")
 	public void addListener(MessageListener listener) {
     	this.listeners.add(listener);
     }
     
+    /**
+     *Sends a "quit" message to the server.
+     * Used when the client disconnects.
+     */
     public void disconnectClient() {
         if (chatClient != null) {
             //try {
