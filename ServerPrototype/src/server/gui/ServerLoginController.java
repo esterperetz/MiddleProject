@@ -81,7 +81,7 @@ public class ServerLoginController {
             server = new ServerController(port, view);
             server.listen(); // Start listening for clients
             
-            // 5. ✅ Transition to the main server screen: replace the Scene in the current window
+            // 5. Transition to the main server screen: replace the Scene in the current window
             Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             primaryStage.setTitle("Server Control Panel - Listening on Port " + port+" IP: "+IP);
             primaryStage.setScene(new Scene(root));

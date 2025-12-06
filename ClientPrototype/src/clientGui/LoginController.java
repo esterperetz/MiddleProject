@@ -35,28 +35,28 @@ public class LoginController {
         }
 
         try {
-            // יצירת ClientUi שמתחבר לשרת לפי ה-IP שהמשתמש הכניס
+       
             clientUi = new ClientUi(ip);
 
-            // אם הכל עבר בלי Exception – הצלחנו
+           
             if (clientUi != null) {
                 lblStatus.setText("Login succeeded. Connected to: " + ip);
                 FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/orderUi.fxml"));
                 Parent root = loader.load();
 
-                // 2) מקבלים את הקונטרולר ש־FXML יצר
+               
                 OrderUi_controller controller = loader.getController();
 
-                // 3) מעבירים לו את ה-ClientUi וה-ip
+                
                 controller.initData(clientUi, ip);
 
-                // 4) מעבר סצינה
+               
                 Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
                 primaryStage.setTitle("Orders Management");
                 primaryStage.setScene(new Scene(root));
                 primaryStage.show();
     	        
-                // כאן אפשר לעבור למסך הראשי (orders וכו') אם יש לך כזה
+                
             } else {
                 lblStatus.setText("Login failed (clientUi is null)");
             }
@@ -67,9 +67,7 @@ public class LoginController {
         }
     }
 
-    /**
-     * מאפשר למסכים אחרים לקבל את החיבור לשרת אחרי ה-login
-     */
+  
     public ClientUi getClientUi() {
         return clientUi;
     }

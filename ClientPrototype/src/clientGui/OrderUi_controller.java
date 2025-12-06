@@ -84,34 +84,8 @@ public class OrderUi_controller implements  MessageListener<Object> {
             });
         });
     }
-    /*
-    public void init() {
-        Order_numberColumn.setCellValueFactory(new PropertyValueFactory<>("order_number"));
-        itemColumn.setCellValueFactory(new PropertyValueFactory<>("number_of_guests"));
-        DateColumn.setCellValueFactory(new PropertyValueFactory<>("order_date"));
-
-        setupEditableColumns();
-
-        orderTable.setItems(orderData);
-
-        clientUi = new ClientUi(ip);
-        
-        clientUi.addListener(this); 
-        orderLogic = new OrderLogic(clientUi);
-
-        System.out.println("Initialization: Requesting all orders...");
-        orderLogic.getAllOrders();
-
-        Platform.runLater(() -> {
-            Stage stage = (Stage) orderTable.getScene().getWindow();
-            stage.setOnCloseRequest(event -> {
-                System.out.println("Closing client...");
-                clientUi.disconnectClient();
-                System.exit(0);
-            });
-        });
-    }
-    */
+ 
+    
     /**
      * Sets the ClientUi instance used by this controller.
      *
@@ -132,16 +106,8 @@ public class OrderUi_controller implements  MessageListener<Object> {
         orderLogic.getAllOrders(); 
     }
 
-    /**
-     * Called when a message is received from the server.
-     * Updates the UI based on the type of the message:
-     *  - List<Order>: refreshes the table
-     *  - Order: logs the single order
-     *  - String: prints server message or reacts to disconnect text
-     *  - Boolean: shows success/failure and refreshes on success
-     *
-     * @param msg The message object from the server.
-     */
+   
+     //Called when a message is received from the server.
     @SuppressWarnings("unchecked")
     @Override
     public void onMessageReceive(Object msg) {

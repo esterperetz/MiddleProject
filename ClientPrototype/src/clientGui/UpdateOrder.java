@@ -67,7 +67,6 @@ public class UpdateOrder implements Initializable {
 			String OrderNum = txtId.getText().trim();
 			String Number_Of_Guests = txtName.getText().trim();
 			String OrderDate = txtName1.getText();
-			System.out.println("heree");
 			
 			Date date = dateFormat.parse(OrderDate);
 
