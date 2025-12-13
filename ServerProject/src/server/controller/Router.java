@@ -1,11 +1,9 @@
 package server.controller;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import Entities.Order;
 import Entities.Request;
 import Entities.ResourceType;
 import ocsf.server.ConnectionToClient;
@@ -13,34 +11,29 @@ import ocsf.server.ConnectionToClient;
 public class Router {
 
     private final OrderController orderController;
-    private static List<ConnectionToClient> clients;
-    // private final UserController userController; 
-    // private final WaitingListController waitingListController; ו
+    private final SubscriberController subscriberController;
+    
+    private static List<ConnectionToClient> clients; 
 
     public Router() {
-    	
         this.orderController = new OrderController();
-        clients=new ArrayList<>();//list of our online clients
+        this.subscriberController = new SubscriberController();
         
-        // this.userController = new UserController();
-        // this.waitingListController = new WaitingListController();
+        if (clients == null) {
+            clients = new ArrayList<>(); 
+        }
     }
 
-    
-
-	
-	 //Routes an incoming Request to the appropriate controller
-
-	public void route(Request req, ConnectionToClient client) throws IOException {
+    public void route(Request req, ConnectionToClient client) throws IOException {
         ResourceType resource = req.getResource(); 
 
         switch (resource) {
             case ORDER:
-                orderController.handle(req, client,clients);
+                orderController.handle(req, client, clients);
                 break;
 
-            case USER:
-                // userController.handle(req, client);
+            case USER: // Handles all registered entities: Subscribers, Workers...
+                subscriberController.handle(req, client);
                 break;
 
             case WAITING_LIST:
@@ -48,47 +41,36 @@ public class Router {
                 break;
 
             default:
-            	//if unknown
                 client.sendToClient("Unknown resource type: " + resource);
         }
     }
-	
-     //Returns the current list of connected (online) clients.
-	public List<ConnectionToClient> getClients() {
-		return clients;
-	}
-	
-     //Replaces the current list of connected clients with a new list.
-	public void setClients(List<ConnectionToClient> clients) {
-		this.clients = clients;
-	}
-	
-	public void addClientOnline(ConnectionToClient client) {
-		this.clients.add(client);
-	}
-	
-	public void removeClientOffline(ConnectionToClient client) {
-		this.clients.remove(client) ;
-	}
-	/**
-     * @param list of clients
-     * @param list of orders
-     * send to all client our change in server side in DB(refresh)
-     */
-    public static void sendToAllClients(Object message)
-    {
-    	//List<Order> orders;
-    	
-		//orders = dao.getAllOrders();
-		for(ConnectionToClient c:clients)
-		{
-				try {
-					c.sendToClient(message);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		}
-    	
+    
+    public List<ConnectionToClient> getClients() {
+        return clients;
     }
-	
+    
+    public void setClients(List<ConnectionToClient> clientsList) {
+        clients = clientsList; // בלי this כי זה משתנה סטטי
+    }
+    
+    public void addClientOnline(ConnectionToClient client) {
+        clients.add(client);
+    }
+    
+    public void removeClientOffline(ConnectionToClient client) {
+        clients.remove(client);
+    }
+
+
+    public static void sendToAllClients(Object message) {
+        if (clients != null) {
+            for (ConnectionToClient c : clients) {
+                try {
+                    c.sendToClient(message);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }
