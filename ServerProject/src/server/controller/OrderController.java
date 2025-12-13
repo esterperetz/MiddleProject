@@ -1,0 +1,99 @@
+package server.controller;
+
+import java.sql.SQLException;
+import java.util.List;
+import DAO.OrderDAO;
+import Entities.*;
+import ocsf.server.ConnectionToClient;
+import java.io.IOException;
+
+public class OrderController {
+
+    private final OrderDAO dao = new OrderDAO();
+
+    
+     //Handles incoming requests related to the ORDER resource.
+    public void handle(Request req, ConnectionToClient client,List<ConnectionToClient> clients) throws IOException {
+        
+        if (req.getResource() != ResourceType.ORDER) {
+            System.err.println("OrderController received request for wrong resource: " + req.getResource());
+            client.sendToClient("Error: Incorrect resource type requested. Expected ORDER.");
+            return; 
+        }
+        
+        try {
+            switch (req.getAction())//checks enum we received from the object (req)
+            {
+                case GET_ALL:
+                    List<Order> orders = dao.getAllOrders();
+                    client.sendToClient(orders);
+                    break;
+
+                case GET_BY_ID:
+                    if (req.getId() == null) {
+                         client.sendToClient("Error: GET_BY_ID requires an ID.");
+                         break;
+                    }
+                    Order order = dao.getOrder(req.getId());
+                    client.sendToClient(order);
+                    break;
+
+                case CREATE:
+                    if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+                         client.sendToClient("Error: CREATE action requires an Order payload.");
+                         break;
+                    }
+                    Order o = (Order) req.getPayload();
+                    boolean created = dao.createOrder(o);
+                    client.sendToClient(created);
+                    //implements sends to all client
+                    sendOrdersToAllClients();
+                    break;
+                    
+                case UPDATE: 
+                    if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+                         client.sendToClient("Error: UPDATE action requires an Order payload.");
+                         break;
+                    }
+                    Order updatedOrder = (Order) req.getPayload();
+                    
+                    boolean updated = dao.updateOrder(updatedOrder); 
+                    client.sendToClient(updated); 
+                    //implements sends to all client
+                    sendOrdersToAllClients();
+
+                    break;
+
+                case DELETE: 
+                    if (req.getId() == null) {
+                         client.sendToClient("Error: DELETE requires an ID.");
+                         break;
+                    }
+                    boolean deleted = dao.deleteOrder(req.getId()); 
+                    client.sendToClient(deleted); 
+                    //implements sends to all client
+                    sendOrdersToAllClients();
+                    break;
+
+                default:
+                    client.sendToClient("Unsupported action: " + req.getAction());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            client.sendToClient("Database error: " + e.getMessage());
+        }
+        
+    }
+    private void sendOrdersToAllClients()
+    {
+    	List<Order> orders;
+    	try {
+			orders = dao.getAllOrders();
+			Router.sendToAllClients(orders);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    			
+    }
+    
+}

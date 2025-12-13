@@ -1,0 +1,13 @@
+package Entities;
+
+import java.io.Serializable;
+
+/**
+ * Enum for the resources of the object that we are sending
+ */
+public enum ResourceType implements Serializable {
+    ORDER,
+    USER,
+    WAITING_LIST
+   
+}
