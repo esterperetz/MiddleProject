@@ -15,10 +15,12 @@ public class SubscriberLoginController {
 
 	    @FXML
 	    void performLogin(ActionEvent event) {
-	    	
+	    	//
 	        String username = SubscriberCode.getText();
 	        System.out.println("Login attempt: " + username);
-	        MainNavigator.loadReservationScreen(true, "", "", ""); //add to get the subscriber details from DB
+	        //MainNavigator.loadReservationScreen(true, "", "", ""); //add to get the subscriber details from DB
+	        MainNavigator.loadScene("subscriber/SubscriberOption");
+	        //System.out.println("asdasdas");
 	        // כאן תוסיף את הלוגיקה
 	    }
 

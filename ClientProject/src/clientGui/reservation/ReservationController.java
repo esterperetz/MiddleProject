@@ -154,6 +154,6 @@ public class ReservationController {
 
     @FXML
     void goBack(ActionEvent event) {
-        MainNavigator.loadScene("navigation/SelectionScreen");
+        MainNavigator.loadScene("subscriber/SubscriberOption");
     }
 }
