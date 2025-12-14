@@ -133,7 +133,7 @@ public class ReservationController {
             System.out.println("Details: " + nameField.getText() + ", " + datePicker.getValue() + " at " + timeComboBox.getValue());
             // כאן תשלח לשרת...
             MainNavigator.showAlert( "Success", "Table Booked successfully!",Alert.AlertType.INFORMATION);
-            MainNavigator.loadScene("SelectionScreen"); // חזרה לראשי
+            MainNavigator.loadScene("navigation/SelectionScreen"); // חזרה לראשי
         } else {
             // חלופה: הצגת שעות קרובות
             showAlternativeTimes();
@@ -147,11 +147,9 @@ public class ReservationController {
     }
 
     private void showAlternativeTimes() {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setTitle("Fully Booked");
-        alert.setHeaderText("The selected time is not available.");
-        alert.setContentText("Alternative times found: 19:30, 20:00"); // כאן תציג לוגיקה אמיתית
-        alert.showAndWait();
+    	MainNavigator.showAlert("The selected time is not available.","Alternative times found: 19:30, 20:00" ,Alert.AlertType.WARNING);
+         // כאן תציג לוגיקה אמיתית
+       
     }
 
     @FXML

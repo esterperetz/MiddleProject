@@ -11,16 +11,11 @@ import java.io.IOException;
 public class MainNavigator {
 
     private static Stage mainStage;
-    private static Alarm alarm;
+   
     // שמירת ה-Stage הראשי בפעם הראשונה שהאפליקציה עולה
     public static void setStage(Stage stage) {
         mainStage = stage;
-        try {
-			alarm = new Alarm();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        
     }
 
     /**
@@ -70,6 +65,6 @@ public class MainNavigator {
     
     public static void showAlert(String header_text,String context_text,Alert.AlertType type) {
     	
-    	alarm.showAlert(header_text, context_text, type);
+    	Alarm.showAlert(header_text, context_text, type);
     }
 }
