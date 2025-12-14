@@ -45,7 +45,8 @@ public class SelectionController implements  MessageListener<Object> {
     @FXML
     void pressCasualCustomer(ActionEvent event) {
         System.out.println("Navigating to Casual Customer screen...");
-        MainNavigator.loadReservationScreen(false, "", "", "");
+        //MainNavigator.loadReservationScreen(false, "", "", "");
+        MainNavigator.loadScene("subscriber/SubscriberOption");
     }
     
     /**

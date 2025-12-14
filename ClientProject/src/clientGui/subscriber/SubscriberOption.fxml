@@ -31,6 +31,12 @@
               prefHeight="45.0" prefWidth="280.0" 
               styleClass="menu-button, primary-button" text="Recieve table" />
 
+      <Button fx:id="btnSubscriberSpecial" 
+              visible="false" managed="false"
+              mnemonicParsing="false" onAction="#subscriberActionBtn" 
+              prefHeight="45.0" prefWidth="280.0" 
+              styleClass="menu-button, primary-button" text="Subscriber History" />
+
        <Button mnemonicParsing="false" onAction="#goBackBtn" 
               prefHeight="45.0" prefWidth="280.0" 
               styleClass="menu-button" text="back">
