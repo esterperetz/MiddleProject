@@ -1,4 +1,4 @@
-package clientGui;
+package clientGui.reservation;
 
 import java.net.URL;
 import java.text.ParseException;

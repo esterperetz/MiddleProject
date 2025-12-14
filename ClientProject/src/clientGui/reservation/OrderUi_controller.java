@@ -1,4 +1,4 @@
-package clientGui;
+package clientGui.reservation;
 
 import java.net.URL;
 
@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import Entities.Alarm;
 import Entities.Order;
 import client.MessageListener;
+import clientGui.ClientUi;
 import clientLogic.OrderLogic;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
