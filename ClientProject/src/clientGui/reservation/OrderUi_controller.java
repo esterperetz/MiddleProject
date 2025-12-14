@@ -166,7 +166,7 @@ public class OrderUi_controller implements  MessageListener<Object> {
     @FXML
     private void handleAddOrder(ActionEvent event) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/addOrder.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/addOrder.fxml"));
             Parent root = loader.load();
             Stage stage = new Stage();
             stage.setTitle("Add New Order");
@@ -194,7 +194,7 @@ public class OrderUi_controller implements  MessageListener<Object> {
         }
 
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/updateOrder.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/updateOrder.fxml"));
             Parent root = loader.load();
             UpdateOrder controller = loader.getController();
             // Passing the selected order, OrderLogic, AND THIS controller reference for refresh

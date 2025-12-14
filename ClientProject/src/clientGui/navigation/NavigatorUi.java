@@ -12,15 +12,16 @@ public class NavigatorUi extends Application {
     public void start(Stage primaryStage) throws Exception {
     	
     	MainNavigator.setStage(primaryStage);
-    	String fxmlPath = "/clientGui/navigation/SelectionScreen.fxml";
+//    	String fxmlPath = "/clientGui/navigation/SelectionScreen.fxml";
+    	String fxmlPath = "/clientGui/logInServer.fxml";
     	java.net.URL location = getClass().getResource(fxmlPath);
     	
-    	System.out.println("here");
+    	
     	// בדיקה האם הקובץ נמצא לפני שמנסים לטעון
     	if (location == null) {
     	    System.err.println("ERROR: Could not find FXML at: " + fxmlPath);
     	    // ניסיון גיבוי - אולי בלי הסלאש הראשון?
-    	    location = getClass().getResource("SelectionScreen.fxml");
+    	    location = getClass().getResource("/clientGui/logInServer.fxml");
     	}
 
     	if (location == null) {
@@ -29,7 +30,7 @@ public class NavigatorUi extends Application {
     	
     	try {
     	    // 1. הטעינה שעשית (מביאה את ה-Root)
-    	    FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/navigation/SelectionScreen.fxml"));
+    	    FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/logInServer.fxml"));
     	    Parent root = loader.load();
 
     	    // 2. יצירת ה-Scene (הדף) שמכיל את ה-Root

@@ -5,6 +5,7 @@ package clientGui;
 import java.io.IOException;
 
 import client.ChatClient;
+import clientGui.navigation.SelectionController;
 import clientGui.reservation.OrderUi_controller;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -42,11 +43,11 @@ public class LoginController {
            
             if (clientUi != null) {
                 lblStatus.setText("Login succeeded. Connected to: " + ip);
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/orderUi.fxml"));
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/navigation/SelectionScreen.fxml"));
                 Parent root = loader.load();
 
                
-                OrderUi_controller controller = loader.getController();
+               SelectionController controller = loader.getController();
 
                 
                 controller.initData(clientUi, ip);

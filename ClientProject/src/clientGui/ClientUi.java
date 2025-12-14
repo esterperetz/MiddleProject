@@ -23,7 +23,7 @@ public class ClientUi {
     private ChatClient chatClient;
     @SuppressWarnings({ "rawtypes" })
 	private List<MessageListener> listeners;//any information from screens that show information from server, be here
-
+    private static ClientUi instance;
     /**
      * Creates the UI and connects to the server.
      *
@@ -43,6 +43,7 @@ public class ClientUi {
 		     //alert.showAndWait();
 		}	
     	this.listeners = new ArrayList<>();
+    	instance = this;
     }
 
     /**
@@ -98,6 +99,10 @@ public class ClientUi {
             	e.printStackTrace();
             }
         }
+    }
+
+    public static ClientUi getInstance() {
+        return instance;
     }
         
 }

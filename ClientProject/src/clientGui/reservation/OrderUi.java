@@ -1,4 +1,5 @@
 package clientGui.reservation;
+import clientGui.navigation.MainNavigator;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -13,9 +14,10 @@ public class OrderUi extends Application{
 	 */
 	@Override
 	    public void start(Stage primaryStage) throws Exception {
+	
 		  Parent root = FXMLLoader.load(getClass().getResource("/clientGui/logInServer.fxml"));
 
-		  
+		  	
 	        Scene scene = new Scene(root);
 	        primaryStage.setTitle("Orders Management");
 	        primaryStage.setScene(scene);
