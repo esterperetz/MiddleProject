@@ -1,0 +1,106 @@
+/* רקע כללי */
+.main-background {
+    -fx-background: #f0f2f5; /* צבע רקע של ה-ScrollPane */
+    -fx-background-color: #f0f2f5;
+}
+
+/* כותרת ראשית */
+.main-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50;
+    -fx-padding: 0 0 10 0;
+}
+
+/* עיצוב ה"כרטיסים" (המסגרות הלבנות) */
+.card-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 10px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+    -fx-border-color: #e1e4e8;
+    -fx-border-radius: 10px;
+}
+
+/* כותרות פנימיות */
+.section-header {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #34495e;
+    -fx-padding: 0 0 10 0;
+    -fx-border-color: transparent transparent #ecf0f1 transparent;
+    -fx-border-width: 0 0 2 0;
+}
+
+.sub-label {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #7f8c8d;
+}
+
+/* כפתורים ראשיים */
+.menu-button {
+    -fx-font-size: 14px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+    -fx-pref-height: 40px;
+}
+
+.primary-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+.primary-button:hover {
+    -fx-background-color: #2980b9;
+}
+
+.report-button {
+    -fx-background-color: #9b59b6; /* סגול לדוחות */
+    -fx-text-fill: white;
+}
+
+.back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #95a5a6;
+    -fx-border-color: #95a5a6;
+    -fx-border-radius: 6px;
+}
+.back-button:hover {
+    -fx-background-color: #ecf0f1;
+}
+
+/* שדות טקסט */
+.time-field, .time-field-small {
+    -fx-background-radius: 4px;
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 4px;
+    -fx-alignment: CENTER;
+}
+
+/* כפתור הוספה קטן */
+.add-button-small {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-min-width: 30px;
+}
+
+/* כפתור טקסט בלבד */
+.text-only-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e74c3c;
+    -fx-font-size: 11px;
+    -fx-underline: true;
+    -fx-cursor: hand;
+    -fx-padding: 0;
+}
+
+/* רשימה */
+.custom-list-view {
+    -fx-background-insets: 0;
+    -fx-padding: 5px;
+    -fx-background-color: #f9f9f9;
+    -fx-border-color: #ecf0f1;
+    -fx-border-radius: 4px;
+}

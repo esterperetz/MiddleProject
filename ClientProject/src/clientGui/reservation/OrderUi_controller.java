@@ -10,6 +10,7 @@ import Entities.Alarm;
 import Entities.Order;
 import client.MessageListener;
 import clientGui.ClientUi;
+import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -242,6 +243,11 @@ public class OrderUi_controller implements  MessageListener<Object> {
             o.setNumber_of_guests(event.getNewValue());
             orderLogic.updateOrder(o); 
         });
+    }
+    @FXML
+    void handleBackBtn()
+    {
+    	MainNavigator.loadScene("managerTeam/workerOption");
     }
 
     /*

@@ -13,8 +13,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 public class SubscriberOptionController implements Initializable{
-	// Link to the special button in the FXML file
 	private boolean isSubscriber;
+	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
 	/**

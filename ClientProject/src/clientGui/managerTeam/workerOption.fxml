@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<ScrollPane fitToWidth="true" styleClass="main-background"
+	stylesheets="@../managerTeam/workerOption.css"
+	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="clientGui.managerTeam.ManagerOptionsController">
+	<content>
+		<VBox alignment="TOP_CENTER" spacing="20.0">
+			<padding>
+				<Insets bottom="30.0" left="20.0" right="20.0" top="30.0" />
+			</padding>
+
+			<children>
+				<Label styleClass="main-title" text="Manager Dashboard" />
+
+				<VBox spacing="10.0" styleClass="card-pane">
+					<children>
+						<Label styleClass="section-header" text="Quick Actions" />
+
+						<Button maxWidth="Infinity" mnemonicParsing="false"
+							onAction="#goToWaitingListBtn"
+							styleClass="menu-button, primary-button" text="Waiting List" />
+						<Button maxWidth="Infinity" mnemonicParsing="false"
+							onAction="#goToOrderDetailsBtn"
+							styleClass="menu-button, primary-button" text="Order Details" />
+						<Button maxWidth="Infinity" mnemonicParsing="false"
+							onAction="#goToRegisterSubscriberBtn"
+							styleClass="menu-button, primary-button"
+							text="Register Subscriber" />
+
+						<Button fx:id="btnViewReports" managed="false"
+							maxWidth="Infinity" mnemonicParsing="false"
+							onAction="#goToReportsBtn"
+							styleClass="menu-button, report-button" text="View Reports"
+							visible="false" />
+					</children>
+					<padding>
+						<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+					</padding>
+				</VBox>
+
+				<VBox spacing="15.0" styleClass="card-pane">
+					<padding>
+						<Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+					</padding>
+						<Label styleClass="section-header"
+							text="Opening Hours Configuration" />
+
+						<VBox spacing="5.0">
+							<Label styleClass="sub-label" text="Standard Weekly Hours" />
+							<HBox alignment="CENTER_LEFT" spacing="10.0">
+								<TextField fx:id="txtOpenTime" promptText="08:00"
+									prefWidth="70.0" styleClass="time-field" />
+								<Label text="to" textFill="#7f8c8d" />
+								<TextField fx:id="txtCloseTime" promptText="23:00"
+									prefWidth="70.0" styleClass="time-field" />
+								<Button onAction="#saveStandardHoursBtn"
+									styleClass="action-icon-button" text="Save" />
+							</HBox>
+						</VBox>
+
+						<Separator />
+
+						<VBox spacing="8.0">
+							<Label styleClass="sub-label"
+								text="Special Dates &amp; Holidays" />
+
+							<HBox spacing="5.0" alignment="CENTER_LEFT">
+								<DatePicker fx:id="dpSpecialDate" promptText="Date"
+									prefWidth="110.0" />
+								<TextField fx:id="txtSpecialOpen" promptText="Start"
+									prefWidth="55.0" styleClass="time-field-small" />
+								<TextField fx:id="txtSpecialClose" promptText="End"
+									prefWidth="55.0" styleClass="time-field-small" />
+								<Button onAction="#addSpecialDateBtn"
+									styleClass="add-button-small" text="+" />
+							</HBox>
+
+							<ListView fx:id="listSpecialDates" prefHeight="100.0"
+								styleClass="custom-list-view" />
+
+							<Button onAction="#removeSpecialDateBtn"
+								text="Remove Selected" styleClass="text-only-button" />
+						</VBox>
+
+						<Label fx:id="lblHoursStatus" styleClass="status-label"
+							text="" />
+				</VBox>
+
+				<Button maxWidth="Infinity" mnemonicParsing="false"
+					onAction="#goBackBtn" styleClass="menu-button, back-button"
+					text="Sign Out / Back" />
+
+			</children>
+		</VBox>
+	</content>
+</ScrollPane>

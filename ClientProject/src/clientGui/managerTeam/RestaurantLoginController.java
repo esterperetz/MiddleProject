@@ -30,23 +30,20 @@ public class RestaurantLoginController {
 
     	    // בדיקת תקינות בסיסית (לוגיקה שלך)
     	    System.out.println("Login attempt: " + username);
-
+    	    MainNavigator.loadScene("managerTeam/workerOption");
+    	    
+    	    /*
     	    try {
-    	        // 1. טעינת ה-FXML ידנית
+    	    //moved to MainNavigation (the name of the function:loadOrderTableScreen)
     	        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/OrderUi.fxml"));
     	        Parent root = loader.load();
 
-    	        // 2. קבלת הקונטרולר של המסך החדש
     	        clientGui.reservation.OrderUi_controller controller = loader.getController();
 
-    	        // 3. העברת ה-ClientUi וה-IP לקונטרולר (קריטי!)
-    	        // הנחה: יש לך גישה ל-clientUi הנוכחי (אולי דרך משתנה סטטי או שהועבר ללוגין)
-    	        // אם אין לך אותו כאן, צריך לוודא מאיפה משיגים אותו.
-    	        // דוגמה: 
+    	         
     	        controller.initData(ClientUi.getInstance(), "localhost"); 
 
-    	        // 4. שימוש ב-MainNavigator רק כדי להחליף את הסצנה (אם יש לו פונקציה כזו)
-    	        // או החלפה ידנית:
+    	        :
     	        Scene scene = new Scene(root); 
     	        Stage stage = (Stage) usernameField.getScene().getWindow();
     	        stage.setScene(scene);
@@ -56,6 +53,7 @@ public class RestaurantLoginController {
     	        e.printStackTrace();
     	        System.out.println("Error loading OrderUi: " + e.getMessage());
     	    }
+    	    */
     	
         // כאן תוסיף את הלוגיקה
     }

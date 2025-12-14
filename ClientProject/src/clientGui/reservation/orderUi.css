@@ -1,0 +1,84 @@
+/* OrderUiStyle.css */
+
+/* רקע כללי בהיר ונקי */
+.main-background {
+    -fx-background-color: #f4f7f6;
+}
+
+/* עיצוב הכותרת הראשית */
+.header-label {
+    -fx-text-fill: #2c3e50;
+    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.1), 5, 0.0, 0, 1);
+}
+
+/* עיצוב כפתור החזרה */
+.back-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #7f8c8d;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+}
+.back-button:hover {
+    -fx-text-fill: #2c3e50;
+    -fx-underline: true;
+}
+
+/* עיצוב כללי לטבלה */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
+}
+.table-view .column-header-background {
+    -fx-background-color: #ecf0f1;
+    -fx-border-width: 0 0 1px 0;
+    -fx-border-color: #bdc3c7;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #2c3e50;
+    -fx-font-weight: bold;
+}
+.table-row-cell:selected {
+    -fx-background-color: #3498db; /* צבע כחול לשורה נבחרת */
+}
+
+/* עיצוב בסיסי לכפתורי הפעולה התחתונים */
+.action-button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 20px; /* כפתורים עגולים */
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+}
+.action-button:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 3);
+}
+.action-button:pressed {
+     -fx-effect: none;
+     -fx-translate-y: 1px;
+}
+
+/* צבעים ספציפיים לכל כפתור */
+.add-button {
+    -fx-background-color: #2ecc71; /* ירוק */
+}
+.add-button:hover {
+    -fx-background-color: #27ae60;
+}
+
+.update-button {
+    -fx-background-color: #f39c12; /* כתום */
+}
+.update-button:hover {
+    -fx-background-color: #d35400;
+}
+
+.delete-button {
+    -fx-background-color: #e74c3c; /* אדום */
+}
+.delete-button:hover {
+    -fx-background-color: #c0392b;
+}

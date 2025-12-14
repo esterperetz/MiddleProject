@@ -1,4 +1,5 @@
 package clientGui.navigation;
+import clientGui.ClientUi;
 import clientGui.reservation.ReservationController;
 import Entities.Alarm;
 import javafx.fxml.FXMLLoader;
@@ -62,7 +63,30 @@ public class MainNavigator {
             e.printStackTrace();
         }
     }
+    public static void loadOrderTableScreen(boolean isSubscriber, String phone, String email, String name)
+    {
+    	try {
+	        FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/reservation/orderUi.fxml"));
+	        Parent root = loader.load();
+
+	        clientGui.reservation.OrderUi_controller controller = loader.getController();
+
+	         
+	        controller.initData(ClientUi.getInstance(), "localhost"); 
+
+	        
+	        Scene scene = new Scene(root); 
+	        //Stage stage = (Stage) usernameField.getScene().getWindow();
+	        mainStage.setScene(scene);
+	        mainStage.show();
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        System.out.println("Error loading OrderUi: " + e.getMessage());
+	    }
+    }
     
+    //ask liel about this function(ido)
     public static void showAlert(String header_text,String context_text,Alert.AlertType type) {
     	
     	Alarm.showAlert(header_text, context_text, type);
