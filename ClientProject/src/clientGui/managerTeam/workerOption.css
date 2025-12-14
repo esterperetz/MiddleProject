@@ -1,106 +1,180 @@
-/* רקע כללי */
+/* --- רקע כללי --- */
 .main-background {
-    -fx-background: #f0f2f5; /* צבע רקע של ה-ScrollPane */
-    -fx-background-color: #f0f2f5;
+    -fx-background: #f4f6f8; /* אפור בהיר מאוד, נעים לעין */
+    -fx-background-color: #f4f6f8;
 }
 
-/* כותרת ראשית */
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* --- כותרות --- */
 .main-title {
-    -fx-font-size: 22px;
+    -fx-font-size: 24px;
+    -fx-font-family: "Segoe UI", sans-serif;
     -fx-font-weight: bold;
     -fx-text-fill: #2c3e50;
-    -fx-padding: 0 0 10 0;
 }
 
-/* עיצוב ה"כרטיסים" (המסגרות הלבנות) */
-.card-pane {
-    -fx-background-color: white;
-    -fx-background-radius: 10px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
-    -fx-border-color: #e1e4e8;
-    -fx-border-radius: 10px;
-}
-
-/* כותרות פנימיות */
 .section-header {
     -fx-font-size: 16px;
     -fx-font-weight: bold;
     -fx-text-fill: #34495e;
-    -fx-padding: 0 0 10 0;
-    -fx-border-color: transparent transparent #ecf0f1 transparent;
-    -fx-border-width: 0 0 2 0;
+    -fx-padding: 0 0 8 0;
+    -fx-border-color: transparent transparent #ecf0f1 transparent; /* קו הפרדה עדין מתחת לכותרת */
+    -fx-border-width: 0 0 1 0;
 }
 
 .sub-label {
-    -fx-font-size: 12px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: #7f8c8d;
 }
 
-/* כפתורים ראשיים */
-.menu-button {
+/* --- כרטיסים (המסגרות הלבנות) --- */
+.card-pane {
+    -fx-background-color: white;
+    -fx-background-radius: 12px; /* פינות עגולות יותר */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 4); /* צל רך ומודרני */
+    -fx-border-color: #ecf0f1;
+    -fx-border-radius: 12px;
+}
+
+/* --- כפתורי אריחים (הריבועים הגדולים - חדש!) --- */
+.dashboard-tile-button {
+    -fx-background-color: #3498db; /* כחול */
+    -fx-text-fill: white;
     -fx-font-size: 14px;
-    -fx-background-radius: 6px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
     -fx-cursor: hand;
-    -fx-pref-height: 40px;
+    -fx-alignment: CENTER;
+    -fx-content-display: TOP;
+    -fx-effect: dropshadow(three-pass-box, rgba(52, 152, 219, 0.3), 5, 0, 0, 2);
 }
 
-.primary-button {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
-}
-.primary-button:hover {
+.dashboard-tile-button:hover {
     -fx-background-color: #2980b9;
+    -fx-translate-y: -2px; /* אפקט הרמה קטן במעבר עכבר */
 }
 
+.dashboard-tile-button:pressed {
+    -fx-background-color: #1f618d;
+    -fx-translate-y: 1px;
+}
+
+/* --- כפתור דוחות ספציפי --- */
 .report-button {
-    -fx-background-color: #9b59b6; /* סגול לדוחות */
+    -fx-background-color: #9b59b6; /* סגול */
+    -fx-effect: dropshadow(three-pass-box, rgba(155, 89, 182, 0.3), 5, 0, 0, 2);
+}
+
+.report-button:hover {
+    -fx-background-color: #8e44ad;
+}
+
+/* --- כפתור שמירה קטן (ליד השעות) --- */
+.action-icon-button {
+    -fx-background-color: #e67e22; /* כתום */
     -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-background-radius: 4px;
+    -fx-cursor: hand;
+    -fx-padding: 4 10;
 }
 
-.back-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #95a5a6;
-    -fx-border-color: #95a5a6;
-    -fx-border-radius: 6px;
-}
-.back-button:hover {
-    -fx-background-color: #ecf0f1;
+.action-icon-button:hover {
+    -fx-background-color: #d35400;
 }
 
-/* שדות טקסט */
+/* --- שדות טקסט ושעות --- */
 .time-field, .time-field-small {
+    -fx-background-color: #fdfdfd;
     -fx-background-radius: 4px;
     -fx-border-color: #bdc3c7;
     -fx-border-radius: 4px;
     -fx-alignment: CENTER;
+    -fx-padding: 4;
 }
 
-/* כפתור הוספה קטן */
+.time-field:focused, .time-field-small:focused, .date-picker:focused {
+    -fx-border-color: #3498db;
+    -fx-background-color: white;
+}
+
+/* --- כפתור הוספה קטן (+) --- */
 .add-button-small {
-    -fx-background-color: #2ecc71;
+    -fx-background-color: #27ae60; /* ירוק */
     -fx-text-fill: white;
     -fx-font-weight: bold;
     -fx-background-radius: 4px;
     -fx-cursor: hand;
-    -fx-min-width: 30px;
 }
 
-/* כפתור טקסט בלבד */
-.text-only-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #e74c3c;
-    -fx-font-size: 11px;
-    -fx-underline: true;
-    -fx-cursor: hand;
-    -fx-padding: 0;
+.add-button-small:hover {
+    -fx-background-color: #219150;
 }
 
-/* רשימה */
+/* --- רשימה (ListView) --- */
 .custom-list-view {
     -fx-background-insets: 0;
     -fx-padding: 5px;
-    -fx-background-color: #f9f9f9;
+    -fx-background-color: #f8f9fa;
     -fx-border-color: #ecf0f1;
     -fx-border-radius: 4px;
+}
+
+.custom-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 5px;
+    -fx-text-fill: #2c3e50;
+}
+
+.custom-list-view .list-cell:filled:selected {
+    -fx-background-color: #e8f6f3; /* רקע ירוק בהיר מאוד בבחירה */
+    -fx-text-fill: #16a085;
+}
+
+/* --- כפתור טקסט בלבד (מחיקה) --- */
+.text-only-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e74c3c; /* אדום */
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+    -fx-border-width: 0;
+}
+
+.text-only-button:hover {
+    -fx-underline: true;
+    -fx-text-fill: #c0392b;
+}
+
+/* --- כפתור חזור/יציאה (Ghost Button) --- */
+.back-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #95a5a6;
+    -fx-border-radius: 20px; /* צורת גלולה */
+    -fx-border-width: 1.5px;
+    -fx-text-fill: #7f8c8d;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+    -fx-padding: 8 30;
+}
+
+.back-button:hover {
+    -fx-background-color: #ecf0f1;
+    -fx-text-fill: #2c3e50;
+    -fx-border-color: #7f8c8d;
+}
+
+/* --- לייבל סטטוס --- */
+.status-label {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2980b9;
 }

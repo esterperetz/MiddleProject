@@ -256,7 +256,9 @@ public class ManagerOptionsController implements Initializable {
     @FXML
     void goBackBtn(ActionEvent event) {
         // Logic for signing out or returning to the main selection screen
-        // MainNavigator.loadScene("navigation/SelectionScreen");
+      
         System.out.println("Going back / Signing out...");
+        MainNavigator.loadScene("navigation/SelectionScreen");
+
     }
 }
