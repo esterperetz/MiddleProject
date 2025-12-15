@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="15.0" 
+      prefHeight="350.0" prefWidth="350.0" 
+      stylesheets="@../navigation/SelectionScreen.css" 
+      styleClass="main-container"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="clientGui.reservation.ForgetCodeController">
+
+   <padding>
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+   </padding>
+
+   <children>
+      <Label text="Recover Code" styleClass="title-label" />
+      
+      <Label text="Please enter your details:" styleClass="subtitle-label">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin>
+      </Label>
+
+      <TextField fx:id="txtEmail" promptText="Enter Email Address" 
+                 styleClass="input-field" prefHeight="40.0" />
+
+      <TextField fx:id="txtPhone" promptText="Enter Phone Number" 
+                 styleClass="input-field" prefHeight="40.0" />
+
+      <Button mnemonicParsing="false" onAction="#recoverReservationCode" 
+              prefHeight="40.0" prefWidth="280.0" 
+              styleClass="menu-button, primary-button" text="Recover My Code">
+         <VBox.margin>
+            <Insets top="15.0" />
+         </VBox.margin>
+      </Button>
+
+      <Button mnemonicParsing="false" onAction="#closePopup" 
+              prefHeight="40.0" prefWidth="280.0" 
+              styleClass="menu-button" text="Cancel" />
+   </children>
+</VBox>
