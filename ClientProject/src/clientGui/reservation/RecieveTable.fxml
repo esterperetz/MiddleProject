@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox alignment="CENTER" spacing="15.0" 
-      prefHeight="400.0" prefWidth="350.0" 
+      prefHeight="450.0" prefWidth="350.0" 
       stylesheets="@../navigation/SelectionScreen.css" 
       styleClass="main-container"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
@@ -18,7 +18,7 @@
    </padding>
 
    <children>
-      <Label text="Recieve table" styleClass="title-label">
+      <Label text="Receive Table" styleClass="title-label">
          <VBox.margin>
             <Insets bottom="20.0" />
          </VBox.margin>
@@ -26,17 +26,25 @@
 
       <TextField fx:id="txtOrderId" promptText="Put code of reservation" 
                  styleClass="input-field" prefHeight="40.0" />
+      
+      <Button fx:id="btnLostCode" mnemonicParsing="false" onAction="#openLostCodePopup" 
+              text="I lost my code" 
+              style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true; -fx-cursor: hand; -fx-font-size: 12px;">
+         <VBox.margin>
+            <Insets top="-10.0" bottom="5.0" />
+         </VBox.margin>
+      </Button>
 
       <Button mnemonicParsing="false" onAction="#checkTableAvailability" 
               prefHeight="45.0" prefWidth="280.0" 
               styleClass="menu-button, primary-button" text="Check table">
          <VBox.margin>
-            <Insets top="10.0" />
+            <Insets top="5.0" />
          </VBox.margin>
       </Button>
       
       <Label fx:id="lblResult" text="" wrapText="true" 
-             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: white;" />
+             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" />
 
       <Button mnemonicParsing="false" onAction="#goBack" 
               prefHeight="45.0" prefWidth="280.0" 
