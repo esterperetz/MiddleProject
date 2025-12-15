@@ -17,6 +17,8 @@ public class SubscriberOptionController implements Initializable{
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
+	
+	
 	/**
      * Initializes the controller class.
      * This method is automatically called after the FXML file has been loaded.
@@ -70,5 +72,9 @@ public class SubscriberOptionController implements Initializable{
         System.out.println("Subscriber specific action executed.");
     }
 
+    @FXML
+    void CheckOutActionBtn(ActionEvent event) {
+    	MainNavigator.loadScene("reservation/CheckOutScreen");
+    }
 
 }
