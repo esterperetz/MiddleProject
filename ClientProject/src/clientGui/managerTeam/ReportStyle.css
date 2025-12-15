@@ -1,0 +1,105 @@
+/* --- עיצוב הגרפים --- */
+
+/* צבעים ל-Bar Chart (גרף 1) */
+.default-color0.chart-bar { -fx-bar-fill: #3498db; } /* כחול - הגעות */
+.default-color1.chart-bar { -fx-bar-fill: #2ecc71; } /* ירוק - עזיבות */
+.default-color2.chart-bar { -fx-bar-fill: #e74c3c; } /* אדום - איחורים */
+
+/* צבעים ל-Line Chart (גרף 2) */
+.default-color0.chart-series-line { -fx-stroke: #3498db; } /* כחול - הזמנות */
+.default-color0.chart-line-symbol { -fx-background-color: #3498db, white; }
+
+.default-color1.chart-series-line { -fx-stroke: #f39c12; } /* כתום - המתנה */
+.default-color1.chart-line-symbol { -fx-background-color: #f39c12, white; }
+
+/* הסרת רקע האפור המכוער מהגרפים */
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+.chart-vertical-grid-lines {
+    -fx-stroke: #ecf0f1;
+}
+.chart-horizontal-grid-lines {
+    -fx-stroke: #ecf0f1;
+}
+/* הגדרות כלליות לחלון */
+.main-container {
+    -fx-background-color: #f4f7f6; /* רקע אפור בהיר-מודרני */
+    -fx-font-family: 'Segoe UI', sans-serif;
+}
+
+/* כותרת ראשית */
+.title-label {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #2c3e50; /* כחול כהה */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2);
+}
+
+/* כותרת משנית */
+.subtitle-label {
+    -fx-font-size: 16px;
+    -fx-text-fill: #7f8c8d; /* אפור */
+}
+
+/* עיצוב בסיסי לכל הכפתורים */
+.menu-button {
+    -fx-background-color: white;
+    -fx-text-fill: #34495e;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 25; /* פינות עגולות מאוד */
+    -fx-border-color: #bdc3c7;
+    -fx-border-radius: 25;
+    -fx-border-width: 1;
+    -fx-cursor: hand; /* יד מצביעה במעבר עכבר */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 5, 0, 0, 3);
+    -fx-transition: all 0.3s;
+}
+
+/* אפקט כשעוברים עם העכבר על כפתור רגיל */
+.menu-button:hover {
+    -fx-background-color: #ecf0f1;
+    -fx-scale-x: 1.02; /* הגדלה קטנה */
+    -fx-scale-y: 1.02;
+    -fx-border-color: #3498db;
+    -fx-text-fill: #3498db;
+}
+
+/* אפקט כשלוחצים על הכפתור */
+.menu-button:pressed {
+    -fx-background-color: #bdc3c7;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
+}
+
+/* עיצוב מיוחד לכפתור של נציג המסעדה (להבליט אותו) */
+.primary-button {
+    -fx-background-color: #3498db; /* כחול */
+    -fx-text-fill: white;
+    -fx-border-color: #3498db;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2980b9; /* כחול כהה יותר */
+    -fx-text-fill: white;
+    -fx-border-color: #2980b9;
+}
+
+/* עיצוב שדות קלט (TextField/PasswordField) */
+.input-field {
+    -fx-background-color: white;
+    -fx-border-color: #bdc3c7;
+    -fx-border-width: 1;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-font-size: 14px;
+    -fx-padding: 5 10 5 10; /* ריווח פנימי לטקסט */
+}
+
+/* כשהמשתמש לוחץ בתוך השדה - המסגרת נהיית כחולה */
+.input-field:focused {
+    -fx-border-color: #3498db;
+    -fx-background-color: white;
+    -fx-effect: dropshadow(three-pass-box, rgba(52,152,219,0.3), 5, 0, 0, 0);
+}
