@@ -70,6 +70,8 @@ public class SubscriberOptionController implements Initializable{
     void subscriberActionBtn(ActionEvent event) {
         // Logic specific to subscribers goes here
         System.out.println("Subscriber specific action executed.");
+    	MainNavigator.loadScene("subscriber/SubscriberHistory");
+
     }
 
     @FXML
