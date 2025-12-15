@@ -10,6 +10,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class GetTableController {
@@ -52,6 +53,33 @@ public class GetTableController {
         
     }
 
+    @FXML
+    void openLostCodePopup(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/ForgetCode.fxml"));
+            Parent root = loader.load();
+            
+            Stage popupStage = new Stage();
+            
+            // הגדרה קריטית: זה מה שהופך את החלון ל-Modal (חוסם את החלון הראשי)
+            popupStage.initModality(Modality.APPLICATION_MODAL); 
+            
+            // קישור לחלון האב (כדי שהפופ-אפ יפתח במרכז יחסי אליו אם נרצה)
+            popupStage.initOwner(((Node)event.getSource()).getScene().getWindow());
+            
+            popupStage.setTitle("Recover Reservation Code");
+            popupStage.setScene(new Scene(root));
+            
+            // אופציונלי: ביטול אפשרות הגדלת החלון כדי שישמור על עיצוב נקי
+            popupStage.setResizable(false); 
+            
+            // פקודה שמחכה עד שהחלון ייסגר לפני שחוזרים לקוד
+            popupStage.showAndWait(); 
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Triggered when the "Back" button is clicked.
      * Navigates back to the main reservation menu.
