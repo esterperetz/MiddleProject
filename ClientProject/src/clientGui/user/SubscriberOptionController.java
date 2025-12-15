@@ -1,4 +1,4 @@
-package clientGui.subscriber;
+package clientGui.user;
 
 import javafx.scene.control.Button;
 //import java.util.ResourceBundle;

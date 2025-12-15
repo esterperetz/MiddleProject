@@ -1,4 +1,4 @@
-package clientGui.subscriber;
+package clientGui.user;
 
 
 import javafx.event.ActionEvent;
