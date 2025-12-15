@@ -1,0 +1,75 @@
+/* --- כרטיסי מידע (סטטיסטיקה למעלה) --- */
+.info-card {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 20;
+    /* צל עדין ויוקרתי */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.08), 10, 0, 0, 4);
+}
+
+/* --- מיכל הטבלה (המסגרת הלבנה) --- */
+.table-container {
+    -fx-background-color: white;
+    -fx-background-radius: 15;
+    -fx-padding: 10;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 2);
+}
+
+/* --- עיצוב הטבלה עצמה (Modern Table) --- */
+.modern-table {
+    -fx-background-color: transparent;
+    -fx-base: transparent;
+    -fx-border-width: 0;
+}
+
+/* הסרת המסגרת של הטבלה כשהיא בפוקוס */
+.modern-table:focused {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* כותרות העמודות */
+.modern-table .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 2 0; /* רק קו תחתון */
+    -fx-border-color: #ecf0f1;
+}
+
+.modern-table .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 50px;
+}
+
+.modern-table .column-header .label {
+    -fx-text-fill: #95a5a6; /* צבע אפור לכותרות */
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+}
+
+/* שורות הטבלה */
+.modern-table .table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-width: 0 0 1 0; /* קו הפרדה עדין בין שורות */
+    -fx-border-color: #f7f9f9;
+    -fx-pref-height: 50px; /* שורות גבוהות ומרווחות יותר */
+}
+
+/* אפקט כשעוברים עם העכבר על שורה */
+.modern-table .table-row-cell:hover {
+    -fx-background-color: #f4f6f7;
+    -fx-cursor: hand;
+}
+
+/* טקסט בתוך התאים */
+.modern-table .table-cell {
+    -fx-text-fill: #2c3e50;
+    -fx-font-size: 14px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-border-color: transparent; /* הסרת קווים אנכיים */
+}
+
+/* צבע מיוחד לעמודת המחיר (אם רוצים להבליט) */
+#colTotal {
+    -fx-font-weight: bold;
+}
