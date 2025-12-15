@@ -237,7 +237,7 @@ public class ManagerOptionsController implements Initializable {
      */
     @FXML
     void goToRegisterSubscriberBtn(ActionEvent event) {
-        MainNavigator.loadScene("subscriber/RegisterSubscriber");
+        MainNavigator.loadScene("user/RegisterSubscriber");
     }
 
     /**

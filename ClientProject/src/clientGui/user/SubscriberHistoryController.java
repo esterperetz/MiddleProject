@@ -46,7 +46,7 @@ public class SubscriberHistoryController {
     @FXML
     void goBackBtn(ActionEvent event) {
 //        ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
-    	MainNavigator.loadScene("subscriber/SubscriberOption");
+    	MainNavigator.loadScene("user/SubscriberOption");
     	
         
     }

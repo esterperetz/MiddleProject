@@ -63,7 +63,7 @@ public class CheckOutController {
 	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		MainNavigator.loadScene("subscriber/SubscriberOption");
+		MainNavigator.loadScene("user/SubscriberOption");
 	}
 
 	/**

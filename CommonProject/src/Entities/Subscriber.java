@@ -10,6 +10,7 @@ public class Subscriber implements Serializable {
 	private String lastName;
 	private String username;
 	private String phoneNumber;
+//	private static int subscriberCode;
 	private String email;
 
 	public Subscriber(String firstName, String lastName, String username, String phoneNumber, String email) {
@@ -19,6 +20,7 @@ public class Subscriber implements Serializable {
 		this.phoneNumber = phoneNumber;
 		this.email = email;
 	}
+	
 
 	// Getters and Setters
 	public int getId() {

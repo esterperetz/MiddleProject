@@ -45,7 +45,7 @@ public class SubscriberOptionController implements Initializable{
 		if(flag==1)
 		{
 			//we need to check if the user is subscriber and if the code is correct
-			MainNavigator.loadScene("subscriber/SubscriberLogin");
+			MainNavigator.loadScene("user/SubscriberLogin");
 			flag=0;
 		}
 		else
@@ -70,7 +70,7 @@ public class SubscriberOptionController implements Initializable{
     void subscriberActionBtn(ActionEvent event) {
         // Logic specific to subscribers goes here
         System.out.println("Subscriber specific action executed.");
-    	MainNavigator.loadScene("subscriber/SubscriberHistory");
+    	MainNavigator.loadScene("user/SubscriberHistory");
 
     }
 

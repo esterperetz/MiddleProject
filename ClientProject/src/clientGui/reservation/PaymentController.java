@@ -62,7 +62,7 @@ public class PaymentController {
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
 		//Alert pay good 
-		MainNavigator.loadScene("subscriber/SubscriberOption");
+		MainNavigator.loadScene("user/SubscriberOption");
 
 	}
 

@@ -86,7 +86,7 @@ public class GetTableController {
      */
     @FXML
     void goBack(ActionEvent event) {
-       MainNavigator.loadScene("subscriber/SubscriberOption");
+       MainNavigator.loadScene("user/SubscriberOption");
     }
 
     /**

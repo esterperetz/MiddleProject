@@ -11,7 +11,7 @@
       stylesheets="@../navigation/SelectionScreen.css" 
       styleClass="main-container"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="clientGui.subscriber.RegisterSubscriberController">
+      fx:controller="clientGui.user.RegisterSubscriberController">
 
    <padding>
       <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
