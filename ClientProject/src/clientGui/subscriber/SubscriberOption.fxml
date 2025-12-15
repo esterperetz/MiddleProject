@@ -30,7 +30,11 @@
       <Button mnemonicParsing="false" onAction="#goToSeatTableBtn" 
               prefHeight="45.0" prefWidth="280.0" 
               styleClass="menu-button, primary-button" text="Recieve table" />
-
+              
+      <Button mnemonicParsing="false" onAction="#CheckOutActionBtn" 
+              prefHeight="45.0" prefWidth="280.0" 
+              styleClass="menu-button, primary-button" text="Check Out" />
+              
       <Button fx:id="btnSubscriberSpecial" 
               visible="false" managed="false"
               mnemonicParsing="false" onAction="#subscriberActionBtn" 
