@@ -248,6 +248,8 @@ public class ManagerOptionsController implements Initializable {
     void goToReportsBtn(ActionEvent event) {
         // MainNavigator.loadScene("manager/ReportsScreen");
         System.out.println("Navigate to Reports Screen...");
+        MainNavigator.loadScene("managerTeam/ReportsScreen");
+
     }
 
     /**
