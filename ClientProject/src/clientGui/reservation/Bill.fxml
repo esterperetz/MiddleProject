@@ -20,7 +20,7 @@
    </padding>
 
    <children>
-      <Label text="Checkout" styleClass="title-label" />
+      <Label text="Order Bill" styleClass="title-label" />
       
       <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-padding: 15;">
          
