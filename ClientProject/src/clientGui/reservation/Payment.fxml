@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" spacing="15.0" 
+      prefHeight="450.0" prefWidth="380.0" 
+      stylesheets="@../navigation/SelectionScreen.css" 
+      styleClass="main-container"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="clientGui.reservation.PaymentController">
+
+   <padding>
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+   </padding>
+
+   <children>
+      <Label text="Credit Card Details" styleClass="title-label" />
+      
+      <Label text="Secure Payment" style="-fx-text-fill: #27ae60; -fx-font-weight: bold; -fx-font-size: 14px;">
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin>
+      </Label>
+
+      <VBox spacing="5.0" alignment="CENTER_LEFT">
+          <Label text="Card Number" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+          <TextField fx:id="txtCardNumber" promptText="XXXX-XXXX-XXXX-XXXX" 
+                     styleClass="input-field" prefHeight="40.0" />
+      </VBox>
+
+      <VBox spacing="5.0" alignment="CENTER_LEFT">
+          <Label text="ID Number" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+          <TextField fx:id="txtID" promptText="Enter ID Number" 
+                     styleClass="input-field" prefHeight="40.0" />
+      </VBox>
+
+      <HBox spacing="15.0">
+         <children>
+            <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                <Label text="Expiry Date" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+                <TextField fx:id="txtExpiry" promptText="MM/YY" 
+                           styleClass="input-field" prefHeight="40.0" />
+            </VBox>
+            
+            <VBox spacing="5.0" alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+                <Label text="CVV" style="-fx-font-weight: bold; -fx-text-fill: #34495e;"/>
+                <TextField fx:id="txtCVV" promptText="123" 
+                           styleClass="input-field" prefHeight="40.0" />
+            </VBox>
+         </children>
+      </HBox>
+      
+      <Label fx:id="lblError" text="" visible="false" wrapText="true"
+             style="-fx-text-fill: #e74c3c; -fx-font-size: 12px; -fx-font-weight: bold;"/>
+
+      <Button fx:id="btnPay" mnemonicParsing="false" onAction="#processPayment" 
+              prefHeight="45.0" prefWidth="320.0" 
+              styleClass="menu-button, primary-button" text="Pay Now">
+         <VBox.margin>
+            <Insets top="10.0" />
+         </VBox.margin>
+      </Button>
+
+      <Button mnemonicParsing="false" onAction="#cancel" 
+              prefHeight="40.0" prefWidth="320.0" 
+              styleClass="menu-button" text="Cancel" />
+
+   </children>
+</VBox>
