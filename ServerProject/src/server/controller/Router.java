@@ -32,7 +32,7 @@ public class Router {
                 orderController.handle(req, client, clients);
                 break;
 
-            case USER: // Handles all registered entities: Subscribers, Workers...
+            case SUBSCRIBER: // Handles all registered entities: Subscribers, Workers...
                 subscriberController.handle(req, client);
                 break;
 
