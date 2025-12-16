@@ -1,12 +1,15 @@
-package clientGui.subscriber;
+package clientGui.user;
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-public class SubscriberLoginController {
+public class SubscriberLoginController implements  MessageListener<Object>, BaseController{
 	
 	 @FXML
 	    private TextField SubscriberCode;
@@ -29,4 +32,16 @@ public class SubscriberLoginController {
 	        // וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
 	        MainNavigator.loadScene("navigation/SelectionScreen");
 	    }
+
+		@Override
+		public void setClientUi(ClientUi clientUi) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void onMessageReceive(Object msg) {
+			// TODO Auto-generated method stub
+			
+		}
 }

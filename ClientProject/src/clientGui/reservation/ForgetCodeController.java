@@ -1,12 +1,15 @@
 package clientGui.reservation;
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class ForgetCodeController {
+public class ForgetCodeController implements  MessageListener<Object>, BaseController{
 
     @FXML
     private TextField txtEmail;
@@ -32,4 +35,16 @@ public class ForgetCodeController {
         Stage stage = (Stage)((Node)event.getSource()).getScene().getWindow();
         stage.close();
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

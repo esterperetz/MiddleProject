@@ -1,5 +1,8 @@
 package clientGui.reservation;
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,7 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class BillController {
+public class BillController implements  MessageListener<Object>, BaseController {
 
     @FXML private ListView<String> itemsList;
     @FXML private Label lblOriginalPrice;
@@ -20,6 +23,7 @@ public class BillController {
     @FXML private Label lblFinalPrice;
 
     private int tableId;
+	private ClientUi clientUi;
     
     /**
      * פונקציה זו נקראת ע"י המסך הקודם כדי לטעון את הנתונים
@@ -57,7 +61,19 @@ public class BillController {
     @FXML
     void payAndReleaseTable(ActionEvent event) {
         
-		MainNavigator.loadScene("reservation/Payment");
+		MainNavigator.loadScreen("reservation/Payment" , clientUi);
         
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		this.clientUi = clientUi;
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

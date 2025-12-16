@@ -1,5 +1,7 @@
 package clientGui.reservation;
 
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,7 +15,9 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReservationController {
+import client.MessageListener;
+
+public class ReservationController implements  MessageListener<Object>, BaseController{
 
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<String> timeComboBox;
@@ -44,7 +48,7 @@ public class ReservationController {
     /**
      * פונקציה זו נקראת מבחוץ כדי לאתחל את המסך עם פרטי מנוי
      */
-    public void initData(boolean isSubscriber, String phone, String email, String name) {
+    public void setData(boolean isSubscriber, String phone, String email, String name) {
         this.isSubscriber = isSubscriber;
         if (isSubscriber) {
             phoneField.setText(phone);
@@ -156,4 +160,16 @@ public class ReservationController {
     void goBack(ActionEvent event) {
         MainNavigator.loadScene("user/SubscriberOption");
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

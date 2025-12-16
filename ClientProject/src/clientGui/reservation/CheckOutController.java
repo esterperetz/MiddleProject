@@ -1,5 +1,8 @@
 package clientGui.reservation;
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -12,13 +15,15 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class CheckOutController {
+public class CheckOutController implements  MessageListener<Object>, BaseController{
 
 	@FXML
 	private TextField txtOrderId;
 
 	@FXML
 	private Label lblResult;
+
+	private ClientUi clientUi;
 
 	/**
 	 * Triggered when the "Check out" button is clicked.
@@ -34,7 +39,7 @@ public class CheckOutController {
 			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
 			return;
 		}
-		MainNavigator.loadScene("reservation/Bill");
+		MainNavigator.loadScreen("reservation/Bill", clientUi);
 
 
 		// 2. Server Simulation (Replace this with real server call later)
@@ -63,7 +68,23 @@ public class CheckOutController {
 	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		MainNavigator.loadScene("user/SubscriberOption");
+		MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+	}
+
+
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		this.clientUi = clientUi;
+	}
+
+
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

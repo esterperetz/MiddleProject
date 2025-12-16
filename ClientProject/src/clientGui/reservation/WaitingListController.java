@@ -7,13 +7,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
-public class WaitingListController implements Initializable {
+import client.MessageListener;
+
+public class WaitingListController implements Initializable ,MessageListener<Object>, BaseController {
 
     @FXML
     private DatePicker filterDate;
@@ -80,4 +84,16 @@ public class WaitingListController implements Initializable {
     void handleBackBtn(ActionEvent event) {
         MainNavigator.loadScene("managerTeam/workerOption");
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

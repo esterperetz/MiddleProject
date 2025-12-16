@@ -1,6 +1,9 @@
 package clientGui.reservation;
 
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -13,7 +16,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class GetTableController {
+public class GetTableController implements  MessageListener<Object>, BaseController{
 
     @FXML
     private TextField txtOrderId;
@@ -88,6 +91,18 @@ public class GetTableController {
     void goBack(ActionEvent event) {
        MainNavigator.loadScene("user/SubscriberOption");
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 
     /**
      * A temporary mock function to simulate server response.

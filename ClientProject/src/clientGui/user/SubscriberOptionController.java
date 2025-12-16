@@ -2,7 +2,8 @@ package clientGui.user;
 
 import javafx.scene.control.Button;
 //import java.util.ResourceBundle;
-
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -12,7 +13,9 @@ import javafx.fxml.Initializable;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class SubscriberOptionController implements Initializable{
+import client.MessageListener;
+
+public class SubscriberOptionController implements Initializable , MessageListener<Object>, BaseController{
 	private boolean isSubscriber;
 	// Link to the special button in the FXML file
 	@FXML
@@ -78,5 +81,15 @@ public class SubscriberOptionController implements Initializable{
     void CheckOutActionBtn(ActionEvent event) {
     	MainNavigator.loadScene("reservation/CheckOutScreen");
     }
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 
 }

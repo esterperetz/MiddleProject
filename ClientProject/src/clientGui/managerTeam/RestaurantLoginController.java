@@ -1,5 +1,8 @@
 package clientGui.managerTeam;
 
+import Entities.User;
+import client.MessageListener;
+import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 
@@ -14,23 +17,26 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class RestaurantLoginController {
+public class RestaurantLoginController implements  MessageListener<Object>, BaseController{
 
     @FXML
     private TextField usernameField;
 
     @FXML
     private PasswordField passwordField;
-
+    private ClientUi clientUi;
+    
+   
     @FXML
     void performLogin(ActionEvent event) {
     	//ליאל עידו צריך לדבר איתך!!!!!!!!!!!!!!!!!!!!
     	    String username = usernameField.getText();
     	    String password = passwordField.getText();
-
+    	    
+    	    User user = new User(username, Integer.parseInt(password));
     	    // בדיקת תקינות בסיסית (לוגיקה שלך)
     	    System.out.println("Login attempt: " + username);
-    	    MainNavigator.loadScene("managerTeam/workerOption");
+    	    MainNavigator.loadScreen("managerTeam/workerOption",clientUi);
     	    
     	    /*
     	    try {
@@ -61,6 +67,16 @@ public class RestaurantLoginController {
     @FXML
     void goBack(ActionEvent event) {
         // וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
-        MainNavigator.loadScene("navigation/SelectionScreen");
+        MainNavigator.loadScreen("navigation/SelectionScreen" ,clientUi);
     }
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		this.clientUi = clientUi;
+	}
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

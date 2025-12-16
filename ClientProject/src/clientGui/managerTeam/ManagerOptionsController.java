@@ -6,12 +6,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.reservation.ReservationController;
 
 import java.net.URL;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+
+import client.MessageListener;
 
 /**
  * Controller for the Manager's Dashboard (Options Screen).
@@ -22,7 +27,7 @@ import java.util.ResourceBundle;
  * 3. Management of Special Dates/Holidays (view, add, remove).
  * 4. Permission-based visibility of sensitive buttons (e.g., Reports).
  */
-public class ManagerOptionsController implements Initializable {
+public class ManagerOptionsController implements Initializable, MessageListener<Object>,BaseController {
     
     // --- Internal Fields ---
     /** Flag to store the user's permission level. */
@@ -68,6 +73,7 @@ public class ManagerOptionsController implements Initializable {
     /** Label to display success or error messages to the user. */
     @FXML
     private Label lblHoursStatus; 
+    private ClientUi clientUi;
 
     /**
      * Called to initialize the controller after the FXML file has been loaded.
@@ -101,6 +107,17 @@ public class ManagerOptionsController implements Initializable {
         // Example: On Christmas, the restaurant opens late.
         specialDatesModel.add("25/12/2025: 18:00 - 02:00 (Holiday)");
     }
+    
+ // ✅ פונקציה שה-Navigator יקרא לה כדי לחבר את הלקוח
+    public void setClientUi(ClientUi clientUi) {
+        this.clientUi = clientUi;
+        
+        // אופציונלי: להירשם לקבלת הודעות ברגע שמקבלים את ה-ClientUi
+        this.clientUi.addListener(this);
+        
+        // עכשיו שאנחנו מחוברים, אפשר לבקש נתונים מהשרת
+        loadStandardHours();
+    }
 
     /**
      * Loads the current standard opening hours from the server/database.
@@ -110,10 +127,12 @@ public class ManagerOptionsController implements Initializable {
         // TODO: Replace with real server call, e.g., String[] hours = ClientUI.chat.getStandardHours();
         
         // Safety check to ensure FXML injection worked
-        if (txtOpenTime != null && txtCloseTime != null) {
-            txtOpenTime.setText("08:00");
-            txtCloseTime.setText("23:00");
-        }
+    	if (clientUi != null) {
+	        if (txtOpenTime != null && txtCloseTime != null) {
+	            txtOpenTime.setText("08:00");
+	            txtCloseTime.setText("23:00");
+	        }
+    	}
     }
 
     /**
@@ -220,7 +239,7 @@ public class ManagerOptionsController implements Initializable {
      */
     @FXML
     void goToWaitingListBtn(ActionEvent event) {
-        MainNavigator.loadScene("reservation/WaitingList");
+        MainNavigator.loadScreen("reservation/WaitingList" ,clientUi);
     }
 
     /**
@@ -229,7 +248,8 @@ public class ManagerOptionsController implements Initializable {
     @FXML
     void goToOrderDetailsBtn(ActionEvent event) {
         // Passing nulls as this is a general view, not specific to one order yet
-        MainNavigator.loadOrderTableScreen(true, null, null, null);
+       BaseController controller =  MainNavigator.loadScreen("reservation/ReservationScreen",clientUi);
+       ((ReservationController) controller).setData(true, null, null, null);
     }
 
     /**
@@ -237,7 +257,7 @@ public class ManagerOptionsController implements Initializable {
      */
     @FXML
     void goToRegisterSubscriberBtn(ActionEvent event) {
-        MainNavigator.loadScene("user/RegisterSubscriber");
+        MainNavigator.loadScreen("user/RegisterSubscriber",clientUi);
     }
 
     /**
@@ -248,7 +268,7 @@ public class ManagerOptionsController implements Initializable {
     void goToReportsBtn(ActionEvent event) {
         // MainNavigator.loadScene("manager/ReportsScreen");
         System.out.println("Navigate to Reports Screen...");
-        MainNavigator.loadScene("managerTeam/ReportsScreen");
+        MainNavigator.loadScreen("managerTeam/ReportsScreen", clientUi);
 
     }
 
@@ -260,7 +280,13 @@ public class ManagerOptionsController implements Initializable {
         // Logic for signing out or returning to the main selection screen
       
         System.out.println("Going back / Signing out...");
-        MainNavigator.loadScene("navigation/SelectionScreen");
+        MainNavigator.loadScreen("navigation/SelectionScreen" ,clientUi);
 
     }
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

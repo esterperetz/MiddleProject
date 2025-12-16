@@ -1,6 +1,9 @@
 package clientGui.managerTeam;
 
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -11,12 +14,13 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class ReportsController {
+public class ReportsController implements BaseController,MessageListener<Object>{
 
     @FXML private BarChart<String, Number> barChartTimes;
     @FXML private LineChart<String, Number> lineChartOrders;
     @FXML private CategoryAxis xAxisTimes;
     @FXML private CategoryAxis xAxisDays;
+	private ClientUi clientUi;
 
     @FXML
     public void initialize() {
@@ -89,7 +93,7 @@ public class ReportsController {
         // Logic for signing out or returning to the main selection screen
       
         System.out.println("Going back / Signing out...");
-        MainNavigator.loadScene("managerTeam/workerOption");
+        MainNavigator.loadScreen("managerTeam/workerOption" ,clientUi);
 
     }
 	
@@ -98,4 +102,16 @@ public class ReportsController {
     void closeScreen(ActionEvent event) {
         ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
     }
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		this.clientUi = clientUi;
+	}
 }

@@ -5,9 +5,12 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 
-public class RegisterSubscriberController {
+public class RegisterSubscriberController implements  MessageListener<Object>, BaseController{
 
     @FXML
     private TextField txtUsername;
@@ -83,4 +86,16 @@ public class RegisterSubscriberController {
         System.out.println("Registering: " + name + ", " + phone + ", " + email);
         return true; // Simulate success
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }

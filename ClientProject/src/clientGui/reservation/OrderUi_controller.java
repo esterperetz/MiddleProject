@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 import Entities.Alarm;
 import Entities.Order;
 import client.MessageListener;
+import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
@@ -31,7 +32,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
-public class OrderUi_controller implements  MessageListener<Object> {
+public class OrderUi_controller implements  MessageListener<Object>, BaseController {
 
     @FXML private TableView<Order> orderTable;
     @FXML private TableColumn<Order, Integer> Order_numberColumn;
@@ -94,7 +95,8 @@ public class OrderUi_controller implements  MessageListener<Object> {
      *
      * @param c The ClientUi to use.
      */
-    public void setClient(ClientUi c)
+    @Override
+    public void setClientUi(ClientUi c)
     {
     	clientUi=c;
     }
@@ -249,6 +251,8 @@ public class OrderUi_controller implements  MessageListener<Object> {
     {
     	MainNavigator.loadScene("managerTeam/workerOption");
     }
+
+	
 
     /*
     /**

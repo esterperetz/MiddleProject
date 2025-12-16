@@ -1,6 +1,9 @@
 package clientGui.user;
 
 
+import client.MessageListener;
+import clientGui.BaseController;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +15,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-public class SubscriberHistoryController {
+public class SubscriberHistoryController implements  MessageListener<Object>, BaseController{
 
     @FXML private TableView<OrderHistoryItem> ordersTable;
     @FXML private TableColumn<OrderHistoryItem, Integer> colOrderId;
@@ -74,4 +77,16 @@ public class SubscriberHistoryController {
         public String getTotal() { return total; }
         public String getStatus() { return status; }
     }
+
+	@Override
+	public void setClientUi(ClientUi clientUi) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onMessageReceive(Object msg) {
+		// TODO Auto-generated method stub
+		
+	}
 }
