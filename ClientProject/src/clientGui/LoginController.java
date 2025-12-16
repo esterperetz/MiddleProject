@@ -5,6 +5,7 @@ package clientGui;
 import java.io.IOException;
 
 import client.ChatClient;
+import clientGui.navigation.MainNavigator;
 import clientGui.navigation.SelectionController;
 import clientGui.reservation.OrderUi_controller;
 import javafx.event.ActionEvent;
@@ -25,11 +26,11 @@ public class LoginController {
     @FXML
     private Label lblStatus;
 
-    private ClientUi clientUi;
+//    private ClientUi clientUi;
 
     @FXML
     private void onConnect(ActionEvent event) {
-        String ip = txtIp.getText().trim();
+    	String ip = txtIp.getText().trim();
 
         if (ip.isEmpty()) {
             lblStatus.setText("Please enter server IP");
@@ -37,29 +38,19 @@ public class LoginController {
         }
 
         try {
-       
-            clientUi = new ClientUi(ip);
+            // 1. יצירת החיבור
+            ClientUi clientUi = new ClientUi(ip);
 
-           
-            if (clientUi != null) {
-                lblStatus.setText("Login succeeded. Connected to: " + ip);
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/navigation/SelectionScreen.fxml"));
-                Parent root = loader.load();
-
-               
-               SelectionController controller = loader.getController();
-
+            if (clientUi != null) { 
+                // הערה: כדאי להוסיף בדיקה ב-ClientUi אם החיבור לשרת באמת הצליח
                 
-                controller.initData(clientUi, ip);
+                lblStatus.setText("Login succeeded!");
 
-               
-                Stage primaryStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-                primaryStage.setTitle("Orders Management");
-                primaryStage.setScene(new Scene(root));
-                primaryStage.show();
-    	        
+                // 2. מעבר למסך הבא באמצעות הנביגטור והעברת ה-ClientUi
+                MainNavigator.loadScreen("navigation/SelectionScreen",clientUi);
                 
-            } else {
+            }
+            else {
                 lblStatus.setText("Login failed (clientUi is null)");
             }
             
@@ -69,9 +60,10 @@ public class LoginController {
         }
     }
 
-  
-    public ClientUi getClientUi() {
-        return clientUi;
-    }
+
+//  
+//    public ClientUi getClientUi() {
+//        return clientUi;
+//    }
 }
 

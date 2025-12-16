@@ -23,7 +23,8 @@ public class ClientUi {
     private ChatClient chatClient;
     @SuppressWarnings({ "rawtypes" })
 	private List<MessageListener> listeners;//any information from screens that show information from server, be here
-    private static ClientUi instance;
+//    private static ClientUi instance;
+    private String ip;
     /**
      * Creates the UI and connects to the server.
      *
@@ -32,6 +33,7 @@ public class ClientUi {
     public ClientUi(String ip) {
     	try {
 			chatClient = new ChatClient(ip, 5555, this);
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 			String header="Error";
@@ -41,9 +43,21 @@ public class ClientUi {
 		     //alert.setTitle("Error");
 		     //alert.setContentText("Connection failed, try a different ip");
 		     //alert.showAndWait();
-		}	
+		}
+    	this.ip = ip;
     	this.listeners = new ArrayList<>();
-    	instance = this;
+//    	clientGui.reservation.OrderUi_controller controller = new clientGui.reservation.OrderUi_controller();
+//    	controller.initData(this, ip);
+//    	instance = this;
+    }
+    
+    public void setIp(String ip) {
+    	this.ip = ip;
+    }
+    
+    public String getIp() 
+    {
+    	return ip;
     }
 
     /**
@@ -101,8 +115,8 @@ public class ClientUi {
         }
     }
 
-    public static ClientUi getInstance() {
-        return instance;
-    }
+//    public static ClientUi getInstance() {
+//        return instance;
+//    }
         
 }

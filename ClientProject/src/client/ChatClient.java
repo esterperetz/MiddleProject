@@ -13,7 +13,7 @@ import ocsf.client.AbstractClient;
 public class ChatClient extends AbstractClient {
 
 	private ClientUi clientUI;
-
+	
 	// Constructor
 	/**
 	 *  Creates a new client and opens a connection to the server.
@@ -34,6 +34,7 @@ public class ChatClient extends AbstractClient {
 	@Override
 	public void handleMessageFromServer(Object msg) {
 		this.clientUI.displayMessage(msg);
+		
 	}
 
     // Handle messages from UI
