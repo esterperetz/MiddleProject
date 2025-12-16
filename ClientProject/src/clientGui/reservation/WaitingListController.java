@@ -18,8 +18,7 @@ import java.util.ResourceBundle;
 
 import client.MessageListener;
 
-public class WaitingListController implements Initializable ,MessageListener<Object>, BaseController {
-	private ClientUi clientUi;
+public class WaitingListController extends MainNavigator implements Initializable ,MessageListener<Object>, BaseController {
     @FXML
     private DatePicker filterDate;
 
@@ -85,7 +84,7 @@ public class WaitingListController implements Initializable ,MessageListener<Obj
     void handleBackBtn(ActionEvent event) {
         //MainNavigator.loadScene("managerTeam/workerOption");
     	ManagerOptionsController controller = 
-    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	        super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,ManagerOptionsController.isManager());
         } else {
@@ -93,11 +92,7 @@ public class WaitingListController implements Initializable ,MessageListener<Obj
         }
     }
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		this.clientUi=clientUi;
-		
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

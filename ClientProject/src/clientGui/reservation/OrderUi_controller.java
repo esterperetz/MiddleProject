@@ -33,7 +33,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
-public class OrderUi_controller implements  MessageListener<Object>, BaseController {
+public class OrderUi_controller extends MainNavigator implements  MessageListener<Object>, BaseController {
 
     @FXML private TableView<Order> orderTable;
     @FXML private TableColumn<Order, Integer> Order_numberColumn;
@@ -43,7 +43,6 @@ public class OrderUi_controller implements  MessageListener<Object>, BaseControl
     @FXML private TableColumn<Order, Integer> subscriber_idColumn;
     @FXML private TableColumn<Order, Date> date_of_placing_orderColumn;
     private ObservableList<Order> orderData = FXCollections.observableArrayList();
-    private ClientUi clientUi;
     private OrderLogic orderLogic;
     private String ip;
     public OrderUi_controller() {
@@ -91,16 +90,8 @@ public class OrderUi_controller implements  MessageListener<Object>, BaseControl
     }
  
     
-    /**
-     * Sets the ClientUi instance used by this controller.
-     *
-     * @param c The ClientUi to use.
-     */
-    @Override
-    public void setClientUi(ClientUi c)
-    {
-    	clientUi=c;
-    }
+    
+   
 
     
     /**
@@ -248,11 +239,11 @@ public class OrderUi_controller implements  MessageListener<Object>, BaseControl
         });
     }
     @FXML
-    void handleBackBtn()
+    void handleBackBtn(ActionEvent event)
     {
     	//MainNavigator.loadScene("managerTeam/workerOption");
     	ManagerOptionsController controller = 
-    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	        super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,ManagerOptionsController.isManager());
         } else {

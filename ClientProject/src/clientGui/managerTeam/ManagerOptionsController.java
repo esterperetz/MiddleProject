@@ -27,7 +27,7 @@ import client.MessageListener;
  * Management of Special Dates/Holidays (view, add, remove). 4. Permission-based
  * visibility of sensitive buttons (e.g., Reports).
  */
-public class ManagerOptionsController implements Initializable, MessageListener<Object>, BaseController {
+public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
 
 	// --- Internal Fields ---
 	/** Flag to store the user's permission level. */
@@ -73,7 +73,6 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
-	private ClientUi clientUi;
 
 	/**
 	 * Called to initialize the controller after the FXML file has been loaded. Sets
@@ -145,17 +144,7 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 		// הערה: את בדיקת isManager השארנו כרגע ב-initialize כמו שביקשת
 	}
 
-	// ✅ פונקציה שה-Navigator יקרא לה כדי לחבר את הלקוח
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		this.clientUi = clientUi;
-
-		// אופציונלי: להירשם לקבלת הודעות ברגע שמקבלים את ה-ClientUi
-		// this.clientUi.addListener(this);
-
-		// עכשיו שאנחנו מחוברים, אפשר לבקש נתונים מהשרת
-		// loadStandardHours();
-	}
+	
 
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
@@ -277,7 +266,7 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 	 */
 	@FXML
 	void goToWaitingListBtn(ActionEvent event) {
-		MainNavigator.loadScreen("reservation/WaitingList", clientUi);
+		super.loadScreen("reservation/WaitingList", event,clientUi);
 	}
 
 	/**
@@ -291,7 +280,7 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 		// ((ReservationController) controller).setData(true, null, null, null);
 		// clientGui.reservation.OrderUi_controller controller =
 		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
-		OrderUi_controller controller = MainNavigator.loadScreen("reservation/orderUi", clientUi);
+		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
 		if (controller != null) {
 
 			controller.initData(clientUi, "localhost");
@@ -305,7 +294,7 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 	 */
 	@FXML
 	void goToRegisterSubscriberBtn(ActionEvent event) {
-		MainNavigator.loadScreen("user/RegisterSubscriber", clientUi);
+		super.loadScreen("user/RegisterSubscriber", event,clientUi);
 	}
 
 	/**
@@ -316,7 +305,7 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 	void goToReportsBtn(ActionEvent event) {
 		// MainNavigator.loadScene("manager/ReportsScreen");
 		System.out.println("Navigate to Reports Screen...");
-		MainNavigator.loadScreen("managerTeam/ReportsScreen", clientUi);
+		super.loadScreen("managerTeam/ReportsScreen", event,clientUi);
 
 	}
 
@@ -328,14 +317,13 @@ public class ManagerOptionsController implements Initializable, MessageListener<
 		// Logic for signing out or returning to the main selection screen
 
 		System.out.println("Going back / Signing out...");
-		MainNavigator.loadScreen("navigation/SelectionScreen", clientUi);
+		super.loadScreen("navigation/SelectionScreen", event,clientUi);
 
 	}
 
 	@Override
 	public void onMessageReceive(Object msg) {
 		System.out.println("Manager Controller received: " + msg);
-
 	}
 
 	public static boolean isManager() {

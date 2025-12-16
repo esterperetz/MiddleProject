@@ -15,7 +15,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-public class SubscriberHistoryController implements  MessageListener<Object>, BaseController{
+public class SubscriberHistoryController extends MainNavigator implements  MessageListener<Object>, BaseController{
 
     @FXML private TableView<OrderHistoryItem> ordersTable;
     @FXML private TableColumn<OrderHistoryItem, Integer> colOrderId;
@@ -49,7 +49,7 @@ public class SubscriberHistoryController implements  MessageListener<Object>, Ba
     @FXML
     void goBackBtn(ActionEvent event) {
 //        ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
-    	MainNavigator.loadScene("user/SubscriberOption");
+    	super.loadScreen("user/SubscriberOption",event,clientUi);
     	
         
     }
@@ -78,11 +78,7 @@ public class SubscriberHistoryController implements  MessageListener<Object>, Ba
         public String getStatus() { return status; }
     }
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

@@ -14,7 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class BillController implements  MessageListener<Object>, BaseController {
+public class BillController extends MainNavigator implements  MessageListener<Object>, BaseController {
 
     @FXML private ListView<String> itemsList;
     @FXML private Label lblOriginalPrice;
@@ -23,7 +23,6 @@ public class BillController implements  MessageListener<Object>, BaseController 
     @FXML private Label lblFinalPrice;
 
     private int tableId;
-	private ClientUi clientUi;
     
     /**
      * פונקציה זו נקראת ע"י המסך הקודם כדי לטעון את הנתונים
@@ -61,15 +60,11 @@ public class BillController implements  MessageListener<Object>, BaseController 
     @FXML
     void payAndReleaseTable(ActionEvent event) {
         
-		MainNavigator.loadScreen("reservation/Payment" , clientUi);
+		super.loadScreen("reservation/Payment" , event,clientUi);
         
     }
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		this.clientUi = clientUi;
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

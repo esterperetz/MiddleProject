@@ -11,7 +11,7 @@ import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 
-public class RegisterSubscriberController implements  MessageListener<Object>, BaseController{
+public class RegisterSubscriberController extends MainNavigator implements  MessageListener<Object>, BaseController{
 	private ClientUi clientUi;
     @FXML
     private TextField txtUsername;
@@ -70,7 +70,7 @@ public class RegisterSubscriberController implements  MessageListener<Object>, B
         // Change "manager/ManagerOptions" to wherever you want to go back to
         //MainNavigator.loadScene("managerTeam/workerOption"); 
     	ManagerOptionsController controller = 
-    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	        super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,ManagerOptionsController.isManager());
         } else {

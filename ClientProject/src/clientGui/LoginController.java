@@ -18,8 +18,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class LoginController {
-
+public class LoginController extends MainNavigator implements BaseController {
+	
     @FXML
     private TextField txtIp;
 
@@ -40,14 +40,18 @@ public class LoginController {
         try {
             // 1. יצירת החיבור
             ClientUi clientUi = new ClientUi(ip);
-
+            
             if (clientUi != null) { 
+            	setClientUi(clientUi);
+            	javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+                Stage stage = (Stage) source.getScene().getWindow();
+            	setStage(stage);
                 // הערה: כדאי להוסיף בדיקה ב-ClientUi אם החיבור לשרת באמת הצליח
                 
                 lblStatus.setText("Login succeeded!");
 
                 // 2. מעבר למסך הבא באמצעות הנביגטור והעברת ה-ClientUi
-                MainNavigator.loadScreen("navigation/SelectionScreen",clientUi);
+               super.loadScreen("navigation/SelectionScreen",event,clientUi);
                 
             }
             else {

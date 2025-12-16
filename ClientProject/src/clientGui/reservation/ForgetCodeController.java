@@ -3,13 +3,14 @@ package clientGui.reservation;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.navigation.MainNavigator;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class ForgetCodeController implements  MessageListener<Object>, BaseController{
+public class ForgetCodeController extends MainNavigator implements  MessageListener<Object>, BaseController{
 
     @FXML
     private TextField txtEmail;

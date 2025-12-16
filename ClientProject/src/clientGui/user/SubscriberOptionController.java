@@ -16,9 +16,9 @@ import java.util.ResourceBundle;
 
 import client.MessageListener;
 
-public class SubscriberOptionController implements Initializable , MessageListener<Object>, BaseController{
+public class SubscriberOptionController extends MainNavigator implements Initializable , MessageListener<Object>, BaseController{
 	private static boolean isSubscriber=true;
-	private ClientUi client_ui;
+	//private ClientUi client_ui;
 
 	// Link to the special button in the FXML file
 	@FXML
@@ -44,7 +44,7 @@ public class SubscriberOptionController implements Initializable , MessageListen
         }
     }
     public void initData(ClientUi clientUi, boolean isSubscriberStatus) {
-        this.client_ui = clientUi;
+    	this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
 
         // 1. רישום לקבלת הודעות (אם צריך בדף זה)
@@ -66,33 +66,33 @@ public class SubscriberOptionController implements Initializable , MessageListen
         }
     }
 	@FXML
-	 void goBackBtn()
+	 void goBackBtn(ActionEvent event)
 	{
 		int flag=1;
 		//when we succeed to log in, we dont go back to navigation screen
 		if(flag==1)
 		{
 			//we need to check if the user is subscriber and if the code is correct
-			MainNavigator.loadScene("user/SubscriberLogin");
+			super.loadScreen("user/SubscriberLogin",event,clientUi);
 			flag=0;
 		}
 		else
-	        MainNavigator.loadScene("navigation/SelectionScreen");
+	        super.loadScreen("navigation/SelectionScreen" ,event,clientUi);
 
 	}
 	@FXML
-	void goToReservationBtn()
+	void goToReservationBtn(ActionEvent event)
 	{
-		ReservationController controller = MainNavigator.loadScreen("reservation/ReservationScreen", client_ui);
+		ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
 
 	    if (controller != null) {
 	        controller.setData(isSubscriber, "", "", ""); 
 	    }	}
 	
 	@FXML
-	void goToSeatTableBtn()
+	void goToSeatTableBtn(ActionEvent event)
 	{
-		MainNavigator.loadScene("reservation/RecieveTable");
+		super.loadScreen("reservation/RecieveTable",event,clientUi);
 	}
 	/**
      * Action handler for the special subscriber-only button.
@@ -101,18 +101,15 @@ public class SubscriberOptionController implements Initializable , MessageListen
     void subscriberActionBtn(ActionEvent event) {
         // Logic specific to subscribers goes here
         System.out.println("Subscriber specific action executed.");
-    	MainNavigator.loadScene("user/SubscriberHistory");
+    	super.loadScreen("user/SubscriberHistory",event,clientUi);
 
     }
 
     @FXML
     void CheckOutActionBtn(ActionEvent event) {
-    	MainNavigator.loadScene("reservation/CheckOutScreen");
+    	super.loadScreen("reservation/CheckOutScreen",event,clientUi);
     }
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		client_ui=clientUi;
-	}
+	
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub

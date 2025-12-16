@@ -17,7 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class CheckOutController implements  MessageListener<Object>, BaseController{
+public class CheckOutController extends MainNavigator implements  MessageListener<Object>, BaseController{
 
 	@FXML
 	private TextField txtOrderId;
@@ -25,7 +25,6 @@ public class CheckOutController implements  MessageListener<Object>, BaseControl
 	@FXML
 	private Label lblResult;
 
-	private ClientUi clientUi;
 
 	/**
 	 * Triggered when the "Check out" button is clicked.
@@ -41,7 +40,7 @@ public class CheckOutController implements  MessageListener<Object>, BaseControl
 			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
 			return;
 		}
-		MainNavigator.loadScreen("reservation/Bill", clientUi);
+		super.loadScreen("reservation/Bill", event,clientUi);
 
 
 		// 2. Server Simulation (Replace this with real server call later)
@@ -72,7 +71,7 @@ public class CheckOutController implements  MessageListener<Object>, BaseControl
 	void goBack(ActionEvent event) {
 		//MainNavigator.loadScreen("user/SubscriberOption", clientUi);
 		SubscriberOptionController controller = 
-    	        MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+    	       super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,SubscriberOptionController.isSubscriber());
         } else {
@@ -82,12 +81,7 @@ public class CheckOutController implements  MessageListener<Object>, BaseControl
 
 
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		this.clientUi = clientUi;
-	}
-
+	
 
 
 	@Override

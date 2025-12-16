@@ -14,13 +14,12 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class ReportsController implements BaseController,MessageListener<Object>{
+public class ReportsController extends MainNavigator implements BaseController,MessageListener<Object>{
 
     @FXML private BarChart<String, Number> barChartTimes;
     @FXML private LineChart<String, Number> lineChartOrders;
     @FXML private CategoryAxis xAxisTimes;
     @FXML private CategoryAxis xAxisDays;
-	private ClientUi clientUi;
 
     @FXML
     public void initialize() {
@@ -95,7 +94,7 @@ public class ReportsController implements BaseController,MessageListener<Object>
         System.out.println("Going back / Signing out...");
         //MainNavigator.loadScreen("managerTeam/workerOption" ,clientUi);
         ManagerOptionsController controller = 
-    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+        		super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,ManagerOptionsController.isManager());
         } else {
@@ -115,9 +114,5 @@ public class ReportsController implements BaseController,MessageListener<Object>
 		
 	}
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		this.clientUi = clientUi;
-	}
+	
 }

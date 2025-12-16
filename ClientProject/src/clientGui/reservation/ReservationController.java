@@ -18,8 +18,7 @@ import java.util.List;
 
 import client.MessageListener;
 
-public class ReservationController implements  MessageListener<Object>, BaseController{
-	private ClientUi client_ui;
+public class ReservationController extends MainNavigator implements  MessageListener<Object>, BaseController{
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<String> timeComboBox;
     @FXML private TextField dinersField;
@@ -138,7 +137,7 @@ public class ReservationController implements  MessageListener<Object>, BaseCont
             System.out.println("Details: " + nameField.getText() + ", " + datePicker.getValue() + " at " + timeComboBox.getValue());
             // כאן תשלח לשרת...
             MainNavigator.showAlert( "Success", "Table Booked successfully!",Alert.AlertType.INFORMATION);
-            MainNavigator.loadScene("navigation/SelectionScreen"); // חזרה לראשי
+            super.loadScreen("navigation/SelectionScreen",event,clientUi); // חזרה לראשי
         } else {
             // חלופה: הצגת שעות קרובות
             showAlternativeTimes();
@@ -161,18 +160,15 @@ public class ReservationController implements  MessageListener<Object>, BaseCont
     void goBack(ActionEvent event) {
         //MainNavigator.loadScene("user/SubscriberOption");
     	SubscriberOptionController controller = 
-    	        MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+    	        super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		client_ui=clientUi;
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

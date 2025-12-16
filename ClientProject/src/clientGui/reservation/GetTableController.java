@@ -17,8 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class GetTableController implements  MessageListener<Object>, BaseController{
-	private ClientUi client_ui;
+public class GetTableController extends MainNavigator implements  MessageListener<Object>, BaseController{
     @FXML
     private TextField txtOrderId;
 
@@ -92,19 +91,15 @@ public class GetTableController implements  MessageListener<Object>, BaseControl
     void goBack(ActionEvent event) {
        //MainNavigator.loadScene("user/SubscriberOption");
     	SubscriberOptionController controller = 
-    	        MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+    	        super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		client_ui=clientUi;
-		
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

@@ -17,20 +17,20 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class RestaurantLoginController implements MessageListener<Object>, BaseController {
+public class RestaurantLoginController extends MainNavigator implements MessageListener<Object>, BaseController {
 
 	@FXML
 	private TextField usernameField;
 
 	@FXML
 	private PasswordField passwordField;
-	private ClientUi clientUi;
 
 	@FXML
 	void performLogin(ActionEvent event) {
 		// ליאל עידו צריך לדבר איתך!!!!!!!!!!!!!!!!!!!!
 		String username = usernameField.getText();
 		String password = passwordField.getText();
+		
 		if (this.clientUi == null) {
 			System.err.println("Error: No connection to server (clientUi is null). Cannot login.");
 			return;
@@ -43,7 +43,7 @@ public class RestaurantLoginController implements MessageListener<Object>, BaseC
 		// --- מעבר מסך ---
 
 		// 1. שימוש בפונקציה הגנרית וקבלת הקונטרולר
-		ManagerOptionsController controller = MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+		ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event,clientUi);
 
 		// 2. אתחול הנתונים במסך החדש
 		if (controller != null) {
@@ -75,15 +75,10 @@ public class RestaurantLoginController implements MessageListener<Object>, BaseC
 	@FXML
 	void goBack(ActionEvent event) {
 		// וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
-		MainNavigator.loadScreen("navigation/SelectionScreen", clientUi);
+		super.loadScreen("navigation/SelectionScreen", event,clientUi);
 	}
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		this.clientUi = clientUi;
-	}
-
+	
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub

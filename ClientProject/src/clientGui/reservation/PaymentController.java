@@ -11,7 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class PaymentController implements  MessageListener<Object>, BaseController{
+public class PaymentController extends MainNavigator implements  MessageListener<Object>, BaseController{
 
 	@FXML
 	private TextField txtCardNumber;
@@ -65,7 +65,7 @@ public class PaymentController implements  MessageListener<Object>, BaseControll
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
 		//Alert pay good 
-		MainNavigator.loadScene("user/SubscriberOption");
+		super.loadScreen("user/SubscriberOption",event,clientUi);
 
 	}
 
@@ -84,11 +84,7 @@ public class PaymentController implements  MessageListener<Object>, BaseControll
 		stage.close();
 	}
 
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {

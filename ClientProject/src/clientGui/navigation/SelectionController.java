@@ -16,8 +16,8 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class SelectionController implements  MessageListener<Object>, BaseController{
-	private ClientUi clientUi;
+public class SelectionController extends MainNavigator implements  MessageListener<Object>, BaseController{
+	//private ClientUi clientUi;
  
     @FXML
     private Button rep_of_the_res;
@@ -35,20 +35,20 @@ public class SelectionController implements  MessageListener<Object>, BaseContro
         System.out.println("Navigating to Restaurant Representative screen...");
         // כאן אתה מעביר לשם של קובץ ה-FXML הבא (למשל "ResturantScreen")
         
-        MainNavigator.loadScreen("managerTeam/RestaurantLogin", clientUi); 
+        super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
     }
 
     @FXML
     void pressSubscriber(ActionEvent event) {
         System.out.println("Navigating to Subscriber screen...");
-        MainNavigator.loadScreen("user/SubscriberLogin", clientUi);
+        super.loadScreen("user/SubscriberLogin", event,clientUi);
     }
 
     @FXML
     void pressCasualCustomer(ActionEvent event) {
         System.out.println("Navigating to Casual Customer screen...");
         //MainNavigator.loadReservationScreen(false, "", "", "");
-        MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+        super.loadScreen("user/SubscriberOption", event,clientUi);
     }
     
     /**
@@ -73,7 +73,7 @@ public class SelectionController implements  MessageListener<Object>, BaseContro
         });
 		
 	}
-
+/*
 	@Override
 	public void setClientUi(ClientUi clientUi) {
 		// TODO Auto-generated method stub
@@ -93,4 +93,5 @@ public class SelectionController implements  MessageListener<Object>, BaseContro
             }
         });
 	}
+	*/
 }

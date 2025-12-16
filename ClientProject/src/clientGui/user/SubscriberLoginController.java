@@ -9,8 +9,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
-public class SubscriberLoginController implements  MessageListener<Object>, BaseController{
-	private ClientUi client_ui;
+public class SubscriberLoginController extends MainNavigator implements  MessageListener<Object>, BaseController{
 	 @FXML
 	    private TextField SubscriberCode;
 
@@ -26,11 +25,11 @@ public class SubscriberLoginController implements  MessageListener<Object>, Base
 	        //System.out.println("asdasdas");
 	        // כאן תוסיף את הלוגיקה
 	        SubscriberOptionController controller = 
-	                MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+	                super.loadScreen("user/SubscriberOption", event,clientUi);
 
 	            // 2. הפעלת initData על הקונטרולר שקיבלנו
 	            if (controller != null) {
-	                controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+	                controller.initData(clientUi,SubscriberOptionController.isSubscriber());
 	            } else {
 	                System.err.println("Error: Could not load ManagerOptionsController.");
 	            }
@@ -39,14 +38,10 @@ public class SubscriberLoginController implements  MessageListener<Object>, Base
 	    @FXML
 	    void goBack(ActionEvent event) {
 	        // וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
-	        MainNavigator.loadScene("navigation/SelectionScreen");
+	        super.loadScreen("navigation/SelectionScreen",event,clientUi);
 	    }
 
-		@Override
-		public void setClientUi(ClientUi clientUi) {
-			// TODO Auto-generated method stub
-			client_ui=clientUi;
-		}
+		
 
 		@Override
 		public void onMessageReceive(Object msg) {
