@@ -11,6 +11,7 @@ import Entities.Order;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import javafx.application.Platform;
@@ -249,7 +250,14 @@ public class OrderUi_controller implements  MessageListener<Object>, BaseControl
     @FXML
     void handleBackBtn()
     {
-    	MainNavigator.loadScene("managerTeam/workerOption");
+    	//MainNavigator.loadScene("managerTeam/workerOption");
+    	ManagerOptionsController controller = 
+    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	if (controller != null) {
+            controller.initData(clientUi,ManagerOptionsController.isManager());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
     }
 
 	

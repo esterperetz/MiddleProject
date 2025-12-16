@@ -23,7 +23,7 @@ public class ClientUi {
     private ChatClient chatClient;
     @SuppressWarnings({ "rawtypes" })
 	private List<MessageListener> listeners;//any information from screens that show information from server, be here
-//    private static ClientUi instance;
+    private static ClientUi instance;
     private String ip;
     /**
      * Creates the UI and connects to the server.
@@ -115,8 +115,8 @@ public class ClientUi {
         }
     }
 
-//    public static ClientUi getInstance() {
-//        return instance;
-//    }
+   public static ClientUi getInstance() {
+        return instance;
+    }
         
 }

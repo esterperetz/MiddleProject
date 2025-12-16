@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.reservation.ReservationController;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
@@ -17,6 +18,8 @@ import client.MessageListener;
 
 public class SubscriberOptionController implements Initializable , MessageListener<Object>, BaseController{
 	private boolean isSubscriber;
+	private ClientUi client_ui;
+
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
@@ -58,8 +61,11 @@ public class SubscriberOptionController implements Initializable , MessageListen
 	@FXML
 	void goToReservationBtn()
 	{
-		MainNavigator.loadReservationScreen(true, "", "", "");
-	}
+		ReservationController controller = MainNavigator.loadScreen("reservation/ReservationScreen", client_ui);
+
+	    if (controller != null) {
+	        controller.setData(isSubscriber, "", "", ""); 
+	    }	}
 	
 	@FXML
 	void goToSeatTableBtn()
@@ -83,8 +89,7 @@ public class SubscriberOptionController implements Initializable , MessageListen
     }
 	@Override
 	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		
+		client_ui=clientUi;
 	}
 	@Override
 	public void onMessageReceive(Object msg) {

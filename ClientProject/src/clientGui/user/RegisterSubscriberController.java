@@ -8,10 +8,11 @@ import javafx.scene.control.TextField;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 
 public class RegisterSubscriberController implements  MessageListener<Object>, BaseController{
-
+	private ClientUi clientUi;
     @FXML
     private TextField txtUsername;
 
@@ -67,7 +68,14 @@ public class RegisterSubscriberController implements  MessageListener<Object>, B
     @FXML
     void handleBackBtn(ActionEvent event) {
         // Change "manager/ManagerOptions" to wherever you want to go back to
-        MainNavigator.loadScene("managerTeam/workerOption"); 
+        //MainNavigator.loadScene("managerTeam/workerOption"); 
+    	ManagerOptionsController controller = 
+    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	if (controller != null) {
+            controller.initData(clientUi,ManagerOptionsController.isManager());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
     }
 
     /**
@@ -89,8 +97,7 @@ public class RegisterSubscriberController implements  MessageListener<Object>, B
 
 	@Override
 	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		
+		this.clientUi=clientUi;
 	}
 
 	@Override

@@ -17,66 +17,76 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class RestaurantLoginController implements  MessageListener<Object>, BaseController{
+public class RestaurantLoginController implements MessageListener<Object>, BaseController {
 
-    @FXML
-    private TextField usernameField;
+	@FXML
+	private TextField usernameField;
 
-    @FXML
-    private PasswordField passwordField;
-    private ClientUi clientUi;
-    
-   
-    @FXML
-    void performLogin(ActionEvent event) {
-    	//ליאל עידו צריך לדבר איתך!!!!!!!!!!!!!!!!!!!!
-    	    String username = usernameField.getText();
-    	    String password = passwordField.getText();
-    	    
-    	    User user = new User(username, Integer.parseInt(password));
-    	    // בדיקת תקינות בסיסית (לוגיקה שלך)
-    	    System.out.println("Login attempt: " + username);
-    	    MainNavigator.loadScreen("managerTeam/workerOption",clientUi);
-    	    
-    	    /*
-    	    try {
-    	    //moved to MainNavigation (the name of the function:loadOrderTableScreen)
-    	        FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/OrderUi.fxml"));
-    	        Parent root = loader.load();
+	@FXML
+	private PasswordField passwordField;
+	private ClientUi clientUi;
 
-    	        clientGui.reservation.OrderUi_controller controller = loader.getController();
+	@FXML
+	void performLogin(ActionEvent event) {
+		// ליאל עידו צריך לדבר איתך!!!!!!!!!!!!!!!!!!!!
+		String username = usernameField.getText();
+		String password = passwordField.getText();
+		if (this.clientUi == null) {
+			System.err.println("Error: No connection to server (clientUi is null). Cannot login.");
+			return;
+		}
 
-    	         
-    	        controller.initData(ClientUi.getInstance(), "localhost"); 
+		// TODO: לוגיקת בדיקת סיסמה מול השרת (שלח בקשה לשרת)
+		// User user = new User(username, Integer.parseInt(password));
+		System.out.println("Login attempt for: " + username);
 
-    	        :
-    	        Scene scene = new Scene(root); 
-    	        Stage stage = (Stage) usernameField.getScene().getWindow();
-    	        stage.setScene(scene);
-    	        stage.show();
+		// --- מעבר מסך ---
 
-    	    } catch (Exception e) {
-    	        e.printStackTrace();
-    	        System.out.println("Error loading OrderUi: " + e.getMessage());
-    	    }
-    	    */
-    	
-        // כאן תוסיף את הלוגיקה
-    }
+		// 1. שימוש בפונקציה הגנרית וקבלת הקונטרולר
+		ManagerOptionsController controller = MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
 
-    @FXML
-    void goBack(ActionEvent event) {
-        // וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
-        MainNavigator.loadScreen("navigation/SelectionScreen" ,clientUi);
-    }
+		// 2. אתחול הנתונים במסך החדש
+		if (controller != null) {
+			controller.initData(clientUi,ManagerOptionsController.isManager());
+		} else {
+			System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
+		}
+		/*
+		 * try { //moved to MainNavigation (the name of the
+		 * function:loadOrderTableScreen) FXMLLoader loader = new
+		 * FXMLLoader(getClass().getResource("/clientGui/reservation/OrderUi.fxml"));
+		 * Parent root = loader.load();
+		 * 
+		 * clientGui.reservation.OrderUi_controller controller = loader.getController();
+		 * 
+		 * 
+		 * controller.initData(ClientUi.getInstance(), "localhost");
+		 * 
+		 * : Scene scene = new Scene(root); Stage stage = (Stage)
+		 * usernameField.getScene().getWindow(); stage.setScene(scene); stage.show();
+		 * 
+		 * } catch (Exception e) { e.printStackTrace();
+		 * System.out.println("Error loading OrderUi: " + e.getMessage()); }
+		 */
+
+		// כאן תוסיף את הלוגיקה
+	}
+
+	@FXML
+	void goBack(ActionEvent event) {
+		// וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
+		MainNavigator.loadScreen("navigation/SelectionScreen", clientUi);
+	}
+
 	@Override
 	public void setClientUi(ClientUi clientUi) {
 		// TODO Auto-generated method stub
 		this.clientUi = clientUi;
 	}
+
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

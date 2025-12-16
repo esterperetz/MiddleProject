@@ -17,7 +17,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class GetTableController implements  MessageListener<Object>, BaseController{
-
+	private ClientUi client_ui;
     @FXML
     private TextField txtOrderId;
 
@@ -94,7 +94,7 @@ public class GetTableController implements  MessageListener<Object>, BaseControl
 
 	@Override
 	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
+		client_ui=clientUi;
 		
 	}
 

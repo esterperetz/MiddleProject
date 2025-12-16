@@ -22,7 +22,7 @@ public class SubscriberLoginController implements  MessageListener<Object>, Base
 	        String username = SubscriberCode.getText();
 	        System.out.println("Login attempt: " + username);
 	        //MainNavigator.loadReservationScreen(true, "", "", ""); //add to get the subscriber details from DB
-	        MainNavigator.loadScene("subscriber/SubscriberOption");
+	        MainNavigator.loadScene("user/SubscriberOption");
 	        //System.out.println("asdasdas");
 	        // כאן תוסיף את הלוגיקה
 	    }

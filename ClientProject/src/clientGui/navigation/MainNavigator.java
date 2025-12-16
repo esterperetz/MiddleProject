@@ -55,25 +55,11 @@ public class MainNavigator {
     /**
      * פונקציה לטעינת מסך חדש
      * @param fxmlFileName שם קובץ ה-FXML (ללא סיומת .fxml)
-     */
-//    public static void loadScene(String fxmlFileName) {
-//        try {
-//        	
-//            FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlFileName + ".fxml"));
-//            
-//            // הערה: בדרך כלל קבצי FXML מתחילים ב-AnchorPane ולא ב-Scene
-//            // הקוד כאן מניח שהשורש הוא Parent (כמו AnchorPane/VBox)
-//            Parent root = loader.load(); 
-//            
-//            Scene scene = new Scene(root);
-//            mainStage.setScene(scene);
-//            mainStage.show();
-//            
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            System.out.println("Could not load FXML: " + fxmlFileName);
-//        }
-//    }
+    */ 
+    public static void loadScene(String fxmlFileName) {
+       loadScreen(fxmlFileName,ClientUi.getInstance());
+    }
+
 //    
 //    public static void loadReservationScreen(boolean isSubscriber, String phone, String email, String name) {
 //        try {

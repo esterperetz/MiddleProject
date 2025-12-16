@@ -9,6 +9,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 
 import java.net.URL;
@@ -18,7 +19,7 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 
 public class WaitingListController implements Initializable ,MessageListener<Object>, BaseController {
-
+	private ClientUi clientUi;
     @FXML
     private DatePicker filterDate;
 
@@ -82,12 +83,19 @@ public class WaitingListController implements Initializable ,MessageListener<Obj
 
     @FXML
     void handleBackBtn(ActionEvent event) {
-        MainNavigator.loadScene("managerTeam/workerOption");
+        //MainNavigator.loadScene("managerTeam/workerOption");
+    	ManagerOptionsController controller = 
+    	        MainNavigator.loadScreen("managerTeam/workerOption", clientUi);
+    	if (controller != null) {
+            controller.initData(clientUi,ManagerOptionsController.isManager());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
     }
 
 	@Override
 	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
+		this.clientUi=clientUi;
 		
 	}
 
