@@ -3,7 +3,9 @@ package clientGui.reservation;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
+import clientGui.user.SubscriberOptionController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -68,7 +70,14 @@ public class CheckOutController implements  MessageListener<Object>, BaseControl
 	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+		//MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+		SubscriberOptionController controller = 
+    	        MainNavigator.loadScreen("user/SubscriberOption", clientUi);
+    	if (controller != null) {
+            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
 	}
 
 

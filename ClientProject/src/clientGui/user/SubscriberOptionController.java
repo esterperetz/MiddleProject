@@ -17,7 +17,7 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 
 public class SubscriberOptionController implements Initializable , MessageListener<Object>, BaseController{
-	private boolean isSubscriber;
+	private static boolean isSubscriber=true;
 	private ClientUi client_ui;
 
 	// Link to the special button in the FXML file
@@ -35,12 +35,34 @@ public class SubscriberOptionController implements Initializable , MessageListen
         
         // --- Check if the current user is a subscriber ---
         // TODO: Replace 'true' with your actual logic, e.g., ClientUI.currentUser.isSubscriber()
-        isSubscriber = true; 
+        //isSubscriber = true; 
 
         if (isSubscriber) {
             // If the user is a subscriber, reveal the button and let it take up space in the layout
             btnSubscriberSpecial.setVisible(true);
             btnSubscriberSpecial.setManaged(true);
+        }
+    }
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus) {
+        this.client_ui = clientUi;
+        this.isSubscriber = isSubscriberStatus;
+
+        // 1. רישום לקבלת הודעות (אם צריך בדף זה)
+        /*
+        if (this.client_ui != null) {
+            this.client_ui.addListener(this);
+        }
+        */
+
+        // 2. לוגיקה גרפית לפי סוג המשתמש
+        if (this.isSubscriber) {
+            // אם הוא מנוי - מציגים את הכפתור
+            btnSubscriberSpecial.setVisible(true);
+            btnSubscriberSpecial.setManaged(true);
+        } else {
+            // אם הוא אורח - מסתירים
+            btnSubscriberSpecial.setVisible(false);
+            btnSubscriberSpecial.setManaged(false);
         }
     }
 	@FXML
@@ -95,6 +117,12 @@ public class SubscriberOptionController implements Initializable , MessageListen
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
 		
+	}
+	public static boolean isSubscriber() {
+		return isSubscriber;
+	}
+	public void setSubscriber(boolean isSubscriber) {
+		this.isSubscriber = isSubscriber;
 	}
 
 }

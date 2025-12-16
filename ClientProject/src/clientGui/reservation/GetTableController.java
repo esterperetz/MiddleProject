@@ -5,6 +5,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.user.SubscriberOptionController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -89,7 +90,14 @@ public class GetTableController implements  MessageListener<Object>, BaseControl
      */
     @FXML
     void goBack(ActionEvent event) {
-       MainNavigator.loadScene("user/SubscriberOption");
+       //MainNavigator.loadScene("user/SubscriberOption");
+    	SubscriberOptionController controller = 
+    	        MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+    	if (controller != null) {
+            controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
     }
 
 	@Override

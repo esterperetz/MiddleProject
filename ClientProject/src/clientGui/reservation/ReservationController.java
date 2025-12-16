@@ -3,6 +3,7 @@ package clientGui.reservation;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.user.SubscriberOptionController;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -18,7 +19,7 @@ import java.util.List;
 import client.MessageListener;
 
 public class ReservationController implements  MessageListener<Object>, BaseController{
-
+	private ClientUi client_ui;
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<String> timeComboBox;
     @FXML private TextField dinersField;
@@ -158,13 +159,19 @@ public class ReservationController implements  MessageListener<Object>, BaseCont
 
     @FXML
     void goBack(ActionEvent event) {
-        MainNavigator.loadScene("user/SubscriberOption");
+        //MainNavigator.loadScene("user/SubscriberOption");
+    	SubscriberOptionController controller = 
+    	        MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+    	if (controller != null) {
+            controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
     }
 
 	@Override
 	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		
+		client_ui=clientUi;
 	}
 
 	@Override

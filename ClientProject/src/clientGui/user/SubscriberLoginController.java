@@ -10,7 +10,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 
 public class SubscriberLoginController implements  MessageListener<Object>, BaseController{
-	
+	private ClientUi client_ui;
 	 @FXML
 	    private TextField SubscriberCode;
 
@@ -19,12 +19,21 @@ public class SubscriberLoginController implements  MessageListener<Object>, Base
 	    @FXML
 	    void performLogin(ActionEvent event) {
 	    	//
-	        String username = SubscriberCode.getText();
-	        System.out.println("Login attempt: " + username);
+	        //String username = SubscriberCode.getText();
+	        //System.out.println("Login attempt: " + username);
 	        //MainNavigator.loadReservationScreen(true, "", "", ""); //add to get the subscriber details from DB
-	        MainNavigator.loadScene("user/SubscriberOption");
+	        //MainNavigator.loadScene("user/SubscriberOption");
 	        //System.out.println("asdasdas");
 	        // כאן תוסיף את הלוגיקה
+	        SubscriberOptionController controller = 
+	                MainNavigator.loadScreen("user/SubscriberOption", client_ui);
+
+	            // 2. הפעלת initData על הקונטרולר שקיבלנו
+	            if (controller != null) {
+	                controller.initData(client_ui,SubscriberOptionController.isSubscriber());
+	            } else {
+	                System.err.println("Error: Could not load ManagerOptionsController.");
+	            }
 	    }
 
 	    @FXML
@@ -36,7 +45,7 @@ public class SubscriberLoginController implements  MessageListener<Object>, Base
 		@Override
 		public void setClientUi(ClientUi clientUi) {
 			// TODO Auto-generated method stub
-			
+			client_ui=clientUi;
 		}
 
 		@Override
