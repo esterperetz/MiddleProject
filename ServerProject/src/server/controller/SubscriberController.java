@@ -9,6 +9,7 @@ import DAO.SubscriberDAO;
 import DBConnection.DBConnection;
 import Entities.ActionType;
 import Entities.Request;
+import Entities.ResourceType;
 import Entities.Subscriber;
 import ocsf.server.ConnectionToClient;
 
@@ -19,6 +20,14 @@ public class SubscriberController {
 	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
 
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
+		if (req.getResource() != ResourceType.SUBSCRIBER) {
+            try {
+                client.sendToClient("Error: Incorrect resource type. Expected SUBSCRIBER.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 

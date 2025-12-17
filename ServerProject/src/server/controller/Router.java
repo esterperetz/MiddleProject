@@ -14,13 +14,14 @@ public class Router {
 	private final OrderController orderController;
 	private final SubscriberController subscriberController;
 	private final TableController tableController;
-
+	private final WaitingListController waitingListController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
 		this.orderController = new OrderController();
 		this.subscriberController = new SubscriberController();
 		this.tableController = new TableController();
+		this.waitingListController = new WaitingListController();
 
 		if (clients == null) {
 			clients = new ArrayList<>();
@@ -44,7 +45,7 @@ public class Router {
 			break;
 
 		case WAITING_LIST:
-			// waitingListController.handle(req, client);
+			waitingListController.handle(req, client);
 			break;
 
 		default:
@@ -72,7 +73,9 @@ public class Router {
 		if (clients != null) {
 			for (ConnectionToClient c : clients) {
 				try {
-					c.sendToClient(message);
+					if (c.isAlive()) {
+						c.sendToClient(message);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

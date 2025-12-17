@@ -165,4 +165,39 @@ public class OrderDAO {
             if (stmt != null) stmt.close();
         }
     }
+    public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int numberOfGuests) throws SQLException {
+        // SQL query to count orders within 2 hours before or after the requested time
+        // Filter by status (APPROVED/SEATED) and minimum guest capacity
+        String sql = "SELECT COUNT(*) FROM `order` " +
+                     "WHERE order_date BETWEEN (? - INTERVAL 2 HOUR) AND (? + INTERVAL 2 HOUR) " +
+                     "AND status IN ('APPROVED', 'SEATED') " +
+                     "AND number_of_guests >= ?";
+                     
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            stmt = con.prepareStatement(sql);
+            
+            // Convert java.util.Date to java.sql.Timestamp for SQL compatibility
+            Timestamp ts = new Timestamp(requestedDate.getTime());
+            
+            stmt.setTimestamp(1, ts); // For the start of the interval
+            stmt.setTimestamp(2, ts); // For the end of the interval
+            stmt.setInt(3, numberOfGuests); // Match guest capacity logic
+            
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Return the count of overlapping active orders
+                return rs.getInt(1);
+            }
+            return 0;
+        } finally {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        }
+    }
 }

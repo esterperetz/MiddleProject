@@ -99,4 +99,26 @@ public class TableDAO {
             if (stmt != null) stmt.close();
         }
     }
+    public int countSuitableTables(int numberOfGuests) throws SQLException {
+        // SQL query to find tables large enough for the request
+        String sql = "SELECT COUNT(*) FROM tables WHERE number_of_seats >= ?";
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            stmt = con.prepareStatement(sql);
+            stmt.setInt(1, numberOfGuests);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 0; // Return 0 if no results found
+        } finally {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        }
+    }
 }
