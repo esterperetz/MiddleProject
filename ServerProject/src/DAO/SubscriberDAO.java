@@ -17,22 +17,21 @@ public class SubscriberDAO {
 
     // Creates a new subscriber in the DB and updates the object's ID
     public boolean createSubscriber(Subscriber subscriber) {
-        String query = "INSERT INTO subscribers (first_name, last_name, username, phone_number, email) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO subscribers (subscriver_id ,subscriber_name, phone_number, email) VALUES (?, ?, ?, ?)";
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) { 
-            
-            ps.setString(1, subscriber.getFirstName());
-            ps.setString(2, subscriber.getLastName());
-            ps.setString(3, subscriber.getUsername());
-            ps.setString(4, subscriber.getPhoneNumber());
-            ps.setString(5, subscriber.getEmail());
+        	
+        	ps.setInt(1, subscriber.getSubscriber_id());
+            ps.setString(2, subscriber.getSubscriber_name());
+            ps.setString(3, subscriber.getPhone_number());
+            ps.setString(4, subscriber.getEmail());
 
             int rowsAffected = ps.executeUpdate();
             
             if (rowsAffected > 0) {
                 ResultSet generatedKeys = ps.getGeneratedKeys(); //returns id number to ps
                 if (generatedKeys.next()) {
-                    subscriber.setId(generatedKeys.getInt(1));
+                    subscriber.setSubscriber_id(generatedKeys.getInt(1));
                 }
                 return true;
             }
@@ -61,10 +60,10 @@ public class SubscriberDAO {
     }
 
     // Fetches a subscriber by their username 
-    public Subscriber getSubscriberByUsername(String username) {
-        String query = "SELECT * FROM subscribers WHERE username = ?";
+    public Subscriber getSubscriberBySubscriberName(String subscriberName) {
+        String query = "SELECT * FROM subscribers WHERE subscriber_name = ?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setString(1, username);
+            ps.setString(1, subscriberName);
             ResultSet rs = ps.executeQuery();
             
             if (rs.next()) {
@@ -79,14 +78,14 @@ public class SubscriberDAO {
 
     // Updates editable details (name, phone, email) 
     public boolean updateSubscriberDetails(Subscriber subscriber) {
-        String query = "UPDATE subscribers SET first_name = ?, last_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
+        String query = "UPDATE subscribers SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setString(1, subscriber.getFirstName());
-            ps.setString(2, subscriber.getLastName());
-            ps.setString(3, subscriber.getPhoneNumber());
+            ps.setInt(1, subscriber.getSubscriber_id());
+            ps.setString(2, subscriber.getSubscriber_name());
+            ps.setString(3, subscriber.getPhone_number());
             ps.setString(4, subscriber.getEmail());
-            ps.setInt(5, subscriber.getId());
+         
 
             int rowsAffected = ps.executeUpdate();
             return rowsAffected > 0;
@@ -119,13 +118,12 @@ public class SubscriberDAO {
     // Helper method to map ResultSet to Subscriber object
     private Subscriber createSubscriberFromResultSet(ResultSet rs) throws SQLException {
         Subscriber s = new Subscriber(
-            rs.getString("first_name"),
-            rs.getString("last_name"),
-            rs.getString("username"),
+            rs.getInt("subscriber_id"),
+            rs.getString("subscriber_name"),
             rs.getString("phone_number"),
             rs.getString("email")
         );
-        s.setId(rs.getInt("subscriber_id"));
+        s.setSubscriber_id(rs.getInt("subscriber_id"));
         return s;
     }
 }
