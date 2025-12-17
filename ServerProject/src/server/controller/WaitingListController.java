@@ -77,7 +77,7 @@ public class WaitingListController {
                     break;
                 }
 
-                boolean promoted = promoteToOrder(req.getId());
+                boolean promoted = promoteToOrder(req.getId(), client);
                 client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, promoted));
 
                 if (promoted) {
@@ -100,7 +100,7 @@ public class WaitingListController {
         }
     }
 
-    private boolean promoteToOrder(int waitingId) throws SQLException {
+    private boolean promoteToOrder(int waitingId, ConnectionToClient client) throws SQLException, IOException {
         WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
         if (entry == null) {
             return false;
@@ -125,7 +125,13 @@ public class WaitingListController {
         );
 
         if (orderdao.createOrder(promotedOrder)) {
-            return waitingListDAO.exitWaitingList(entry.getWaitingId());
+            // Remove from waiting list and sync clients
+            waitingListDAO.exitWaitingList(waitingId);
+            client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, true));
+            
+            sendListToAllClients();
+            // Sync the orders list because a new APPROVED order was added
+            Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderdao.getAllOrders()));
         }
 
         return false;

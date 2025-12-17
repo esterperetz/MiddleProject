@@ -1,6 +1,7 @@
 package server.controller;
 
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
 import DAO.TableDAO;
@@ -129,6 +130,69 @@ public class OrderController {
 					}
 				}
 				break;
+			case IDENTIFY_AT_TERMINAL:
+			    if (req.getId() != null) {
+			        Order order_at_bistro = orderdao.getByConfirmationCode(req.getId()); //only if approved
+			        
+			        if (order_at_bistro != null && order_at_bistro.getStatus() == Order.OrderStatus.APPROVED) {
+			            long now = new Date().getTime();
+			            long orderTime = order_at_bistro.getOrder_date().getTime();
+			            long diffInMinutes = (now - orderTime) / 60000;
+
+			            // 15-minute rule enforcement 
+			            if (diffInMinutes > 15) {
+			                order_at_bistro.setStatus(Order.OrderStatus.CANCELLED);
+			                orderdao.updateOrder(order_at_bistro);
+			                client.sendToClient(new Request(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL, null, "Order Expired (15 min late)"));
+			            } else {
+			                // Success - Move to SEATED status
+			                order_at_bistro.setStatus(Order.OrderStatus.SEATED);
+			                
+			                // Subscriber recognition for 10% discount later 
+			                if (order_at_bistro.getSubscriber_id() != null) {
+			                    System.out.println("Subscriber " + order_at_bistro.getSubscriber_id() + " confirmed. 10% discount flag is set.");
+			                }
+			                
+			                orderdao.updateOrder(order_at_bistro);
+			                client.sendToClient(new Request(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL, order_at_bistro.getOrder_number(), true));
+			            }
+			            sendOrdersToAllClients();
+			        } else {
+			            client.sendToClient(new Request(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL, null, false));
+			        }
+			    }
+			case PAY_BILL:
+			    if (req.getId() != null) {
+			        Order orderToPay = orderdao.getOrder(req.getId());
+			        
+			        // Verification: Only a SEATED order can be paid
+			        if (orderToPay != null && orderToPay.getStatus() == Order.OrderStatus.SEATED) {
+			            
+			            double finalAmount = orderToPay.getTotal_price();
+
+			            // Apply 10% Subscriber Discount
+			            if (orderToPay.getSubscriber_id() != null) {
+			                finalAmount = finalAmount * 0.9;
+			                System.out.println("Subscriber discount applied (10%). Original: " + orderToPay.getTotal_price() + ", Final: " + finalAmount);
+			            }
+
+			            // Update the order object with the final calculated price and status
+			            orderToPay.setTotal_price(finalAmount);
+			            orderToPay.setStatus(Order.OrderStatus.PAID);
+			            
+			            if (orderdao.updateOrder(orderToPay)) {
+			                // Return success to the terminal/client with the final amount to display
+			                client.sendToClient(new Request(ResourceType.ORDER, ActionType.PAY_BILL, orderToPay.getOrder_number(), finalAmount));
+			                
+			                sendOrdersToAllClients();
+			            } else {
+			                client.sendToClient(new Request(ResourceType.ORDER, ActionType.PAY_BILL, null, "Error: Failed to update payment in database."));
+			            }
+			        } else {
+			            client.sendToClient(new Request(ResourceType.ORDER, ActionType.PAY_BILL, null, "Error: Order not found or not currently seated."));
+			        }
+			    }
+			    break;
 			default:
 				client.sendToClient("Unsupported action: " + req.getAction());
 			}
