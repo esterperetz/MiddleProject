@@ -13,12 +13,13 @@ public class Subscriber implements Serializable {
 //	private static int subscriberCode;
 	private String email;
 
+
 	public Subscriber(String firstName, String lastName, String username, String phoneNumber, String email) {
 		this.firstName = firstName;
 		this.lastName = lastName;
 		this.username = username;
 		this.phoneNumber = phoneNumber;
-		this.email = email;
+		this.email = email;		
 	}
 	
 
@@ -74,5 +75,15 @@ public class Subscriber implements Serializable {
 	@Override
 	public String toString() {
 		return "Subscriber [id=" + id + ", username=" + username + ", phone=" + phoneNumber + "]";
+	}
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Subscriber other = (Subscriber) obj;
+
+		return this.id == other.getId();
 	}
 }

@@ -11,22 +11,18 @@ public class OrderController {
 
     private final OrderDAO dao = new OrderDAO();
 
-    
-     //Handles incoming requests related to the ORDER resource.
-    public void handle(Request req, ConnectionToClient client,List<ConnectionToClient> clients) throws IOException {
+    public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
         
         if (req.getResource() != ResourceType.ORDER) {
-            System.err.println("OrderController received request for wrong resource: " + req.getResource());
             client.sendToClient("Error: Incorrect resource type requested. Expected ORDER.");
             return; 
         }
         
         try {
-            switch (req.getAction())//checks enum we received from the object (req)
-            {
+            switch (req.getAction()) {
                 case GET_ALL:
                     List<Order> orders = dao.getAllOrders();
-                    client.sendToClient(orders);
+                    client.sendToClient(new Request(req.getResource(), ActionType.GET_ALL, null, orders));
                     break;
 
                 case GET_BY_ID:
@@ -35,7 +31,7 @@ public class OrderController {
                          break;
                     }
                     Order order = dao.getOrder(req.getId());
-                    client.sendToClient(order);
+                    client.sendToClient(new Request(req.getResource(), ActionType.GET_BY_ID, req.getId(), order));
                     break;
 
                 case CREATE:
@@ -44,10 +40,20 @@ public class OrderController {
                          break;
                     }
                     Order o = (Order) req.getPayload();
+                    
+                    // Validate Mandatory Identification
+                    if (o.getIdentification_details() == null || o.getIdentification_details().isEmpty()) {
+                        client.sendToClient("Error: Identification details are mandatory.");
+                        break;
+                    }
+
                     boolean created = dao.createOrder(o);
-                    client.sendToClient(created);
-                    //implements sends to all client
-                    sendOrdersToAllClients();
+                    if (created) {
+                        client.sendToClient("Success: Order created.");
+                        sendOrdersToAllClients();
+                    } else {
+                        client.sendToClient("Error: Failed to create order.");
+                    }
                     break;
                     
                 case UPDATE: 
@@ -56,12 +62,13 @@ public class OrderController {
                          break;
                     }
                     Order updatedOrder = (Order) req.getPayload();
-                    
                     boolean updated = dao.updateOrder(updatedOrder); 
-                    client.sendToClient(updated); 
-                    //implements sends to all client
-                    sendOrdersToAllClients();
-
+                    if (updated) {
+                        client.sendToClient("Success: Order updated.");
+                        sendOrdersToAllClients();
+                    } else {
+                        client.sendToClient("Error: Failed to update order.");
+                    }
                     break;
 
                 case DELETE: 
@@ -70,9 +77,12 @@ public class OrderController {
                          break;
                     }
                     boolean deleted = dao.deleteOrder(req.getId()); 
-                    client.sendToClient(deleted); 
-                    //implements sends to all client
-                    sendOrdersToAllClients();
+                    if (deleted) {
+                        client.sendToClient("Success: Order deleted.");
+                        sendOrdersToAllClients();
+                    } else {
+                        client.sendToClient("Error: Failed to delete order.");
+                    }
                     break;
 
                 default:
@@ -82,18 +92,15 @@ public class OrderController {
             e.printStackTrace();
             client.sendToClient("Database error: " + e.getMessage());
         }
-        
     }
-    private void sendOrdersToAllClients()
-    {
-    	List<Order> orders;
-    	try {
-			orders = dao.getAllOrders();
-			Router.sendToAllClients(orders);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-    			
+
+    private void sendOrdersToAllClients() {
+        try {
+            List<Order> orders = dao.getAllOrders();
+            Request updateMsg = new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orders);
+            Router.sendToAllClients(updateMsg);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
-    
 }

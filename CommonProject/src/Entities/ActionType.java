@@ -3,7 +3,7 @@ package Entities;
 import java.io.Serializable;
 
 /**
- * Enum for the actions of the object that we are sending
+ * Actions for client-server communication requests
  */
 public enum ActionType implements Serializable {
     GET_ALL,
@@ -11,6 +11,19 @@ public enum ActionType implements Serializable {
     CREATE,
     UPDATE,
     DELETE,
+
+    // Subscriber specific
     GET_USER_ORDERS,
-    REGISTER_SUBSCRIBER
+    REGISTER_SUBSCRIBER,
+
+    // Reservation Logic
+    CHECK_AVAILABILITY,    // Verify table availability before booking
+    
+    // Waiting List specific
+    ENTER_WAITING_LIST,
+    EXIT_WAITING_LIST,
+
+    // Table & Billing management
+    UPDATE_ORDER_STATUS,   // Change status to SEATED, etc.
+    PAY_BILL               // Complete payment and close order
 }
