@@ -1,6 +1,6 @@
 package clientGui.managerTeam;
 
-import Entities.User;
+
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
@@ -17,7 +17,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class RestaurantLoginController extends MainNavigator implements MessageListener<Object>, BaseController {
+public class RestaurantLoginController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
 	private TextField usernameField;
@@ -27,7 +27,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 	@FXML
 	void performLogin(ActionEvent event) {
-		// ליאל עידו צריך לדבר איתך!!!!!!!!!!!!!!!!!!!!
+		
 		String username = usernameField.getText();
 		String password = passwordField.getText();
 		

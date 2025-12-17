@@ -17,7 +17,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class GetTableController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class GetTableController extends MainNavigator implements  MessageListener<Object>{
     @FXML
     private TextField txtOrderId;
 

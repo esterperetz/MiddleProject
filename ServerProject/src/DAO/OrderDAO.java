@@ -166,8 +166,8 @@ public class OrderDAO {
         }
     }
     public Order getByConfirmationCode(int code) throws SQLException {
-        String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND status IN ('APPROVED', 'SEATED')";
-        Connection con = null;
+    	String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND status = 'APPROVED'";
+    	Connection con = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
 

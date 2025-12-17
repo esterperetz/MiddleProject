@@ -2,6 +2,7 @@ package server.controller;
 
 import java.io.IOException;
 
+
 import DBConnection.DBConnection; 
 import Entities.Request;
 import ocsf.server.AbstractServer;
@@ -12,12 +13,15 @@ public class ServerController extends AbstractServer {
 
     private final ServerViewController view;
     private final Router router;
+    private final OrderCleanupThread cleanupThread;
 
     public ServerController(int port, ServerViewController view) {
         super(port);
         this.view = view;
         this.router = new Router();
         view.setServerController(this);
+        this.cleanupThread = new OrderCleanupThread(); 
+        this.cleanupThread.start();
     }
 
     

@@ -5,85 +5,58 @@ import java.io.Serializable;
 public class Subscriber implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private int id;
-	private String firstName;
-	private String lastName;
-	private String username;
-	private String phoneNumber;
-//	private static int subscriberCode;
+	private int subscriber_id;
+	private String subscriber_name;
+	private String phone_number;
 	private String email;
-
-
-	public Subscriber(String firstName, String lastName, String username, String phoneNumber, String email) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.username = username;
-		this.phoneNumber = phoneNumber;
-		this.email = email;		
-	}
 	
-
-	// Getters and Setters
-	public int getId() {
-		return id;
+	public Subscriber(int subscriber_id, String subscriber_name, String phone_number, String email) {
+		this.subscriber_id = subscriber_id;
+		this.subscriber_name = subscriber_name;
+		this.phone_number = phone_number;
+		this.email = email;
 	}
 
-	public void setId(int id) {
-		this.id = id;
+	public int getSubscriber_id() {
+		return subscriber_id;
 	}
 
-	public String getFirstName() {
-		return firstName;
+
+	public void setSubscriber_id(int subscriber_id) {
+		this.subscriber_id = subscriber_id;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
+
+	public String getSubscriber_name() {
+		return subscriber_name;
 	}
 
-	public String getLastName() {
-		return lastName;
+
+	public void setSubscriber_name(String subscriber_name) {
+		this.subscriber_name = subscriber_name;
 	}
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
+
+	public String getPhone_number() {
+		return phone_number;
 	}
 
-	public String getUsername() {
-		return username;
+
+	public void setPhone_number(String phone_number) {
+		this.phone_number = phone_number;
 	}
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
-
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
 
 	public String getEmail() {
 		return email;
 	}
 
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
-	@Override
-	public String toString() {
-		return "Subscriber [id=" + id + ", username=" + username + ", phone=" + phoneNumber + "]";
-	}
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null || getClass() != obj.getClass())
-			return false;
-		Subscriber other = (Subscriber) obj;
 
-		return this.id == other.getId();
-	}
+   
+	
 }

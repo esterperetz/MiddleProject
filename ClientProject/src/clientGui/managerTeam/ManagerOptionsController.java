@@ -283,7 +283,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
 		if (controller != null) {
 
-			controller.initData(clientUi, "localhost");
+			controller.initData(clientUi, clientUi.getIp());
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
 		}

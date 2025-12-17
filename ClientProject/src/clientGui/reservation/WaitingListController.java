@@ -18,7 +18,7 @@ import java.util.ResourceBundle;
 
 import client.MessageListener;
 
-public class WaitingListController extends MainNavigator implements Initializable ,MessageListener<Object>, BaseController {
+public class WaitingListController extends MainNavigator implements Initializable ,MessageListener<Object> {
     @FXML
     private DatePicker filterDate;
 

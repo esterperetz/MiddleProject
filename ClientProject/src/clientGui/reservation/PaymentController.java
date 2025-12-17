@@ -11,7 +11,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class PaymentController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class PaymentController extends MainNavigator implements  MessageListener<Object>{
 
 	@FXML
 	private TextField txtCardNumber;
