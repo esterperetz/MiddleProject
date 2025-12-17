@@ -165,6 +165,51 @@ public class OrderDAO {
             if (stmt != null) stmt.close();
         }
     }
+    public Order getByConfirmationCode(int code) throws SQLException {
+        String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND status IN ('APPROVED', 'SEATED')";
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            stmt = con.prepareStatement(sql);
+            stmt.setInt(1, code);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int subIdTemp = rs.getInt("subscriber_id");
+                Integer subId = rs.wasNull() ? null : subIdTemp;
+                
+                return new Order(
+                    rs.getInt("order_number"),
+                    rs.getTimestamp("order_date"),
+                    rs.getInt("number_of_guests"),
+                    rs.getInt("confirmation_code"),
+                    subId,
+                    rs.getTimestamp("date_of_placing_order"),
+                    rs.getString("identification_details"),
+                    rs.getString("full_name"),
+                    rs.getDouble("total_price"),
+                    Order.OrderStatus.valueOf(rs.getString("status"))
+                );
+            }
+            return null;
+        } finally {
+            if (rs != null) rs.close();
+            if (stmt != null) stmt.close();
+        }
+    }
+
+    public boolean updateOrderStatus(int orderNumber, Order.OrderStatus status) throws SQLException {
+        String sql = "UPDATE `order` SET status = ? WHERE order_number = ?";
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setString(1, status.name());
+            stmt.setInt(2, orderNumber);
+            return stmt.executeUpdate() > 0;
+        }
+    }
     public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int numberOfGuests) throws SQLException {
         // SQL query to count orders within 2 hours before or after the requested time
         // Filter by status (APPROVED/SEATED) and minimum guest capacity

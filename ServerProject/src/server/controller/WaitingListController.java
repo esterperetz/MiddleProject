@@ -5,8 +5,11 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
+import DAO.OrderDAO;
 import DAO.WaitingListDAO;
 import Entities.ActionType;
+import Entities.Order;
+import Entities.Order.OrderStatus;
 import Entities.Request;
 import Entities.ResourceType;
 import Entities.WaitingList;
@@ -14,74 +17,126 @@ import ocsf.server.ConnectionToClient;
 
 public class WaitingListController {
 
-	private final WaitingListDAO waitingListDAO = new WaitingListDAO();
+    private final WaitingListDAO waitingListDAO = new WaitingListDAO();
+    private final OrderDAO orderdao = new OrderDAO();
 
-	public void handle(Request req, ConnectionToClient client) throws IOException {
-		if (req.getResource() != ResourceType.WAITING_LIST) {
-			client.sendToClient("Error: Incorrect resource type. Expected WAITING_LIST.");
-			return;
-		}
+    public void handle(Request req, ConnectionToClient client) throws IOException {
+        if (req.getResource() != ResourceType.WAITING_LIST) {
+            client.sendToClient("Error: Incorrect resource type. Expected WAITING_LIST.");
+            return;
+        }
 
-		try {
-			switch (req.getAction()) {
-			case GET_ALL:
-				List<WaitingList> list = waitingListDAO.getAllWaitingList();
-				client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list));
-				break;
+        try {
+            switch (req.getAction()) {
 
-			case ENTER_WAITING_LIST:
-				if (req.getPayload() instanceof WaitingList) {
-					WaitingList item = (WaitingList) req.getPayload();
+            case GET_ALL: {
+                List<WaitingList> list = waitingListDAO.getAllWaitingList();
+                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list));
+                break;
+            }
 
-					// Generate confirmation code in the Controller (Business Logic)
-					int generatedCode = 1000 + (int) (Math.random() * 9000);
-					item.setConfirmationCode(generatedCode);
+            case ENTER_WAITING_LIST: {
+                if (!(req.getPayload() instanceof WaitingList)) {
+                    client.sendToClient("Error: ENTER_WAITING_LIST requires a WaitingList payload.");
+                    break;
+                }
 
-					// Set current time as entry time
-					item.setEnterTime(new Date());
+                WaitingList item = (WaitingList) req.getPayload();
 
-					// Save to database with DAO
-					if (waitingListDAO.enterWaitingList(item)) {
-						client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-								generatedCode, true));
+                int generatedCode = 1000 + (int) (Math.random() * 9000);
+                item.setConfirmationCode(generatedCode);
+                item.setEnterTime(new Date());
 
-						sendListToAllClients();
-					} else {
-						client.sendToClient(
-								new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, null, false));
-					}
-				}
-				break;
+                boolean ok = waitingListDAO.enterWaitingList(item);
+                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, generatedCode, ok));
 
-			case EXIT_WAITING_LIST:
-				if (req.getId() != null) {
-					if (waitingListDAO.exitWaitingList(req.getId())) {
-						client.sendToClient("Success: Removed from waiting list.");
-						sendListToAllClients();
-					} else {
-						client.sendToClient("Error: Failed to remove from waiting list.");
-					}
-				} else {
-					client.sendToClient("Error: ID required for EXIT.");
-				}
-				break;
+                if (ok) {
+                    sendListToAllClients();
+                }
+                break;
+            }
 
-			default:
-				client.sendToClient("Error: Unknown action for Waiting List.");
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			client.sendToClient("Database Error: " + e.getMessage());
-		}
-	}
+            case EXIT_WAITING_LIST: {
+                if (req.getId() == null) {
+                    client.sendToClient("Error: ID required for EXIT_WAITING_LIST.");
+                    break;
+                }
 
-	private void sendListToAllClients() {
-		try {
-			List<WaitingList> list = waitingListDAO.getAllWaitingList();
-			Request updateMsg = new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list);
-			Router.sendToAllClients(updateMsg);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
+                boolean ok = waitingListDAO.exitWaitingList(req.getId());
+                client.sendToClient(ok ? "Success: Removed from waiting list." : "Error: Failed to remove from waiting list.");
+
+                if (ok) {
+                    sendListToAllClients();
+                }
+                break;
+            }
+
+            case PROMOTE_TO_ORDER: {
+                if (req.getId() == null) {
+                    client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, false));
+                    break;
+                }
+
+                boolean promoted = promoteToOrder(req.getId());
+                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, promoted));
+
+                if (promoted) {
+                    sendListToAllClients();
+                    Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderdao.getAllOrders()));
+                }
+                break;
+            }
+
+            default:
+                client.sendToClient("Error: Unknown action for Waiting List.");
+                break;
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            client.sendToClient("Database Error: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            client.sendToClient("Error: " + e.getMessage());
+        }
+    }
+
+    private boolean promoteToOrder(int waitingId) throws SQLException {
+        WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
+        if (entry == null) {
+            return false;
+        }
+
+        String idDetails = entry.getIdentificationDetails();
+        if (idDetails == null || idDetails.isEmpty()) {
+            throw new IllegalArgumentException("Identification details cannot be null or empty.");
+        }
+
+        Order promotedOrder = new Order(
+            0,
+            new Date(),
+            entry.getNumberOfGuests(),
+            entry.getConfirmationCode(),
+            entry.getSubscriberId(),
+            new Date(),
+            idDetails,
+            entry.getFullName(),
+            0.0,
+            OrderStatus.APPROVED
+        );
+
+        if (orderdao.createOrder(promotedOrder)) {
+            return waitingListDAO.exitWaitingList(entry.getWaitingId());
+        }
+
+        return false;
+    }
+
+    private void sendListToAllClients() {
+        try {
+            List<WaitingList> list = waitingListDAO.getAllWaitingList();
+            Router.sendToAllClients(new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

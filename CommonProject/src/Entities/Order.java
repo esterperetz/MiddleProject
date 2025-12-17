@@ -25,6 +25,11 @@ public class Order implements Serializable {
 	public Order(int order_number, Date order_date, int number_of_guests, int confirmation_code, Integer subscriber_id,
 			Date date_of_placing_order, String identification_details, String full_name, double total_price,
 			OrderStatus status) {
+		
+		if (identification_details == null || identification_details.isEmpty()) {
+			throw new IllegalArgumentException("Identification details cannot be null or empty.");
+		}
+
 		this.order_number = order_number;
 		this.order_date = order_date;
 		this.number_of_guests = number_of_guests;
@@ -34,28 +39,7 @@ public class Order implements Serializable {
 		this.identification_details = identification_details;
 		this.full_name = full_name;
 		this.total_price = total_price;
-		this.status = status;
-	}
-
-	// Constructor for creating NEW order
-	public Order(Date order_date, int number_of_guests, int confirmation_code, Integer subscriber_id,
-			Date date_of_placing_order, String identification_details, String full_name) {
-
-		if (identification_details == null || identification_details.isEmpty()) {
-			throw new IllegalArgumentException("Identification details cannot be null or empty.");
-		}
-
-		this.order_date = order_date;
-		this.number_of_guests = number_of_guests;
-		this.confirmation_code = confirmation_code;
-		this.subscriber_id = subscriber_id;
-		this.date_of_placing_order = date_of_placing_order;
-		this.identification_details = identification_details;
-		this.full_name = full_name;
-
-		// Defaults
-		this.total_price = 0.0;
-		this.status = OrderStatus.APPROVED;
+		this.status = (status != null) ? status : OrderStatus.APPROVED; // Default to APPROVED
 	}
 
 	// Getters and Setters

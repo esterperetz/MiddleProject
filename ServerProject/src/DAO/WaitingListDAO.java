@@ -21,27 +21,36 @@ public class WaitingListDAO {
 
             List<WaitingList> list = new ArrayList<>();
             while (rs.next()) {
-                int subIdTemp = rs.getInt("subscriber_id");
-                Integer subId = rs.wasNull() ? null : subIdTemp;
-
-                WaitingList item = new WaitingList(
-                        rs.getInt("waiting_id"),
-                        subId,
-                        rs.getString("identification_details"),
-                        rs.getString("full_name"),
-                        rs.getInt("number_of_guests"),
-                        rs.getTimestamp("enter_time"),
-                        rs.getInt("confirmation_code")
-                );
-                list.add(item);
+                list.add(mapResultSetToWaitingList(rs));
             }
             return list;
         } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            closeResources(rs, stmt);
         }
     }
-    
+    public WaitingList getByWaitingId(int waitingId) throws SQLException {
+        String sql = "SELECT * FROM waiting_list WHERE waiting_id = ?";
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            stmt = con.prepareStatement(sql);
+            stmt.setInt(1, waitingId);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                // Using the helper method we created earlier to keep it clean
+                return mapResultSetToWaitingList(rs);
+            }
+            return null;
+        } finally {
+            // Simplified cleanup using the helper
+            closeResources(rs, stmt);
+        }
+    }
+
     public WaitingList getByCode(int code) throws SQLException {
         String sql = "SELECT * FROM waiting_list WHERE confirmation_code = ?";
         Connection con = null;
@@ -55,23 +64,35 @@ public class WaitingListDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                int subIdTemp = rs.getInt("subscriber_id");
-                Integer subId = rs.wasNull() ? null : subIdTemp;
-                
-                return new WaitingList(
-                        rs.getInt("waiting_id"),
-                        subId,
-                        rs.getString("identification_details"),
-                        rs.getString("full_name"),
-                        rs.getInt("number_of_guests"),
-                        rs.getTimestamp("enter_time"),
-                        rs.getInt("confirmation_code")
-                );
+                return mapResultSetToWaitingList(rs);
             }
             return null;
         } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            closeResources(rs, stmt);
+        }
+    }
+
+    /**
+     * Calculates subscriber position in line by counting entries with an earlier timestamp.
+     */
+    public int getPosition(Timestamp enterTime) throws SQLException {
+        String sql = "SELECT COUNT(*) + 1 FROM waiting_list WHERE enter_time < ?";
+        Connection con = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            stmt = con.prepareStatement(sql);
+            stmt.setTimestamp(1, enterTime);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+            return 1;
+        } finally {
+            closeResources(rs, stmt);
         }
     }
 
@@ -98,7 +119,7 @@ public class WaitingListDAO {
 
             return stmt.executeUpdate() > 0;
         } finally {
-            if (stmt != null) stmt.close();
+            closeResources(null, stmt);
         }
     }
 
@@ -113,7 +134,33 @@ public class WaitingListDAO {
             stmt.setInt(1, waitingId);
             return stmt.executeUpdate() > 0;
         } finally {
+            closeResources(null, stmt);
+        }
+    }
+
+    //creates waiting list from rs
+    private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
+        int subIdTemp = rs.getInt("subscriber_id");
+        Integer subId = rs.wasNull() ? null : subIdTemp;
+
+        return new WaitingList(
+                rs.getInt("waiting_id"),
+                subId,
+                rs.getString("identification_details"),
+                rs.getString("full_name"),
+                rs.getInt("number_of_guests"),
+                rs.getTimestamp("enter_time"),
+                rs.getInt("confirmation_code")
+        );
+    }
+   
+
+    private void closeResources(ResultSet rs, Statement stmt) {
+        try {
+            if (rs != null) rs.close();
             if (stmt != null) stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

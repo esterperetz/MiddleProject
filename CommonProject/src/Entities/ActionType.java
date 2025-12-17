@@ -22,6 +22,7 @@ public enum ActionType implements Serializable {
     // Waiting List specific
     ENTER_WAITING_LIST,
     EXIT_WAITING_LIST,
+    PROMOTE_TO_ORDER,
 
     // Table & Billing management
     UPDATE_ORDER_STATUS,   // Change status to SEATED, etc.
