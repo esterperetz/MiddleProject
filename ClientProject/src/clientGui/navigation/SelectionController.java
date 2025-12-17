@@ -16,7 +16,7 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class SelectionController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class SelectionController extends MainNavigator implements  MessageListener<Object>{
 	//private ClientUi clientUi;
  
     @FXML

@@ -14,7 +14,7 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class BillController extends MainNavigator implements  MessageListener<Object>, BaseController {
+public class BillController extends MainNavigator implements  MessageListener<Object> {
 
     @FXML private ListView<String> itemsList;
     @FXML private Label lblOriginalPrice;

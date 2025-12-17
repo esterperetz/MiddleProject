@@ -33,7 +33,7 @@ import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
-public class OrderUi_controller extends MainNavigator implements  MessageListener<Object>, BaseController {
+public class OrderUi_controller extends MainNavigator implements  MessageListener<Object>{
 
     @FXML private TableView<Order> orderTable;
     @FXML private TableColumn<Order, Integer> Order_numberColumn;

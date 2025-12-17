@@ -18,7 +18,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class LoginController extends MainNavigator implements BaseController {
+public class LoginController extends MainNavigator {
 	
     @FXML
     private TextField txtIp;

@@ -69,7 +69,7 @@ public class SubscriberController {
 		Subscriber newSub = (Subscriber) req.getPayload();
 
 		// Check if username already exists
-		Subscriber existing = subscriberDAO.getSubscriberByUsername(newSub.getUsername());
+		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriber_name());
 		if (existing != null) {
 			client.sendToClient("Error: Username already exists.");
 			return;
@@ -78,7 +78,7 @@ public class SubscriberController {
 		boolean success = subscriberDAO.createSubscriber(newSub);
 		if (success) {
 			// Send back the object (which now has the generated ID) or a success message
-			client.sendToClient(new Request(req.getResource(), ActionType.REGISTER_SUBSCRIBER, newSub.getId(), newSub));
+			client.sendToClient(new Request(req.getResource(), ActionType.REGISTER_SUBSCRIBER, newSub.getSubscriber_id(), newSub));
 		} else {
 			client.sendToClient("Error: Failed to create subscriber in DB.");
 		}

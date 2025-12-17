@@ -18,7 +18,7 @@ import java.util.List;
 
 import client.MessageListener;
 
-public class ReservationController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class ReservationController extends MainNavigator implements  MessageListener<Object>{
     @FXML private DatePicker datePicker;
     @FXML private ComboBox<String> timeComboBox;
     @FXML private TextField dinersField;

@@ -14,7 +14,7 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class ReportsController extends MainNavigator implements BaseController,MessageListener<Object>{
+public class ReportsController extends MainNavigator implements MessageListener<Object>{
 
     @FXML private BarChart<String, Number> barChartTimes;
     @FXML private LineChart<String, Number> lineChartOrders;

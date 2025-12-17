@@ -54,6 +54,8 @@ public class MainNavigator implements BaseController {
 		try {
 			FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
 			Parent root = loader.load();
+			
+			//add init  data here
 
 			// קבלת הקונטרולר (אנחנו לא יודעים איזה סוג הוא, וזה בסדר)
 			T controller = loader.getController();
