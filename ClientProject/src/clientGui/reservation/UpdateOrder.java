@@ -78,16 +78,19 @@ public class UpdateOrder implements Initializable {
 				//showAlert("Input Error", "Please Enter Order ID (This field is now locked).", Alert.AlertType.ERROR);
 			}
 			else {
-
 				// Re-create the Order object with new data and old uneditable data
 				Order updatedOrder = new Order(
-				    Integer.parseInt(OrderNum), 
-				    date, 
-				    Integer.parseInt(Number_Of_Guests), 
-				    o.getConfirmation_code(), 
-				    o.getSubscriber_id(), 
-				    o.getDate_of_placing_order()
-				);
+					    Integer.parseInt(OrderNum), 
+					    date, // תאריך מעודכן
+					    Integer.parseInt(Number_Of_Guests), // כמות אורחים מעודכנת
+					    o.getConfirmation_code(), 
+					    o.getSubscriber_id(), 
+					    o.getDate_of_placing_order(),
+					    // --- הוספת השדות החסרים מהאובייקט המקורי ---
+					    o.getIdentification_details(),
+					    o.getFull_name(),
+					    o.getTotal_price(),
+					    o.getStatus());
 				
 				if (ol != null) { 
 				    ol.updateOrder(updatedOrder);

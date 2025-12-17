@@ -3,11 +3,13 @@ package server.controller;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 
 import DAO.SubscriberDAO;
 import DBConnection.DBConnection;
 import Entities.ActionType;
 import Entities.Request;
+import Entities.ResourceType;
 import Entities.Subscriber;
 import ocsf.server.ConnectionToClient;
 
@@ -15,24 +17,17 @@ import ocsf.server.ConnectionToClient;
 
 public class SubscriberController {
 
-	private SubscriberDAO subscriberDAO;
+	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
 
-	public SubscriberController() {
-		// Initialize DAO with the persistent DB connection
-		try {
-			this.subscriberDAO = new SubscriberDAO(DBConnection.getInstance().getConnection());
-		} catch (SQLException e) {
-			System.err.println("Error initializing SubscriberDAO: " + e.getMessage());
-		}
-	}
-
-	/**
-	 * Handles the incoming request regarding subscribers/users. * @param req: The
-	 * request object from the client
-	 * 
-	 * @param client: The connection to the client
-	 */
-	public void handle(Request req, ConnectionToClient client) {
+	public void handle(Request req, ConnectionToClient client) throws SQLException {
+		if (req.getResource() != ResourceType.SUBSCRIBER) {
+            try {
+                client.sendToClient("Error: Incorrect resource type. Expected SUBSCRIBER.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return;
+        }
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 
@@ -60,12 +55,14 @@ public class SubscriberController {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 
 	// --- Private Handling Methods ---
 
-	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException {
+	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Subscriber newSub = (Subscriber) req.getPayload();
 
 		// Check if username already exists
@@ -84,7 +81,7 @@ public class SubscriberController {
 		}
 	}
 
-	private void getSubscriberById(Request req, ConnectionToClient client) throws IOException {
+	private void getSubscriberById(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int id = req.getId();
 		Subscriber sub = subscriberDAO.getSubscriberById(id);
 		if (sub != null) {
@@ -94,12 +91,12 @@ public class SubscriberController {
 		}
 	}
 
-	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException {
-		ArrayList<Subscriber> list = subscriberDAO.getAllSubscribers();
+	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
+		List<Subscriber> list = subscriberDAO.getAllSubscribers();
 		client.sendToClient(new Request(req.getResource(), ActionType.GET_ALL, null, list));
 	}
 
-	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException {
+	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Subscriber subToUpdate = (Subscriber) req.getPayload();
 		boolean success = subscriberDAO.updateSubscriberDetails(subToUpdate);
 
