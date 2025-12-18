@@ -40,7 +40,7 @@ public class OrderCleanupThread extends Thread {
 
             for (Order order : orders) {
                 // Check only APPROVED orders (future ones or promoted from waiting list)
-                if (order.getStatus() == Order.OrderStatus.APPROVED) {
+                if (order.getOrder_status() == Order.OrderStatus.APPROVED) {
                     long orderTime = order.getOrder_date().getTime();
                     long diffInMinutes = (now - orderTime) / 60000;
 
@@ -49,7 +49,7 @@ public class OrderCleanupThread extends Thread {
                         System.out.println("Auto-cancelling late order: " + order.getOrder_number());
                         
                         // Update DB status to CANCELLED
-                        order.setStatus(Order.OrderStatus.CANCELLED);
+                        order.setOrder_status(Order.OrderStatus.CANCELLED);
                         orderDao.updateOrder(order);
 
                         Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderDao.getAllOrders()));

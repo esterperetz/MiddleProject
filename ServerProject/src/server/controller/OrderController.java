@@ -45,7 +45,7 @@ public class OrderController {
 				Order o = (Order) req.getPayload();
 
 				// Validate Mandatory Identification
-				if (o.getIdentification_details() == null || o.getIdentification_details().isEmpty()) {
+				if (o.getClient_email() == null || o.getClient_Phone() == null) {
 					client.sendToClient("Error: Identification details are mandatory.");
 					break;
 				}
@@ -134,19 +134,19 @@ public class OrderController {
 			    if (req.getId() != null) {
 			        Order order_at_bistro = orderdao.getByConfirmationCode(req.getId()); //only if approved
 			        
-			        if (order_at_bistro != null && order_at_bistro.getStatus() == Order.OrderStatus.APPROVED) {
+			        if (order_at_bistro != null && order_at_bistro.getOrder_status() == Order.OrderStatus.APPROVED) {
 			            long now = new Date().getTime();
 			            long orderTime = order_at_bistro.getOrder_date().getTime();
 			            long diffInMinutes = (now - orderTime) / 60000;
 
 			            // 15-minute rule enforcement 
 			            if (diffInMinutes > 15) {
-			                order_at_bistro.setStatus(Order.OrderStatus.CANCELLED);
+			                order_at_bistro.setOrder_status(Order.OrderStatus.CANCELLED);
 			                orderdao.updateOrder(order_at_bistro);
 			                client.sendToClient(new Request(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL, null, "Order Expired (15 min late)"));
 			            } else {
 			                // Success - Move to SEATED status
-			                order_at_bistro.setStatus(Order.OrderStatus.SEATED);
+			                order_at_bistro.setOrder_status(Order.OrderStatus.SEATED);
 			                
 			                // Subscriber recognition for 10% discount later 
 			                if (order_at_bistro.getSubscriber_id() != null) {
@@ -166,7 +166,7 @@ public class OrderController {
 			        Order orderToPay = orderdao.getOrder(req.getId());
 			        
 			        // Verification: Only a SEATED order can be paid
-			        if (orderToPay != null && orderToPay.getStatus() == Order.OrderStatus.SEATED) {
+			        if (orderToPay != null && orderToPay.getOrder_status() == Order.OrderStatus.SEATED) {
 			            
 			            double finalAmount = orderToPay.getTotal_price();
 
@@ -178,7 +178,7 @@ public class OrderController {
 
 			            // Update the order object with the final calculated price and status
 			            orderToPay.setTotal_price(finalAmount);
-			            orderToPay.setStatus(Order.OrderStatus.PAID);
+			            orderToPay.setOrder_status(Order.OrderStatus.PAID);
 			            
 			            if (orderdao.updateOrder(orderToPay)) {
 			                // Return success to the terminal/client with the final amount to display
