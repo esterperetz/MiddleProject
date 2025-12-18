@@ -43,7 +43,7 @@ public class DBConnection {
         
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
-//		createTableSubscriber(instance.connection);
+		createTableSubscriber(instance.connection);
 		createTableOrder(instance.connection);
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
