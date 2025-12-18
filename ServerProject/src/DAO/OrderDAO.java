@@ -84,7 +84,7 @@ public class OrderDAO {
 
 	public boolean createOrder(Order o) throws SQLException {
 		// עדכון השאילתה לשדות החדשים
-		String sql = "INSERT INTO bistro.orders (order_date, number_of_guests, confirmation_code, subscriber_id, "
+		String sql = "INSERT INTO `order` (order_date, number_of_guests, confirmation_code, subscriber_id, "
 				+ "date_of_placing_order, client_name, client_email, client_phone, arrival_time, total_price, order_status) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -128,7 +128,7 @@ public class OrderDAO {
 	}
 
 	public boolean updateOrder(Order o) throws SQLException {
-	    String sql = "UPDATE bistro.`order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
+	    String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
 	                 "subscriber_id = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, " +
 	                 "client_Phone = ?, ArrivalTime = ?, total_price = ?, order_status = ? " +
 	                 "WHERE order_number = ?";
