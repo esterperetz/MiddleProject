@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="600.0" prefWidth="950.0" 
+<AnchorPane prefHeight="600.0" prefWidth="1100.0" 
             styleClass="main-background" stylesheets="@../reservation/orderUi.css" 
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="clientGui.reservation.OrderUi_controller">
@@ -41,16 +41,22 @@
 
             <TableView fx:id="orderTable" editable="true" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="Order_numberColumn" text="Order #" prefWidth="60.0" />
-                <TableColumn fx:id="DateColumn" text="Order Date" prefWidth="120.0" />
-                <TableColumn fx:id="itemColumn" text="Guests" prefWidth="60.0" /> <TableColumn fx:id="confirmation_codeColumn" text="Conf. Code" prefWidth="80.0" />
-                <TableColumn fx:id="subscriber_idColumn" text="Sub. ID" prefWidth="60.0" />
-                <TableColumn fx:id="date_of_placing_orderColumn" text="Placed On" prefWidth="120.0" />
+                <TableColumn fx:id="Order_numberColumn" text="#" prefWidth="50.0" />
                 
-                <TableColumn fx:id="identificationDetailsColumn" text="ID Details" prefWidth="100.0" />
-                <TableColumn fx:id="fullNameColumn" text="Full Name" prefWidth="120.0" />
+                <TableColumn fx:id="clientNameColumn" text="Client Name" prefWidth="120.0" />
+                <TableColumn fx:id="clientPhoneColumn" text="Phone" prefWidth="100.0" />
+                <TableColumn fx:id="clientEmailColumn" text="Email" prefWidth="130.0" />
+                <TableColumn fx:id="subscriber_idColumn" text="Sub. ID" prefWidth="60.0" />
+
+                <TableColumn fx:id="DateColumn" text="Date" prefWidth="90.0" />
+                <TableColumn fx:id="arrivalTimeColumn" text="Time" prefWidth="70.0" />
+                <TableColumn fx:id="itemColumn" text="Guests" prefWidth="60.0" />
+                
                 <TableColumn fx:id="totalPriceColumn" text="Price" prefWidth="70.0" />
                 <TableColumn fx:id="statusColumn" text="Status" prefWidth="90.0" />
+                
+                <TableColumn fx:id="confirmation_codeColumn" text="Code" prefWidth="60.0" />
+                <TableColumn fx:id="date_of_placing_orderColumn" text="Created On" prefWidth="100.0" />
               </columns>
                <columnResizePolicy>
                   <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
