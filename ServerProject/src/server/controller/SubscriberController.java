@@ -5,20 +5,22 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import DAO.SubscriberDAO;
 import DBConnection.DBConnection;
 import Entities.ActionType;
 import Entities.Request;
 import Entities.ResourceType;
+import Entities.Response;
 import Entities.Subscriber;
 import ocsf.server.ConnectionToClient;
-/*
+
 //Controller responsible for handling all subscriber-related requests.
 
 public class SubscriberController {
 
-	//private final SubscriberDAO subscriberDAO = new SubscriberDAO(DBConnection.getInstance().getConnection());
-
+	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
+	
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
 		if (req.getResource() != ResourceType.SUBSCRIBER) {
             try {
@@ -50,7 +52,7 @@ public class SubscriberController {
 				break;
 
 			default:
-				client.sendToClient("Error: Unknown action for User/Subscriber resource.");
+				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Unknown action for User/Subscriber resource.",null));
 				break;
 			}
 		} catch (IOException e) {
@@ -68,16 +70,16 @@ public class SubscriberController {
 		// Check if username already exists
 		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriber_name());
 		if (existing != null) {
-			client.sendToClient("Error: Username already exists.");
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Username already exists.",null));
 			return;
 		}
 
 		boolean success = subscriberDAO.createSubscriber(newSub);
 		if (success) {
 			// Send back the object (which now has the generated ID) or a success message
-			client.sendToClient(new Request(req.getResource(), ActionType.REGISTER_SUBSCRIBER, newSub.getSubscriber_id(), newSub));
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.SUCCESS, "Subscriber_id"+newSub.getSubscriber_id(), newSub));
 		} else {
-			client.sendToClient("Error: Failed to create subscriber in DB.");
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Failed to create subscriber in DB.",null));
 		}
 	}
 
@@ -85,15 +87,15 @@ public class SubscriberController {
 		int id = req.getId();
 		Subscriber sub = subscriberDAO.getSubscriberById(id);
 		if (sub != null) {
-			client.sendToClient(new Request(req.getResource(), ActionType.GET_BY_ID, id, sub));
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.SUCCESS, "id:"+id, sub));
 		} else {
-			client.sendToClient("Error: Subscriber not found.");
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.ERROR,"Error: Subscriber not found.",null));
 		}
 	}
 
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
 		List<Subscriber> list = subscriberDAO.getAllSubscribers();
-		client.sendToClient(new Request(req.getResource(), ActionType.GET_ALL, null, list));
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,Response.ResponseStatus.SUCCESS, null, list));
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
@@ -101,10 +103,9 @@ public class SubscriberController {
 		boolean success = subscriberDAO.updateSubscriberDetails(subToUpdate);
 
 		if (success) {
-			client.sendToClient("Success: Subscriber updated.");
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,Response.ResponseStatus.SUCCESS,"Success: Subscriber updated.",null));
 		} else {
-			client.sendToClient("Error: Failed to update subscriber.");
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,Response.ResponseStatus.ERROR,"Error: Failed to update subscriber.",null));
 		}
 	}
 }
-*/
