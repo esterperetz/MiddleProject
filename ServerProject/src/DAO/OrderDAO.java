@@ -25,7 +25,7 @@ public class OrderDAO {
 				int subIdTemp = rs.getInt("subscriber_id");
 				Integer subId = rs.wasNull() ? null : subIdTemp;
 
-				String statusStr = rs.getString("status");
+				String statusStr = rs.getString("order_status");
 				OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
 
 				Order o = new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"),
