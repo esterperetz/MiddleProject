@@ -12,14 +12,14 @@ import ocsf.server.ConnectionToClient;
 public class Router {
 
 	private final OrderController orderController;
-	private final SubscriberController subscriberController;
+	//private final SubscriberController subscriberController;
 	private final TableController tableController;
 	private final WaitingListController waitingListController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
 		this.orderController = new OrderController();
-		this.subscriberController = new SubscriberController();
+		//this.subscriberController = new SubscriberController();
 		this.tableController = new TableController();
 		this.waitingListController = new WaitingListController();
 
@@ -37,7 +37,7 @@ public class Router {
 			break;
 
 		case SUBSCRIBER:
-			subscriberController.handle(req, client);
+			//subscriberController.handle(req, client);
 			break;
 
 		case TABLE:

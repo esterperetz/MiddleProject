@@ -108,9 +108,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param clientUi The client UI used for server communication.
 	 * @param ip       The server IP address.
 	 */
-	public void initData(ClientUi clientUi, String ip) {
-		this.clientUi = clientUi;
-		this.ip = ip;
+	//public void initData(ClientUi clientUi, String ip) {
+	public void initData() {
+		//this.clientUi = clientUi;
+		this.ip = clientUi.getIp();
 
 		clientUi.addListener(this);
 		orderLogic = new OrderLogic(clientUi);
@@ -171,9 +172,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 					}
 					break;
 
-				case CREATE:
-				case UPDATE:
-				case DELETE:
+				//case CREATE:
+				//case UPDATE:
+				//case DELETE:
 				default:
 					// Handle success or failure notification
 					if (payload instanceof Boolean) {
@@ -242,12 +243,20 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	@FXML
 	private void handleAddOrder(ActionEvent event) {
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/addOrder.fxml"));
-			Parent root = loader.load();
-			Stage stage = new Stage();
-			stage.setTitle("Add New Order");
-			stage.setScene(new Scene(root));
-			stage.show();
+			//FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/addOrder.fxml"));
+			//Parent root = loader.load();
+			//Stage stage = new Stage();
+			//stage.setTitle("Add New Order");
+			//stage.setScene(new Scene(root));
+			//stage.show();
+			AddOrderController controller = 
+	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
+			if (controller != null) {
+	            controller.initData();
+	        } else {
+	            System.err.println("Error: Could not load AddOrderController.");
+	        }
+			
 
 		} catch (Exception e) {
 			String header = "Navigation Error";
@@ -272,18 +281,25 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		}
 
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/updateOrder.fxml"));
-			Parent root = loader.load();
-			UpdateOrder controller = loader.getController();
+			UpdateOrder controller = 
+	        		super.loadScreen("reservation/updateOrder", event,this.clientUi);
+	    	if (controller != null) {
+	            controller.initData(selectedOrder,orderLogic,this);
+	        } else {
+	            System.err.println("Error: Could not load ManagerOptionsController.");
+	        }
+	    	//FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/updateOrder.fxml"));
+			//Parent root = loader.load();
+			//super.loadScreen(, event, this.clientUi);
+			//UpdateOrder controller = loader.getController();
 			// Passing the selected order, OrderLogic, AND THIS controller reference for
 			// refresh
-			controller.initData(selectedOrder, orderLogic, this);
+			//controller.initData(selectedOrder, orderLogic, this);
 
-			Stage stage = new Stage();
-			stage.setTitle("Update Order #" + selectedOrder.getOrder_number());
-			stage.setScene(new Scene(root));
-			stage.show();
-
+			//Stage stage = new Stage();
+			//stage.setTitle("Update Order #" + selectedOrder.getOrder_number());
+			//stage.setScene(new Scene(root));
+			//stage.show();
 		} catch (Exception e) {
 			e.printStackTrace();
 			String header = "Navigation Error";

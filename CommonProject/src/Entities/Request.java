@@ -18,7 +18,7 @@ public class Request implements Serializable {
     private final ActionType action;     // GET_ALL / CREATE / ...
     private final Integer id;            // Identifier (orderId, userId, etc.)
     private final Object payload;        // The body of the request (e.g., Order, User)
-
+    //need to change the name payload
     /**
      * Creates a new Request object.
      *
