@@ -43,7 +43,7 @@ public class DBConnection {
         
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
-//		createTableSubscriber(instance.connection);
+		createTableSubscriber(instance.connection);
 		createTableOrder(instance.connection);
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
@@ -115,7 +115,7 @@ public class DBConnection {
 	
 	public static void createTableOrder(Connection con1) {
 		Statement stmt;
-		String sql = "CREATE TABLE IF NOT EXISTS bistro.orders (" +
+		String sql = "CREATE TABLE IF NOT EXISTS bistro.order (" +
                 "order_number INT NOT NULL AUTO_INCREMENT, " +
                 "order_date DATETIME NOT NULL, " +
                 "number_of_guests INT NOT NULL, " +

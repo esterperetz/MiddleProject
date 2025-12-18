@@ -40,65 +40,106 @@ import javafx.util.converter.IntegerStringConverter;
 public class OrderUi_controller extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
-	private TableView<Order> orderTable;
-	@FXML
-	private TableColumn<Order, Integer> Order_numberColumn;
-	@FXML
-	private TableColumn<Order, Date> DateColumn;
-	@FXML
-	private TableColumn<Order, Integer> itemColumn; // Guests
-	@FXML
-	private TableColumn<Order, Integer> confirmation_codeColumn;
-	@FXML
-	private TableColumn<Order, Integer> subscriber_idColumn;
-	@FXML
-	private TableColumn<Order, Date> date_of_placing_orderColumn;
-	@FXML
-	private TableColumn<Order, String> identificationDetailsColumn;
-	@FXML
-	private TableColumn<Order, String> fullNameColumn;
-	@FXML
-	private TableColumn<Order, Double> totalPriceColumn;
-	@FXML
-	private TableColumn<Order, Order.OrderStatus> statusColumn;
-	private ObservableList<Order> orderData = FXCollections.observableArrayList();
-	private OrderLogic orderLogic;
-	private String ip;
+    private TableView<Order> orderTable;
+    
+    // --- 1. משתנים התואמים ל-FXML החדש ---
+    @FXML
+    private TableColumn<Order, Integer> Order_numberColumn;
+    
+    @FXML
+    private TableColumn<Order, String> clientNameColumn;  // החליף את fullNameColumn
+    
+    @FXML
+    private TableColumn<Order, String> clientPhoneColumn; // החליף את identificationDetailsColumn
+    
+    @FXML
+    private TableColumn<Order, String> clientEmailColumn; // שדה חדש!
+    
+    @FXML
+    private TableColumn<Order, Integer> subscriber_idColumn;
 
-	public OrderUi_controller() {
-	}
+    @FXML
+    private TableColumn<Order, Date> DateColumn; // Order Date
+    
+    @FXML
+    private TableColumn<Order, Date> arrivalTimeColumn;   // שדה חדש!
+    
+    @FXML
+    private TableColumn<Order, Integer> itemColumn; // Guests
+    
+    @FXML
+    private TableColumn<Order, Double> totalPriceColumn;
+    
+    @FXML
+    private TableColumn<Order, Order.OrderStatus> statusColumn;
+    
+    @FXML
+    private TableColumn<Order, Integer> confirmation_codeColumn;
+    
+    @FXML
+    private TableColumn<Order, Date> date_of_placing_orderColumn;
 
-	@FXML
-	private void initialize() {
+    private ObservableList<Order> orderData = FXCollections.observableArrayList();
+    private OrderLogic orderLogic;
+    private String ip;
 
-		Order_numberColumn
-				.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_number()));
+    public OrderUi_controller() {
+    }
 
-		itemColumn.setCellValueFactory(
-				cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNumber_of_guests()));
+    @FXML
+    private void initialize() {
+        // --- 2. חיבור הנתונים לטבלה באמצעות Getters של Order החדש ---
 
-		confirmation_codeColumn.setCellValueFactory(
-				cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmation_code()));
+        // מספר הזמנה
+        Order_numberColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_number()));
 
-		subscriber_idColumn
-				.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriber_id()));
+        // שם לקוח (String)
+        clientNameColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getClient_name()));
 
-		DateColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_date()));
+        // טלפון (String)
+        clientPhoneColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getClient_Phone()));
 
-		date_of_placing_orderColumn.setCellValueFactory(
-				cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getDate_of_placing_order()));
+        // אימייל (String)
+        clientEmailColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty(cellData.getValue().getClient_email()));
 
-		identificationDetailsColumn.setCellValueFactory(
-				cellData -> new SimpleStringProperty(cellData.getValue().getIdentification_details()));
+        // מזהה מנוי
+        subscriber_idColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriber_id()));
 
-		fullNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFull_name()));
+        // תאריך הזמנה
+        DateColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_date()));
 
-		totalPriceColumn
-				.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getTotal_price()));
+        // שעת הגעה בפועל
+        arrivalTimeColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getArrivalTime()));
 
-		statusColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getStatus()));
-		setupEditableColumns();
-		orderTable.setItems(orderData);
+        // כמות אורחים
+        itemColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getNumber_of_guests()));
+
+        // מחיר כולל
+        totalPriceColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getTotal_price()));
+
+        // סטטוס (שים לב: getOrder_status ולא getStatus)
+        statusColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_status()));
+
+        // קוד אישור
+        confirmation_codeColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmation_code()));
+
+        // תאריך יצירת ההזמנה
+        date_of_placing_orderColumn.setCellValueFactory(cellData -> 
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getDate_of_placing_order()));
+
+        setupEditableColumns();
+        orderTable.setItems(orderData);
 	}
 
 	/**

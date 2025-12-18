@@ -130,7 +130,7 @@ public class OrderDAO {
 	public boolean updateOrder(Order o) throws SQLException {
 	    String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
 	                 "subscriber_id = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, " +
-	                 "client_Phone = ?, ArrivalTime = ?, total_price = ?, order_status = ? " +
+	                 "client_Phone = ?, arrival_time = ?, total_price = ?, order_status = ? " +
 	                 "WHERE order_number = ?";
 	    
 	    Connection con = null;
