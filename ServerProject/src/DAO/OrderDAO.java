@@ -262,6 +262,7 @@ public class OrderDAO {
 			stmt.setTimestamp(2, ts); // For the end of the interval
 			stmt.setInt(3, numberOfGuests); // Match guest capacity logic
 
+			
 			rs = stmt.executeQuery();
 
 			if (rs.next()) {
