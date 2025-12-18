@@ -15,31 +15,37 @@ public class Order implements Serializable {
 	private Date order_date;
 	private int number_of_guests;
 	private int confirmation_code;
-	private Integer subscriber_id; // Integer to allow NULL
+	private Integer subscriber_id;
 	private Date date_of_placing_order;
-	private String identification_details; // Mandatory
-	private String full_name;
+	private String client_name;
+	private String client_email; 
+	private String client_Phone; 
+	private Date ArrivalTime;
 	private double total_price;
-	private OrderStatus status;
+	private OrderStatus order_status;
 
+	// סדר מתוקן ב-Constructor של Order.java
 	public Order(int order_number, Date order_date, int number_of_guests, int confirmation_code, Integer subscriber_id,
-			Date date_of_placing_order, String identification_details, String full_name, double total_price,
-			OrderStatus status) {
-		
-		if (identification_details == null || identification_details.isEmpty()) {
-			throw new IllegalArgumentException("Identification details cannot be null or empty.");
-		}
+	        Date date_of_placing_order, String client_name, String client_email, String client_Phone, Date ArrivalTime, 
+	        double total_price, OrderStatus order_status) {
+	    
+	    // בדיקת תקינות
+	    if (client_email == null || client_Phone == null) {
+	        throw new IllegalArgumentException("Email and Phone cannot be null.");
+	    }
 
-		this.order_number = order_number;
-		this.order_date = order_date;
-		this.number_of_guests = number_of_guests;
-		this.confirmation_code = confirmation_code;
-		this.subscriber_id = subscriber_id;
-		this.date_of_placing_order = date_of_placing_order;
-		this.identification_details = identification_details;
-		this.full_name = full_name;
-		this.total_price = total_price;
-		this.status = (status != null) ? status : OrderStatus.APPROVED; // Default to APPROVED
+	    this.order_number = order_number;
+	    this.order_date = order_date;
+	    this.number_of_guests = number_of_guests;
+	    this.confirmation_code = confirmation_code;
+	    this.subscriber_id = subscriber_id;
+	    this.date_of_placing_order = date_of_placing_order;
+	    this.client_name = client_name;   // שים לב לסדר ההשמה
+	    this.client_email = client_email;
+	    this.client_Phone = client_Phone;
+	    this.ArrivalTime = ArrivalTime;
+	    this.total_price = total_price;
+	    this.order_status = (order_status != null) ? order_status : OrderStatus.APPROVED;
 	}
 
 	// Getters and Setters
@@ -91,21 +97,6 @@ public class Order implements Serializable {
 		this.date_of_placing_order = date_of_placing_order;
 	}
 
-	public String getIdentification_details() {
-		return identification_details;
-	}
-
-	public void setIdentification_details(String identification_details) {
-		this.identification_details = identification_details;
-	}
-
-	public String getFull_name() {
-		return full_name;
-	}
-
-	public void setFull_name(String full_name) {
-		this.full_name = full_name;
-	}
 
 	public double getTotal_price() {
 		return total_price;
@@ -115,18 +106,44 @@ public class Order implements Serializable {
 		this.total_price = total_price;
 	}
 
-	public OrderStatus getStatus() {
-		return status;
+	public String getClient_name() {
+		return client_name;
 	}
 
-	public void setStatus(OrderStatus status) {
-		this.status = status;
+	public void setClient_name(String client_name) {
+		this.client_name = client_name;
 	}
 
-	@Override
-	public String toString() {
-		return "Order [order_number=" + order_number + ", order_date=" + order_date + ", identification="
-				+ identification_details + ", status=" + status + "]";
+	public String getClient_email() {
+		return client_email;
+	}
+
+	public void setClient_email(String client_email) {
+		this.client_email = client_email;
+	}
+
+	public String getClient_Phone() {
+		return client_Phone;
+	}
+
+	public void setClient_Phone(String client_Phone) {
+		this.client_Phone = client_Phone;
+	}
+
+	public Date getArrivalTime() {
+		return ArrivalTime;
+	}
+
+	public void setArrivalTime(Date arrivalTime) {
+		ArrivalTime = arrivalTime;
+	}
+
+	public OrderStatus getOrder_status() {
+		return order_status;
+	}
+
+	public void setOrder_status(OrderStatus order_status) {
+		this.order_status = order_status;
 	}
 
 	@Override
