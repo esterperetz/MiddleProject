@@ -6,11 +6,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+
+
+import DBConnection.DBConnection;
 import Entities.Subscriber;
 
 public class SubscriberDAO {
     private Connection dbConnection;
 
+    public SubscriberDAO() {
+    	try {
+			this.dbConnection = DBConnection.getInstance().getConnection();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+    }
     public SubscriberDAO(Connection dbConnection) {
         this.dbConnection = dbConnection;
     }
