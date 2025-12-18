@@ -12,12 +12,12 @@ import Entities.Request;
 import Entities.ResourceType;
 import Entities.Subscriber;
 import ocsf.server.ConnectionToClient;
-
+/*
 //Controller responsible for handling all subscriber-related requests.
 
 public class SubscriberController {
 
-	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
+	//private final SubscriberDAO subscriberDAO = new SubscriberDAO(DBConnection.getInstance().getConnection());
 
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
 		if (req.getResource() != ResourceType.SUBSCRIBER) {
@@ -107,3 +107,4 @@ public class SubscriberController {
 		}
 	}
 }
+*/
