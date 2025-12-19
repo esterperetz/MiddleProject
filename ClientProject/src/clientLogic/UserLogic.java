@@ -23,6 +23,7 @@ public class UserLogic {
 		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.GET_BY_ID, id, null);
 		client.sendRequest(req);
 	}
+	
 
 	public void registerSubscriber(Subscriber subscriber) {
 		System.out.println("three");

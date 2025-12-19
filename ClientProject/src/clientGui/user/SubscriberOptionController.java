@@ -16,13 +16,14 @@ import java.util.ResourceBundle;
 
 import client.MessageListener;
 
-public class SubscriberOptionController extends MainNavigator implements Initializable , MessageListener<Object>, BaseController{
+public class SubscriberOptionController extends MainNavigator implements Initializable , MessageListener<Object>{
 	private static boolean isSubscriber=true;
 	//private ClientUi client_ui;
 
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
+	protected int subscriberId;
 	
 	
 	/**
@@ -43,10 +44,11 @@ public class SubscriberOptionController extends MainNavigator implements Initial
             btnSubscriberSpecial.setManaged(true);
         }
     }
-    public void initData(ClientUi clientUi, boolean isSubscriberStatus) {
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
     	this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
-
+        this.subscriberId = subId;
+        System.out.println("Loaded options for subscriber: " + subId);
         // 1. רישום לקבלת הודעות (אם צריך בדף זה)
         /*
         if (this.client_ui != null) {
