@@ -1,88 +1,202 @@
 package clientGui.user;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import Entities.ActionType;
+import Entities.Order;
+import Entities.Response;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientLogic.OrderLogic;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-public class SubscriberHistoryController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class SubscriberHistoryController extends MainNavigator implements MessageListener<Object>, BaseController {
 
-    @FXML private TableView<OrderHistoryItem> ordersTable;
-    @FXML private TableColumn<OrderHistoryItem, Integer> colOrderId;
-    @FXML private TableColumn<OrderHistoryItem, String> colDate;
-    @FXML private TableColumn<OrderHistoryItem, String> colTime;
-    @FXML private TableColumn<OrderHistoryItem, String> colTotal;
-    @FXML private TableColumn<OrderHistoryItem, String> colStatus;
+	// we need to bring the join between subscriber and order
+	@FXML
+	private TableView<OrderHistoryItem> ordersTable;
+	@FXML
+	private TableColumn<OrderHistoryItem, Integer> colOrderId;
+	@FXML
+	private TableColumn<OrderHistoryItem, String> colDate;
+	@FXML
+	private TableColumn<OrderHistoryItem, String> colTime;
+	@FXML
+	private TableColumn<OrderHistoryItem, String> colTotal;
+	@FXML
+	private TableColumn<OrderHistoryItem, String> colStatus;
+	@FXML
+	private DatePicker filterDatePicker;
+	private ObservableList<OrderHistoryItem> fullDataList = FXCollections.observableArrayList();
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+	private OrderLogic orderLogic;
+	private int currentSubscriberId;
 
-    @FXML
-    public void initialize() {
-        // חיבור העמודות למשתנים במחלקה
-        colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
-        colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
-        colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
-        colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
-        colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+	@FXML
+	public void initialize() {
+		// חיבור העמודות למשתנים במחלקה
+		colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
+		colDate.setCellValueFactory(new PropertyValueFactory<>("date"));
+		colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
+		colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
+		colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
 
-        // טעינת נתונים לדוגמה (בפועל זה יגיע מהשרת)
-        loadMockData();
-    }
+	}
 
-    private void loadMockData() {
-        ObservableList<OrderHistoryItem> list = FXCollections.observableArrayList(
-            new OrderHistoryItem(1024, "12/12/2025", "19:30", "65.00 ₪", "Completed"),
-            new OrderHistoryItem(1011, "05/12/2025", "13:15","45.00 ₪", "Completed"),
-            new OrderHistoryItem(998, "20/11/2025", "20:00", "180.00 ₪", "Completed")
-        );
-        ordersTable.setItems(list);
-    }
+	// public void initData(ClientUi clientUi, int subscriberId) {
+	public void initData(int subscriberId) {
+		// this.clientUi = clientUi;
+		this.currentSubscriberId = subscriberId;
+		this.clientUi.addListener(this);
+		this.orderLogic = new OrderLogic(clientUi);
+		System.out.println("Fetching history for subscriber: " + subscriberId);
+		orderLogic.getSubscriberHistory(subscriberId);
+	}
 
-    @FXML
-    void goBackBtn(ActionEvent event) {
-//        ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
-    	super.loadScreen("user/SubscriberOption",event,clientUi);
-    	
-        
-    }
+	@FXML
+	void handleClearFilter(ActionEvent event) {
+		// איפוס ה-DatePicker
+		filterDatePicker.setValue(null);
 
-    // --- מחלקה פנימית לייצוג שורה בטבלה ---
-    public static class OrderHistoryItem {
-        private int orderId;
-        private String date;
-        private String time;
-        private String total;
-        private String status;
+		// החזרת הטבלה להציג את כל הנתונים המקוריים
+		ordersTable.setItems(fullDataList);
+	}
 
-        public OrderHistoryItem(int orderId, String date, String time, String total, String status) {
-            this.orderId = orderId;
-            this.date = date;
-            this.time = time;
-            this.total = total;
-            this.status = status;
-        }
+	@FXML
+	void handleDateFilter(ActionEvent event) {
+		LocalDate selectedDate = filterDatePicker.getValue();
 
-        // Getters are mandatory for PropertyValueFactory
-        public int getOrderId() { return orderId; }
-        public String getDate() { return date; }
-        public String getTime() { return time; }
-        public String getTotal() { return total; }
-        public String getStatus() { return status; }
-    }
+		if (selectedDate == null) {
+			return;
+		}
 
-	
+		// create a list that help us to filter
+		ObservableList<OrderHistoryItem> filteredList = FXCollections.observableArrayList();
+
+		for (OrderHistoryItem item : fullDataList) {
+			try {
+				// convert string
+				LocalDate itemDate = LocalDate.parse(item.getDate(), formatter);
+				//filter orders
+				if (!itemDate.isBefore(selectedDate)) {
+					filteredList.add(item);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		// update the filter table
+		ordersTable.setItems(filteredList);
+	}
+
+	@FXML
+	void goBackBtn(ActionEvent event) {
+		clientUi.removeListener(this);
+		super.loadScreen("user/SubscriberOption", event, clientUi);
+
+	}
 
 	@Override
 	public void onMessageReceive(Object msg) {
-		// TODO Auto-generated method stub
-		
+		try {
+			Platform.runLater(() -> {
+				if (msg instanceof Response) {
+					Response res = (Response) msg;
+
+					// בדיקה: האם זו הפעולה הנכונה והאם היא הצליחה?
+					if (res.getAction() == ActionType.GET_USER_ORDERS) {
+
+						if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+							// בדיקה שהמידע שהתקבל הוא אכן רשימה
+							if (res.getData() instanceof List) {
+								List<Order> orders = (List<Order>) res.getData();
+								updateTable(orders);
+							}
+						} else {
+
+							System.err.println("Error fetching history: " + res.getMessage_from_server());
+							// כאן אפשר להוסיף Alarm.showAlert אם רוצים
+						}
+					}
+				}
+			});
+		} catch (Exception e) {
+			System.out.println("two ");
+		}
+
 	}
+
+	private void updateTable(List<Order> orders) {
+		fullDataList.clear(); // מחיקת נתונים ישנים
+
+		SimpleDateFormat dateFmt = new SimpleDateFormat("dd/MM/yyyy");
+		SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm");
+
+		for (Order o : orders) {
+			String dateStr = dateFmt.format(o.getOrder_date());
+			String timeStr = timeFmt.format(o.getOrder_date());
+			String priceStr = String.format("%.2f ₪", o.getTotal_price());
+			String statusStr = o.getOrder_status().toString();
+
+			// create new row in table
+			fullDataList.add(new OrderHistoryItem(o.getOrder_number(), dateStr, timeStr, priceStr, statusStr));
+		}
+		ordersTable.setItems(fullDataList);
+	}
+
+	// --- מחלקה פנימית לייצוג שורה בטבלה ---
+	public static class OrderHistoryItem {
+		private int orderId;
+		private String date;
+		private String time;
+		private String total;
+		private String status;
+
+		public OrderHistoryItem(int orderId, String date, String time, String total, String status) {
+			this.orderId = orderId;
+			this.date = date;
+			this.time = time;
+			this.total = total;
+			this.status = status;
+		}
+
+		// Getters are mandatory for PropertyValueFactory
+		public int getOrderId() {
+			return orderId;
+		}
+
+		public String getDate() {
+			return date;
+		}
+
+		public String getTime() {
+			return time;
+		}
+
+		public String getTotal() {
+			return total;
+		}
+
+		public String getStatus() {
+			return status;
+		}
+	}
+
 }
