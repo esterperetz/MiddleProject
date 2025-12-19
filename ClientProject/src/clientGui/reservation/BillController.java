@@ -23,6 +23,7 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
     @FXML private Label lblFinalPrice;
 
     private int tableId;
+	private int subscriberId;
     
     /**
      * פונקציה זו נקראת ע"י המסך הקודם כדי לטעון את הנתונים
@@ -31,8 +32,9 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
      * @param isSubscriber - האם הלקוח הוא מנוי
      * @param tableId - מספר השולחן (כדי לשחרר אותו בסוף)
      */
-    public void initData(ObservableList<String> items, double originalTotal, boolean isSubscriber, int tableId) {
+    public void initData(ObservableList<String> items, double originalTotal, boolean isSubscriber, int tableId, int subId) {
         this.tableId = tableId;
+        this.subscriberId = subId;
         itemsList.setItems(items);
         
         lblOriginalPrice.setText(String.format("%.2f $", originalTotal));

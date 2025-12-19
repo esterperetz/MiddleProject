@@ -6,6 +6,8 @@ import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
+import clientLogic.OrderLogic;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,6 +27,10 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 	@FXML
 	private Label lblResult;
 
+	private int currentSubscriberId;
+
+	private OrderLogic orderLogic;
+	private int tableId;
 
 	/**
 	 * Triggered when the "Check out" button is clicked.
@@ -40,6 +46,7 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
 			return;
 		}
+		
 		super.loadScreen("reservation/Bill", event,clientUi);
 
 
@@ -73,12 +80,21 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-//            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+    		controller.initData(clientUi,SubscriberOptionController.isSubscriber(), currentSubscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
 	}
-
+	
+	public void initData(int subscriberId, int tableId) {
+		// this.clientUi = clientUi;
+//		this.clientUi.addListener(this);
+		this.currentSubscriberId = subscriberId;
+		this.orderLogic = new OrderLogic(clientUi);
+		System.out.println("Fetching history for subscriber: " + subscriberId);
+//		orderLogic.getOrdersBySubscriberCode(subscriberId);
+	
+	}
 
 
 	

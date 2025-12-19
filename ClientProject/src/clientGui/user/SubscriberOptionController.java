@@ -5,6 +5,8 @@ import javafx.scene.control.Button;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.reservation.CheckOutController;
+import clientGui.reservation.GetTableController;
 import clientGui.reservation.ReservationController;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -23,7 +25,8 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
-	protected int subscriberId;
+	private int subscriberId;
+	private int tableId; //check how to initialize it
 	
 	
 	/**
@@ -41,6 +44,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         if (isSubscriber) {
             // If the user is a subscriber, reveal the button and let it take up space in the layout
             btnSubscriberSpecial.setVisible(true);
+            System.out.println("HII");
             btnSubscriberSpecial.setManaged(true);
         }
     }
@@ -88,13 +92,16 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
 
 	    if (controller != null) {
-	        controller.setData(isSubscriber, "", "", ""); 
-	    }	}
+//	        controller.setData(isSubscriber, "", "", ""); 
+	    	controller.initData(clientUi, isSubscriber, subscriberId);
+	    }	
+	 }
 	
 	@FXML
 	void goToSeatTableBtn(ActionEvent event)
 	{
-		super.loadScreen("reservation/RecieveTable",event,clientUi);
+		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
+		getTableController.initData(clientUi, isSubscriber, subscriberId);
 	}
 	/**
      * Action handler for the special subscriber-only button.
@@ -103,13 +110,16 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     void subscriberActionBtn(ActionEvent event) {
         // Logic specific to subscribers goes here
         System.out.println("Subscriber specific action executed.");
-    	super.loadScreen("user/SubscriberHistory",event,clientUi);
+        
+        SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory",event,clientUi);
+        subHistoryController.initData(subscriberId);
 
     }
 
     @FXML
     void CheckOutActionBtn(ActionEvent event) {
-    	super.loadScreen("reservation/CheckOutScreen",event,clientUi);
+    	CheckOutController checkOutController = super.loadScreen("reservation/CheckOutScreen",event,clientUi);
+    	checkOutController.initData(subscriberId, tableId);
     }
 	
 	@Override

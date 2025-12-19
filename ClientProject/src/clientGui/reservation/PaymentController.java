@@ -4,6 +4,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.user.SubscriberOptionController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -27,6 +28,7 @@ public class PaymentController extends MainNavigator implements  MessageListener
 	// משתנה לשמירת הסכום לתשלום (אופציונלי, כדי להציג בלוג)
 	private double amountToPay;
 	private int tableId;
+	private int subscriberId;
 
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
@@ -65,13 +67,16 @@ public class PaymentController extends MainNavigator implements  MessageListener
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
 		//Alert pay good 
-		super.loadScreen("user/SubscriberOption",event,clientUi);
+		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",event,clientUi);
+		
+		controller.initData(clientUi, SubscriberOptionController.isSubscriber(), subscriberId);
 
 	}
 
 	@FXML
 	void cancel(ActionEvent event) {
-		super.loadScreen("reservation/Bill",event,clientUi);
+		BillController billController = super.loadScreen("reservation/Bill",event,clientUi);
+		billController.initData(null, amountToPay, SubscriberOptionController.isSubscriber(), tableId, subscriberId);
 	
 	}
 

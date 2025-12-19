@@ -1,5 +1,6 @@
 package clientGui.user;
 
+import Entities.Alarm;
 import Entities.Response;
 import client.MessageListener;
 import clientGui.ClientUi;
@@ -79,7 +80,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		                   
 		                }
 		            } else {
-		                super.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
+		                Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
 		            }
 		            
 		        });

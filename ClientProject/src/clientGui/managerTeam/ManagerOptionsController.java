@@ -280,7 +280,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// ((ReservationController) controller).setData(true, null, null, null);
 		// clientGui.reservation.OrderUi_controller controller =
 		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
-		clientUi.removeListener(this);
+//		clientUi.removeListener(this);
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
 		if (controller != null) {
 

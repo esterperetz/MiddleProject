@@ -23,6 +23,9 @@ public class GetTableController extends MainNavigator implements  MessageListene
 
     @FXML
     private Label lblResult;
+    private int subscriberId;
+
+	private boolean isSubscriber;
 
     /**
      * Triggered when the "Check Table" button is clicked.
@@ -93,12 +96,18 @@ public class GetTableController extends MainNavigator implements  MessageListene
     	SubscriberOptionController controller = 
     	        super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-//            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+            controller.initData(clientUi,SubscriberOptionController.isSubscriber(),subscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
-
+    
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+    	this.clientUi = clientUi;
+        this.isSubscriber = isSubscriberStatus;
+        this.subscriberId = subId;
+        System.out.println("Loaded options for subscriber: " + subId);
+    }
 	
 
 	@Override
