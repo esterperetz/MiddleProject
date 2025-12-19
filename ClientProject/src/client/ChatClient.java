@@ -33,6 +33,7 @@ public class ChatClient extends AbstractClient {
 	 */
 	@Override
 	public void handleMessageFromServer(Object msg) {
+		System.out.println("got from the server");
 		this.clientUI.displayMessage(msg);
 		
 	}
@@ -46,6 +47,7 @@ public class ChatClient extends AbstractClient {
 	public void send(Object obj) { 
 	    try {
 	        // (sendToServer  Object)
+	    	System.out.println("get here");
 	        sendToServer(obj);
 	    } catch (IOException e) {
 	        Platform.runLater(() -> clientUI.displayMessage("Error sending request to server."));
