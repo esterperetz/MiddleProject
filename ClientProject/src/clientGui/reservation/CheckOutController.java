@@ -73,7 +73,7 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+//            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }

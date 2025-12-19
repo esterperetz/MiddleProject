@@ -9,11 +9,10 @@ import Entities.Subscriber;
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
-import clientGui.navigation.BaseController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 import clientLogic.UserLogic;
 
-public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>, BaseController {
+public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>{
 	@FXML
 	private TextField txtUsername;
 
@@ -51,7 +50,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			return;
 		}
 		try {
-		clientUi.addListener(this);//MUST DO NOT FORGER
+//		clientUi.addListener(this);//MUST DO NOT FORGER
 		UserLogic user = new UserLogic(clientUi);//MUST DO NOT FORGER
 		user.registerSubscriber(new Subscriber(123456, username, phone, email));
 		}catch(Exception e) {

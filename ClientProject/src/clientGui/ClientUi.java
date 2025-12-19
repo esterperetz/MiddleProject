@@ -98,6 +98,14 @@ public class ClientUi {
     	this.listeners.add(listener);
     }
     
+    public void removeListener(MessageListener listener) {
+    	this.listeners.remove(listener);
+    }
+    
+    public void removeAllListeners() {
+        listeners.clear(); // מרוקן את כל רשימת המאזינים
+    }
+    
     /**
      *Sends a "quit" message to the server.
      * Used when the client disconnects.
@@ -111,6 +119,9 @@ public class ClientUi {
             } catch (Exception e) {
                 // Ignore
             	e.printStackTrace();
+            }
+            finally {
+                System.exit(0);
             }
         }
     }

@@ -135,7 +135,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			System.err.println("Error: ClientUi is null in ManagerOptionsController!");
 			return;
 		}
-		this.clientUi.addListener(this);
+//		this.clientUi.addListener(this);
 
 		// 4. עכשיו בטוח לקרוא לשרת כי clientUi קיים
 		loadStandardHours();
@@ -280,6 +280,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// ((ReservationController) controller).setData(true, null, null, null);
 		// clientGui.reservation.OrderUi_controller controller =
 		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
+		clientUi.removeListener(this);
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
 		if (controller != null) {
 
@@ -325,7 +326,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
 	@Override
 	public void onMessageReceive(Object msg) {
-		System.out.println("Manager Controller received: " + msg);
+		System.out.println("Manager Controller received: " + msg.toString());
 	}
 
 	public static boolean isManager() {
