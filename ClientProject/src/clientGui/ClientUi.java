@@ -97,6 +97,10 @@ public class ClientUi {
 	public void addListener(MessageListener listener) {
     	this.listeners.add(listener);
     }
+    @SuppressWarnings("rawtypes")
+	public void removeListener(MessageListener listener) {
+    	this.listeners.remove(listener);
+    }
     
     /**
      *Sends a "quit" message to the server.
