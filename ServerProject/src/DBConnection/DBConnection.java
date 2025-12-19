@@ -98,8 +98,8 @@ public class DBConnection {
 	public static void createTableSubscriber(Connection con1) {
 		Statement stmt;
 		String sql = "CREATE TABLE IF NOT EXISTS bistro.subscriber (" + "subscriber_id INT NOT NULL AUTO_INCREMENT, "
-				+ "first_name VARCHAR(100) NOT NULL, " + "last_name VARCHAR(100) NOT NULL, "
-				+ "email VARCHAR(255) UNIQUE NOT NULL, " + "phone_number VARCHAR(20), " + "PRIMARY KEY (subscriber_id)"
+				+ "subscriber_name VARCHAR(100) NOT NULL, "
+				+ "phone_number VARCHAR(255) UNIQUE NOT NULL, " + "email VARCHAR(20), " + "PRIMARY KEY (subscriber_id)"
 				+ ");";
 		try {
 			stmt = con1.createStatement();
