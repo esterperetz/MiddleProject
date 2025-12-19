@@ -27,7 +27,6 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	private Label lblMessage;
 
 	private UserLogic UserLogic;
-	private boolean work = true;
 
 	/**
 	 * Handles the registration process when "Register Now" is clicked.
@@ -52,16 +51,12 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			return;
 		}
 		try {
-		clientUi.addListener(this);
-		UserLogic user = new UserLogic(clientUi);
+		clientUi.addListener(this);//MUST DO NOT FORGER
+		UserLogic user = new UserLogic(clientUi);//MUST DO NOT FORGER
 		user.registerSubscriber(new Subscriber(123456, username, phone, email));
 		}catch(Exception e) {
 			System.out.println("one ");
 		}
-		// 3. Send to Server (Simulation)
-		// TODO: specific logic to send data to server (e.g.,
-		// ClientUI.chat.registerSubscriber(...))
-//        boolean success = mockServerRegistration(username, phone, email);
 
 	}
 
@@ -70,7 +65,6 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		try {
 		if (msg instanceof Response) {
 			Response res = (Response) msg;
-			work = false;
 			System.out.println(res.getStatus().getString());
 		} else
 			System.out.println("nothing works");
@@ -87,16 +81,12 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	void handleBackBtn(ActionEvent event) {
 		// Change "manager/ManagerOptions" to wherever you want to go back to
 		// MainNavigator.loadScene("managerTeam/workerOption");
-		if (!work) {
 			ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event, clientUi);
 			if (controller != null) {
 				controller.initData(clientUi, ManagerOptionsController.isManager());
 			} else {
 				System.err.println("Error: Could not load ManagerOptionsController.");
 			}
-		}else {
-			System.out.println("back does not work");
-		}
 	}
 
 	/**
