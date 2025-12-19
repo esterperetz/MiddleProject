@@ -25,6 +25,11 @@ public class OrderLogic {
         Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_ID, orderId, null);
         client.sendRequest(req);
     }
+    
+	public void getOrdersBySubscriberId(int subscriberId) {
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_ID, subscriberId, null);
+		client.sendRequest(req);
+	}
 
 
     public void createOrder(Order order) {

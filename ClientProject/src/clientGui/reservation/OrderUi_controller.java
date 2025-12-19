@@ -155,7 +155,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		//this.clientUi = clientUi;
 		this.ip = clientUi.getIp();
 
-		clientUi.addListener(this);
+//		clientUi.addListener(this);
 		orderLogic = new OrderLogic(clientUi);
 
 		System.out.println("Initialization: Requesting all orders...");

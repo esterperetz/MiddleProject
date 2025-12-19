@@ -45,6 +45,50 @@ public class OrderDAO {
 				stmt.close();
 		}
 	}
+	
+	public List<Order> getOrdersBySubscriberId(int subscriberId) throws SQLException {
+	    // שאילתה לשליפת כל ההזמנות ששייכות למנוי מסוים
+	    String sql = "SELECT * FROM `order` WHERE subscriber_id = ?";
+	    Connection con = null;
+	    PreparedStatement stmt = null;
+	    ResultSet rs = null;
+
+	    try {
+	        con = DBConnection.getInstance().getConnection();
+	        stmt = con.prepareStatement(sql);
+	        stmt.setInt(1, subscriberId);
+	        rs = stmt.executeQuery();
+
+	        List<Order> orderList = new ArrayList<>();
+	        while (rs.next()) {
+	            // טיפול ב-Status (מניעת שגיאה אם השדה ריק)
+	            String statusStr = rs.getString("order_status");
+	            OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
+
+	            // יצירת אובייקט הזמנה והוספה לרשימה
+	            Order o = new Order(
+	                rs.getInt("order_number"),
+	                rs.getTimestamp("order_date"),
+	                rs.getInt("number_of_guests"),
+	                rs.getInt("confirmation_code"),
+	                subscriberId, // אנחנו כבר יודעים את ה-ID
+	                rs.getTimestamp("date_of_placing_order"),
+	                rs.getString("client_name"), 
+	                rs.getString("client_email"), 
+	                rs.getString("client_phone"), 
+	                rs.getTimestamp("arrival_time"),
+	                rs.getDouble("total_price"), 
+	                status
+	            );
+	            orderList.add(o);
+	        }
+	        return orderList;
+	    } finally {
+	        // סגירת משאבים
+	        if (rs != null) rs.close();
+	        if (stmt != null) stmt.close();
+	    }
+	}
 
 	public Order getOrder(int id) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE order_number = ?";
@@ -130,7 +174,7 @@ public class OrderDAO {
 	public boolean updateOrder(Order o) throws SQLException {
 	    String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
 	                 "subscriber_id = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, " +
-	                 "client_Phone = ?, ArrivalTime = ?, total_price = ?, order_status = ? " +
+	                 "client_Phone = ?, arrival_time = ?, total_price = ?, order_status = ? " +
 	                 "WHERE order_number = ?";
 	    
 	    Connection con = null;

@@ -71,7 +71,8 @@ public class PaymentController extends MainNavigator implements  MessageListener
 
 	@FXML
 	void cancel(ActionEvent event) {
-		closeWindow(event);
+		super.loadScreen("reservation/Bill",event,clientUi);
+	
 	}
 
 	private void showError(String msg) {

@@ -1,10 +1,18 @@
 package clientGui.user;
 
 
+import java.util.Date;
+import java.util.List;
+
+import Entities.Order;
+import Entities.Order.OrderStatus;
+import Entities.Response;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientLogic.OrderLogic;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -15,7 +23,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-public class SubscriberHistoryController extends MainNavigator implements  MessageListener<Object>, BaseController{
+public class SubscriberHistoryController extends SubscriberOptionController implements  MessageListener<Object>{
 
     @FXML private TableView<OrderHistoryItem> ordersTable;
     @FXML private TableColumn<OrderHistoryItem, Integer> colOrderId;
@@ -23,6 +31,9 @@ public class SubscriberHistoryController extends MainNavigator implements  Messa
     @FXML private TableColumn<OrderHistoryItem, String> colTime;
     @FXML private TableColumn<OrderHistoryItem, String> colTotal;
     @FXML private TableColumn<OrderHistoryItem, String> colStatus;
+    	  private OrderLogic orderLogic;
+    	  private List<Order> orderList;
+    	 
 
     @FXML
     public void initialize() {
@@ -32,18 +43,16 @@ public class SubscriberHistoryController extends MainNavigator implements  Messa
         colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-
+        orderLogic = new OrderLogic(clientUi);
         // טעינת נתונים לדוגמה (בפועל זה יגיע מהשרת)
-        loadMockData();
+        loadDataFromDB();
     }
+ 
 
-    private void loadMockData() {
-        ObservableList<OrderHistoryItem> list = FXCollections.observableArrayList(
-            new OrderHistoryItem(1024, "12/12/2025", "19:30", "65.00 ₪", "Completed"),
-            new OrderHistoryItem(1011, "05/12/2025", "13:15","45.00 ₪", "Completed"),
-            new OrderHistoryItem(998, "20/11/2025", "20:00", "180.00 ₪", "Completed")
-        );
-        ordersTable.setItems(list);
+    private void loadDataFromDB() {
+    	if (subscriberId != 0)
+    		orderLogic.getOrdersBySubscriberId(subscriberId);
+    
     }
 
     @FXML
@@ -57,25 +66,25 @@ public class SubscriberHistoryController extends MainNavigator implements  Messa
     // --- מחלקה פנימית לייצוג שורה בטבלה ---
     public static class OrderHistoryItem {
         private int orderId;
-        private String date;
-        private String time;
-        private String total;
-        private String status;
+        private Date date;
+        private Date time;
+        private double total;
+        private OrderStatus  status;
 
-        public OrderHistoryItem(int orderId, String date, String time, String total, String status) {
+        public OrderHistoryItem(int orderId, Date date, Date time, double total, OrderStatus orderStatus) {
             this.orderId = orderId;
             this.date = date;
             this.time = time;
             this.total = total;
-            this.status = status;
+            this.status = orderStatus;
         }
 
         // Getters are mandatory for PropertyValueFactory
         public int getOrderId() { return orderId; }
-        public String getDate() { return date; }
-        public String getTime() { return time; }
-        public String getTotal() { return total; }
-        public String getStatus() { return status; }
+        public Date getDate() { return date; }
+        public Date getTime() { return time; }
+        public double getTotal() { return total; }
+        public OrderStatus getStatus() { return status; }
     }
 
 	
@@ -83,6 +92,31 @@ public class SubscriberHistoryController extends MainNavigator implements  Messa
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
+		if (msg instanceof Response) {
+			Response response = (Response)msg;
+			boolean status = ((Response) msg).getStatus().equals("SUCCESS");
+			if(status) {
+				List<Order> orderList = (List<Order>) ((Response) msg).getData();
+				Platform.runLater(() -> {
+	                ObservableList<OrderHistoryItem> tableData = FXCollections.observableArrayList();
+	                
+	                for (Order o : orderList) {
+	                    tableData.add(new OrderHistoryItem(
+	                        o.getOrder_number(), 
+	                        o.getDate_of_placing_order(), 
+	                        o.getArrivalTime(), 
+	                        o.getTotal_price(), 
+	                        o.getOrder_status()
+	                    ));
+	                }
+	                ordersTable.setItems(tableData);
+	                ordersTable.refresh(); // ליתר ביטחון
+	            });
+			}
+			else {
+				System.out.println("There are no available orders by this ID");
+			}
 		
+		}
 	}
 }

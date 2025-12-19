@@ -32,7 +32,18 @@ public class OrderController {
 				client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
 						null, orders));
 				break;
-
+			
+			case GET_ALL_BY_SUBSCRIBER_ID:
+				if(req.getId() == null) {
+					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,Response.ResponseStatus.ERROR,"Error: GET_BY_ID requires an ID.",null));
+					break;
+				}
+				List<Order> subOrders = orderdao.getOrdersBySubscriberId(req.getId());
+				client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
+						Response.ResponseStatus.SUCCESS, null, subOrders));
+				break;
+				
+				
 			case GET_BY_ID:
 				if (req.getId() == null) {
 					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,Response.ResponseStatus.ERROR,"Error: GET_BY_ID requires an ID.",null));
