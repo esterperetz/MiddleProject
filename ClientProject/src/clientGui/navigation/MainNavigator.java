@@ -4,6 +4,7 @@ import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.reservation.ReservationController;
 import Entities.Alarm;
+import client.MessageListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -12,7 +13,7 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class MainNavigator implements BaseController {
-
+	private MessageListener currentListener;
 	private Stage mainStage;
 	protected ClientUi clientUi;// importent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -42,34 +43,45 @@ public class MainNavigator implements BaseController {
 	
 	public <T> T loadScreen(String fxmlPath, javafx.event.ActionEvent event,ClientUi c) {
 		try {
+			
+
 			FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
 			Parent root = loader.load();
 			
 			//add init  data here
 
 			T controller = loader.getController();
-
+			
 			if (controller instanceof BaseController) {
 				BaseController base = (BaseController) controller;
-
 				base.setClientUi(c);
-
-				
 				base.setMainNavigator(this);
 			}
-			Stage stage;
+			
+			
+			if (controller instanceof MessageListener) {
+	            c.removeAllListeners(); // ניקוי טוטאלי של רשימת המאזינים
+	            c.addListener((MessageListener<Object>) controller);
+	            System.out.println("DEBUG: Cleared old listeners and added new listener: " + controller.getClass().getSimpleName());
+	        }
+
+
 			System.out.println(this.clientUi);
-			if (event != null) {
-				javafx.scene.Node source = (javafx.scene.Node) event.getSource();
-				stage = (Stage) source.getScene().getWindow();
-			} else {
-				stage = this.mainStage;
+			
+			// 1. ניסיון לחלץ את ה-Stage מה-event, אם לא הצלחנו - ניקח את ה-mainStage הקיים
+			Stage stage = (event != null && event.getSource() instanceof javafx.scene.Node) 
+			                ? (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow() 
+			                : this.mainStage;
+
+			// 2. בדיקת הגנה אחרונה
+			if (stage == null) {
+			    System.err.println("Error: Stage is null. Cannot load screen.");
+			    return null;
 			}
 
+			// 3. עדכון ה-mainStage והצגת הסצנה
 			this.mainStage = stage;
-			
-			Scene scene = new Scene(root);
-			stage.setScene(scene);
+			stage.setScene(new Scene(root));
 			stage.show();
 
 			return controller; 
@@ -84,7 +96,7 @@ public class MainNavigator implements BaseController {
 	
 	// ask liel about this function(ido)
 	public static void showAlert(String header_text, String context_text, Alert.AlertType type) {
-
+		
 		Alarm.showAlert(header_text, context_text, type);
 	}
 }
