@@ -10,23 +10,39 @@ import ocsf.server.ConnectionToClient;
 import java.io.IOException;
 
 public class OrderController {
-
-	
-	
 	private final OrderDAO orderdao = new OrderDAO();
 	private final TableDAO tabledao = new TableDAO();
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 
 		if (req.getResource() != ResourceType.ORDER) {
-			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,Response.ResponseStatus.ERROR,"Error: Incorrect resource type requested. Expected ORDER.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.ERROR,
+					"Error: Incorrect resource type requested. Expected ORDER.", null));
 			return;
 		}
-		
-		
 
 		try {
 			switch (req.getAction()) {
+			case GET_USER_ORDERS:
+				int subId;
+				if (req.getPayload() != null) {
+					if (req.getPayload() instanceof Integer) {
+						subId = (Integer) req.getPayload();
+						// called function from OrderDao
+
+						List<Order> history = orderdao.getOrdersBySubscriberId(subId);
+
+						// send to client what he send requast
+						client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+								Response.ResponseStatus.SUCCESS, null, history));
+					} else {
+						client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+								Response.ResponseStatus.ERROR, "Error: Subscriber ID is missing.", null));
+					}
+				} else
+					System.out.println("Error");
+
+				break;
 			case GET_ALL:
 				List<Order> orders = orderdao.getAllOrders();
 				client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
@@ -46,7 +62,8 @@ public class OrderController {
 				
 			case GET_BY_ID:
 				if (req.getId() == null) {
-					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,Response.ResponseStatus.ERROR,"Error: GET_BY_ID requires an ID.",null));
+					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,
+							Response.ResponseStatus.ERROR, "Error: GET_BY_ID requires an ID.", null));
 					break;
 				}
 				Order order = orderdao.getOrder(req.getId());
@@ -223,17 +240,20 @@ public class OrderController {
 
 							sendOrdersToAllClients();
 						} else {
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
-									"Error: Failed to update payment in database.",null));
+							client.sendToClient(
+									new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
+											"Error: Failed to update payment in database.", null));
 						}
 					} else {
-						client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,Response.ResponseStatus.ERROR,
-								"Error: Order not found or not currently seated.",null));
+						client.sendToClient(
+								new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
+										"Error: Order not found or not currently seated.", null));
 					}
 				}
 				break;
 			default:
-				client.sendToClient(new Response(null,null,Response.ResponseStatus.ERROR,"Unsupported action: " + req.getAction(),null));
+				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+						"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -244,7 +264,8 @@ public class OrderController {
 	private void sendOrdersToAllClients() {
 		try {
 			List<Order> orders = orderdao.getAllOrders();
-			Response updateMsg = new Response(ResourceType.ORDER, ActionType.GET_ALL,Response.ResponseStatus.SUCCESS ,null, orders);
+			Response updateMsg = new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
+					null, orders);
 			Router.sendToAllClients(updateMsg);
 		} catch (SQLException e) {
 			e.printStackTrace();

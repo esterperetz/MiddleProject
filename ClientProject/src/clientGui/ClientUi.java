@@ -97,6 +97,8 @@ public class ClientUi {
 	public void addListener(MessageListener listener) {
     	this.listeners.add(listener);
     }
+   
+
     
     public void removeListener(MessageListener listener) {
     	this.listeners.remove(listener);
