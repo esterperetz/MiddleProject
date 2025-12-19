@@ -91,7 +91,7 @@ public class SubscriberController {
 		if (sub != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.SUCCESS, "id:"+id, sub));
 		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.ERROR,"Error: Subscriber not found.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.NOT_FOUND,"Error: Subscriber not found.",null));
 		}
 	}
 
