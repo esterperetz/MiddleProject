@@ -43,4 +43,8 @@ public class OrderLogic {
         Request req = new Request(ResourceType.ORDER, ActionType.DELETE, orderId, null);
         client.sendRequest(req);
     }
+    public void getSubscriberHistory(int subscriberId) {
+        Request req = new Request(ResourceType.ORDER, ActionType.GET_USER_ORDERS, null, subscriberId);
+        client.sendRequest(req);
+    }
 }
