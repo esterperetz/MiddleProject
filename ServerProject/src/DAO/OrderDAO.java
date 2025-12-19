@@ -30,10 +30,8 @@ public class OrderDAO {
 
 				Order o = new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"),
 						rs.getInt("number_of_guests"), rs.getInt("confirmation_code"), subId,
-						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"), 
-						rs.getString("client_email"), 
-						rs.getString("client_phone"), 
-						rs.getTimestamp("arrival_time"),
+						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"),
+						rs.getString("client_email"), rs.getString("client_phone"), rs.getTimestamp("arrival_time"),
 						rs.getDouble("total_price"), status);
 				list.add(o);
 			}
@@ -67,10 +65,8 @@ public class OrderDAO {
 
 				return new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"),
 						rs.getInt("number_of_guests"), rs.getInt("confirmation_code"), subId,
-						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"), 
-						rs.getString("client_email"), 
-						rs.getString("client_phone"), 
-						rs.getTimestamp("arrival_time"),
+						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"),
+						rs.getString("client_email"), rs.getString("client_phone"), rs.getTimestamp("arrival_time"),
 						rs.getDouble("total_price"), status);
 			}
 			return null;
@@ -128,51 +124,50 @@ public class OrderDAO {
 	}
 
 	public boolean updateOrder(Order o) throws SQLException {
-	    String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
-	                 "subscriber_id = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, " +
-	                 "client_Phone = ?, ArrivalTime = ?, total_price = ?, order_status = ? " +
-	                 "WHERE order_number = ?";
-	    
-	    Connection con = null;
-	    PreparedStatement stmt = null;
+		String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, "
+				+ "subscriber_id = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, "
+				+ "client_Phone = ?, arrival_time = ?, total_price = ?, order_status = ? " + "WHERE order_number = ?";
 
-	    try {
-	        con = DBConnection.getInstance().getConnection();
-	        stmt = con.prepareStatement(sql);
+		Connection con = null;
+		PreparedStatement stmt = null;
 
-	        stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrder_date().getTime()));
-	        stmt.setInt(2, o.getNumber_of_guests());
-	        stmt.setInt(3, o.getConfirmation_code());
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
 
-	        if (o.getSubscriber_id() == null) {
-	            stmt.setNull(4, java.sql.Types.INTEGER);
-	        } else {
-	            stmt.setInt(4, o.getSubscriber_id());
-	        }
+			stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrder_date().getTime()));
+			stmt.setInt(2, o.getNumber_of_guests());
+			stmt.setInt(3, o.getConfirmation_code());
 
-	        stmt.setTimestamp(5, new java.sql.Timestamp(o.getDate_of_placing_order().getTime()));
-	        
-	        stmt.setString(6, o.getClient_name());
-	        stmt.setString(7, o.getClient_email());
-	        stmt.setString(8, o.getClient_Phone());
-	        
-	        if (o.getArrivalTime() != null) {
-	            stmt.setTimestamp(9, new java.sql.Timestamp(o.getArrivalTime().getTime()));
-	        } else {
-	            stmt.setNull(9, java.sql.Types.TIMESTAMP);
-	        }
+			if (o.getSubscriber_id() == null) {
+				stmt.setNull(4, java.sql.Types.INTEGER);
+			} else {
+				stmt.setInt(4, o.getSubscriber_id());
+			}
 
-	        stmt.setDouble(10, o.getTotal_price());
-	        
-	        stmt.setString(11, o.getOrder_status().name());
+			stmt.setTimestamp(5, new java.sql.Timestamp(o.getDate_of_placing_order().getTime()));
 
-	        stmt.setInt(12, o.getOrder_number());
+			stmt.setString(6, o.getClient_name());
+			stmt.setString(7, o.getClient_email());
+			stmt.setString(8, o.getClient_Phone());
 
-	        return stmt.executeUpdate() > 0;
-	    } finally {
-	        if (stmt != null)
-	            stmt.close();
-	    }
+			if (o.getArrivalTime() != null) {
+				stmt.setTimestamp(9, new java.sql.Timestamp(o.getArrivalTime().getTime()));
+			} else {
+				stmt.setNull(9, java.sql.Types.TIMESTAMP);
+			}
+
+			stmt.setDouble(10, o.getTotal_price());
+
+			stmt.setString(11, o.getOrder_status().name());
+
+			stmt.setInt(12, o.getOrder_number());
+
+			return stmt.executeUpdate() > 0;
+		} finally {
+			if (stmt != null)
+				stmt.close();
+		}
 	}
 
 	public boolean deleteOrder(int id) throws SQLException {
@@ -206,20 +201,11 @@ public class OrderDAO {
 				int subIdTemp = rs.getInt("subscriber_id");
 				Integer subId = rs.wasNull() ? null : subIdTemp;
 
-				return new Order(
-				    rs.getInt("order_number"),
-				    rs.getTimestamp("order_date"),
-				    rs.getInt("number_of_guests"),
-				    rs.getInt("confirmation_code"),
-				    subId,
-				    rs.getTimestamp("date_of_placing_order"),
-				    rs.getString("client_name"),   
-				    rs.getString("client_email"),  
-				    rs.getString("client_Phone"),  
-				    rs.getTimestamp("ArrivalTime"),
-				    rs.getDouble("total_price"),
-				    OrderStatus.valueOf(rs.getString("order_status")) 
-				);
+				return new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"),
+						rs.getInt("number_of_guests"), rs.getInt("confirmation_code"), subId,
+						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"),
+						rs.getString("client_email"), rs.getString("client_Phone"), rs.getTimestamp("ArrivalTime"),
+						rs.getDouble("total_price"), OrderStatus.valueOf(rs.getString("order_status")));
 			}
 			return null;
 		} finally {
@@ -262,7 +248,6 @@ public class OrderDAO {
 			stmt.setTimestamp(2, ts); // For the end of the interval
 			stmt.setInt(3, numberOfGuests); // Match guest capacity logic
 
-			
 			rs = stmt.executeQuery();
 
 			if (rs.next()) {
@@ -270,6 +255,47 @@ public class OrderDAO {
 				return rs.getInt(1);
 			}
 			return 0;
+		} finally {
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
+		}
+	}
+
+	/**
+	 * @param subscriberId
+	 * @return list of orders by specific subscriber
+	 * @throws SQLException
+	 */
+	public List<Order> getOrdersBySubscriberId(int subscriberId) throws SQLException {
+		String sql = "SELECT * FROM `order` WHERE subscriber_id = ?";
+		Connection con = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			con = DBConnection.getInstance().getConnection();
+			stmt = con.prepareStatement(sql);
+			stmt.setInt(1, subscriberId);
+			rs = stmt.executeQuery();
+
+			List<Order> list = new ArrayList<>();
+			while (rs.next()) {
+				int subIdTemp = rs.getInt("subscriber_id");
+				Integer subId = rs.wasNull() ? null : subIdTemp;
+
+				String statusStr = rs.getString("order_status");
+				OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
+
+				Order o = new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"),
+						rs.getInt("number_of_guests"), rs.getInt("confirmation_code"), subId,
+						rs.getTimestamp("date_of_placing_order"), rs.getString("client_name"),
+						rs.getString("client_email"), rs.getString("client_phone"), rs.getTimestamp("arrival_time"),
+						rs.getDouble("total_price"), status);
+				list.add(o);
+			}
+			return list;
 		} finally {
 			if (rs != null)
 				rs.close();
