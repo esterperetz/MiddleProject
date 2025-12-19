@@ -36,6 +36,7 @@ public class SubscriberController {
 		try {
 			switch (action) {
 			case REGISTER_SUBSCRIBER:
+				System.out.println("four server");
 				registerSubscriber(req, client);
 				break;
 
@@ -65,8 +66,9 @@ public class SubscriberController {
 	// --- Private Handling Methods ---
 
 	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
+		
 		Subscriber newSub = (Subscriber) req.getPayload();
-
+		System.out.println("client "+newSub.getEmail());
 		// Check if username already exists
 		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriber_name());
 		if (existing != null) {

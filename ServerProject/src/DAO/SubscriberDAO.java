@@ -27,7 +27,7 @@ public class SubscriberDAO {
 
     // Creates a new subscriber in the DB and updates the object's ID
     public boolean createSubscriber(Subscriber subscriber) {
-        String query = "INSERT INTO subscribers (subscriver_id ,subscriber_name, phone_number, email) VALUES (?, ?, ?, ?)";
+        String query = "INSERT INTO subscriber (subscriber_id ,subscriber_name, phone_number, email) VALUES (?, ?, ?, ?)";
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) { 
         	
@@ -54,7 +54,7 @@ public class SubscriberDAO {
 
     // Fetches a subscriber by their unique ID
     public Subscriber getSubscriberById(int id) {
-        String query = "SELECT * FROM subscribers WHERE subscriber_id = ?";
+        String query = "SELECT * FROM subscriber WHERE subscriber_id = ?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
@@ -71,7 +71,7 @@ public class SubscriberDAO {
 
     // Fetches a subscriber by their username 
     public Subscriber getSubscriberBySubscriberName(String subscriberName) {
-        String query = "SELECT * FROM subscribers WHERE subscriber_name = ?";
+        String query = "SELECT * FROM subscriber WHERE subscriber_name = ?";
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
             ps.setString(1, subscriberName);
             ResultSet rs = ps.executeQuery();
@@ -88,7 +88,7 @@ public class SubscriberDAO {
 
     // Updates editable details (name, phone, email) 
     public boolean updateSubscriberDetails(Subscriber subscriber) {
-        String query = "UPDATE subscribers SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
+        String query = "UPDATE subscriber SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
             ps.setInt(1, subscriber.getSubscriber_id());
@@ -110,7 +110,7 @@ public class SubscriberDAO {
     // Returns a list of all subscribers in the system
     public ArrayList<Subscriber> getAllSubscribers() {
         ArrayList<Subscriber> subscribers = new ArrayList<>();
-        String query = "SELECT * FROM subscribers";
+        String query = "SELECT * FROM subscriber";
         
         try (Statement stmt = dbConnection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
