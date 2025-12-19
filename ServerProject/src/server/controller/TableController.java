@@ -8,6 +8,7 @@ import DAO.TableDAO;
 import Entities.ActionType;
 import Entities.Request;
 import Entities.ResourceType;
+import Entities.Response;
 import Entities.Table;
 import ocsf.server.ConnectionToClient;
 
@@ -17,7 +18,7 @@ public class TableController {
 
 	public void handle(Request req, ConnectionToClient client) throws IOException {
         if (req.getResource() != ResourceType.TABLE) {
-             client.sendToClient("Error: Incorrect resource type. Expected TABLE.");
+             client.sendToClient(new Response(req.getResource(), req.getAction(), Response.ResponseStatus.ERROR, "Invalid resource", null));
              return; 
         }
 
@@ -25,22 +26,19 @@ public class TableController {
             switch (req.getAction()) {
                 case GET_ALL:
                     List<Table> tables = tableDAO.getAllTables();
-                    client.sendToClient(new Request(ResourceType.TABLE, ActionType.GET_ALL, null, tables));
+                    client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, tables));
                     break;
 
                 case CREATE:
                     if (req.getPayload() instanceof Table) {
                         Table newTable = (Table) req.getPayload();
                         if (tableDAO.getTable(newTable.getTableNumber()) != null) {
-                            client.sendToClient("Error: Table number already exists.");
+                            client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.ERROR, "Table exists", null));
                             return;
                         }
-                        
                         if (tableDAO.addTable(newTable)) {
-                            client.sendToClient("Success: Table added.");
+                            client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.SUCCESS, "Added", null));
                             sendTablesToAllClients(); 
-                        } else {
-                            client.sendToClient("Error: Failed to add table.");
                         }
                     }
                     break;
@@ -49,43 +47,33 @@ public class TableController {
                     if (req.getPayload() instanceof Table) {
                         Table updateTable = (Table) req.getPayload();
                         if (tableDAO.updateTable(updateTable)) {
-                            client.sendToClient("Success: Table updated.");
+                            client.sendToClient(new Response(ResourceType.TABLE, ActionType.UPDATE, Response.ResponseStatus.SUCCESS, "Updated", null));
                             sendTablesToAllClients();
-                        } else {
-                            client.sendToClient("Error: Failed to update table.");
                         }
                     }
                     break;
 
                 case DELETE:
-                    if (req.getId() != null) {
-                        if (tableDAO.deleteTable(req.getId())) {
-                            client.sendToClient("Success: Table deleted.");
-                            sendTablesToAllClients();
-                        } else {
-                            client.sendToClient("Error: Failed to delete table.");
-                        }
-                    } else {
-                        client.sendToClient("Error: ID required for DELETE.");
+                    if (req.getId() != null && tableDAO.deleteTable(req.getId())) {
+                        client.sendToClient(new Response(ResourceType.TABLE, ActionType.DELETE, Response.ResponseStatus.SUCCESS, "Deleted", null));
+                        sendTablesToAllClients();
                     }
                     break;
 
                 default:
-                    client.sendToClient("Error: Unknown action for Table resource.");
+                    client.sendToClient(new Response(ResourceType.TABLE, req.getAction(), Response.ResponseStatus.ERROR, "Unknown action", null));
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            client.sendToClient("Database Error: " + e.getMessage());
+            client.sendToClient(new Response(ResourceType.TABLE, req.getAction(), Response.ResponseStatus.DATABASE_ERROR, e.getMessage(), null));
         }
     }
 
 	private void sendTablesToAllClients() {
 		try {
 			List<Table> tables = tableDAO.getAllTables();
-			Request updateMsg = new Request(ResourceType.TABLE, ActionType.GET_ALL, null, tables);
+			Response updateMsg = new Response(ResourceType.TABLE, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, tables);
 			Router.sendToAllClients(updateMsg);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		} catch (SQLException e) { e.printStackTrace(); }
 	}
 }

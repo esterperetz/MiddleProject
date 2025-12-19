@@ -4,147 +4,97 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-
 import DAO.OrderDAO;
+import DAO.TableDAO;
 import DAO.WaitingListDAO;
-import Entities.ActionType;
-import Entities.Order;
-import Entities.Order.OrderStatus;
-import Entities.Request;
-import Entities.ResourceType;
-import Entities.WaitingList;
+import Entities.*;
 import ocsf.server.ConnectionToClient;
 
 public class WaitingListController {
 
-    private final WaitingListDAO waitingListDAO = new WaitingListDAO();
-    private final OrderDAO orderdao = new OrderDAO();
+	private final WaitingListDAO waitingListDAO = new WaitingListDAO();
+	private final OrderDAO orderdao = new OrderDAO();
+	private final TableDAO tabledao = new TableDAO();
 
-    public void handle(Request req, ConnectionToClient client) throws IOException {
-        if (req.getResource() != ResourceType.WAITING_LIST) {
-            client.sendToClient("Error: Incorrect resource type. Expected WAITING_LIST.");
-            return;
-        }
+	public void handle(Request req, ConnectionToClient client) throws IOException {
+		if (req.getResource() != ResourceType.WAITING_LIST)
+			return;
 
-        try {
-            switch (req.getAction()) {
+		try {
+			switch (req.getAction()) {
+			case GET_ALL:
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
+						Response.ResponseStatus.SUCCESS, null, waitingListDAO.getAllWaitingList()));
+				break;
 
-            case GET_ALL: {
-                List<WaitingList> list = waitingListDAO.getAllWaitingList();
-                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list));
-                break;
-            }
+			case ENTER_WAITING_LIST:
+				processEntry(req, client);
+				break;
 
-            case ENTER_WAITING_LIST: {
-                if (!(req.getPayload() instanceof WaitingList)) {
-                    client.sendToClient("Error: ENTER_WAITING_LIST requires a WaitingList payload.");
-                    break;
-                }
+			case EXIT_WAITING_LIST:
+				if (req.getId() != null && waitingListDAO.exitWaitingList(req.getId())) {
+					sendListToAllClients();
+				}
+				break;
+			// Manual PROMOTE_TO_ORDER removed to ensure automation only
+			default:
+				break;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 
-                WaitingList item = (WaitingList) req.getPayload();
+	/**
+	 * * Logic used by the background thread to promote a customer. Transitions from
+	 * WaitingList to SEATED Order.
+	 */
+	public boolean autoPromote(WaitingList entry) throws SQLException {
+		// Try to find and lock a table atomically
+		Integer tableNum = tabledao.findAndOccupyTable(entry.getNumberOfGuests());
+		if (tableNum == null)
+			return false;
 
-                int generatedCode = 1000 + (int) (Math.random() * 9000);
-                item.setConfirmationCode(generatedCode);
-                item.setEnterTime(new Date());
+		Order promotedOrder = new Order(0, new Date(), entry.getNumberOfGuests(), entry.getConfirmationCode(),
+				entry.getSubscriberId(), new Date(), entry.getFullName(), "N/A", "N/A", new Date(), 0.0,
+				Order.OrderStatus.SEATED);
+		promotedOrder.setTable_number(tableNum);
 
-                boolean ok = waitingListDAO.enterWaitingList(item);
-                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, generatedCode, ok));
+		if (orderdao.createOrder(promotedOrder)) {
+			waitingListDAO.exitWaitingList(entry.getWaitingId());
+			sendListToAllClients();
+			// Sync all orders and tables for all clients
+			Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
+					Response.ResponseStatus.SUCCESS, null, orderdao.getAllOrders()));
+			Router.sendToAllClients(new Response(ResourceType.TABLE, ActionType.GET_ALL,
+					Response.ResponseStatus.SUCCESS, null, tabledao.getAllTables()));
+			return true;
+		} else {
+			tabledao.updateTableStatus(tableNum, false); // Rollback if order fails
+			return false;
+		}
+	}
 
-                if (ok) {
-                    sendListToAllClients();
-                }
-                break;
-            }
+	private void processEntry(Request req, ConnectionToClient client) throws SQLException, IOException {
+		WaitingList item = (WaitingList) req.getPayload();
+		int code = 1000 + (int) (Math.random() * 9000);
+		item.setConfirmationCode(code);
+		item.setEnterTime(new Date());
 
-            case EXIT_WAITING_LIST: {
-                if (req.getId() == null) {
-                    client.sendToClient("Error: ID required for EXIT_WAITING_LIST.");
-                    break;
-                }
+		if (waitingListDAO.enterWaitingList(item)) {
+			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+					Response.ResponseStatus.SUCCESS, "Entered list", code));
+			sendListToAllClients();
+		}
+	}
 
-                boolean ok = waitingListDAO.exitWaitingList(req.getId());
-                client.sendToClient(ok ? "Success: Removed from waiting list." : "Error: Failed to remove from waiting list.");
-
-                if (ok) {
-                    sendListToAllClients();
-                }
-                break;
-            }
-
-            case PROMOTE_TO_ORDER: {
-                if (req.getId() == null) {
-                    client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, false));
-                    break;
-                }
-
-                boolean promoted = promoteToOrder(req.getId(), client);
-                client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, promoted));
-
-                if (promoted) {
-                    sendListToAllClients();
-                    Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderdao.getAllOrders()));
-                }
-                break;
-            }
-
-            default:
-                client.sendToClient("Error: Unknown action for Waiting List.");
-                break;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            client.sendToClient("Database Error: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            client.sendToClient("Error: " + e.getMessage());
-        }
-    }
-
-    private boolean promoteToOrder(int waitingId, ConnectionToClient client) throws SQLException, IOException {
-        WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
-        if (entry == null) {
-            return false;
-        }
-
-        String idDetails = entry.getIdentificationDetails();
-        if (idDetails == null || idDetails.isEmpty()) {
-            throw new IllegalArgumentException("Identification details cannot be null or empty.");
-        }
-
-        Order promotedOrder = new Order(
-        	    0,                                  // order_number (Auto Increment)
-        	    new Date(),                         // order_date
-        	    entry.getNumberOfGuests(),          // number_of_guests
-        	    entry.getConfirmationCode(),        // confirmation_code
-        	    entry.getSubscriberId(),            // subscriber_id (יכול להיות null)
-        	    new Date(),                         // date_of_placing_order
-        	    null,              // client_name (השדה החדש)
-        	    null,             // client_email (השדה החדש)
-        	    null,             // client_phone (השדה החדש)
-        	    null,             // arrival_time (השדה החדש)
-        	    0.0,                                // total_price
-        	    OrderStatus.APPROVED                // order_status
-        	);
-
-        if (orderdao.createOrder(promotedOrder)) {
-            // Remove from waiting list and sync clients
-            waitingListDAO.exitWaitingList(waitingId);
-            client.sendToClient(new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, null, true));
-            
-            sendListToAllClients();
-            // Sync the orders list because a new APPROVED order was added
-            Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderdao.getAllOrders()));
-        }
-
-        return false;
-    }
-
-    private void sendListToAllClients() {
-        try {
-            List<WaitingList> list = waitingListDAO.getAllWaitingList();
-            Router.sendToAllClients(new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL, null, list));
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
+	public void sendListToAllClients() {
+		try {
+			List<WaitingList> list = waitingListDAO.getAllWaitingList();
+			Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
+					Response.ResponseStatus.SUCCESS, null, list));
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }

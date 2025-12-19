@@ -15,6 +15,7 @@ public class Router {
 	private final SubscriberController subscriberController;
 	private final TableController tableController;
 	private final WaitingListController waitingListController;
+	private final EmployeeLoginController employeeLoginController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
@@ -22,6 +23,7 @@ public class Router {
 		this.subscriberController = new SubscriberController();
 		this.tableController = new TableController();
 		this.waitingListController = new WaitingListController();
+		this.employeeLoginController = new EmployeeLoginController();
 
 		if (clients == null) {
 			clients = new ArrayList<>();
@@ -33,7 +35,7 @@ public class Router {
 
 		switch (resource) {
 		case ORDER:
-			orderController.handle(req, client, clients);
+			orderController.handle(req, client);
 			break;
 
 		case SUBSCRIBER:
@@ -46,6 +48,10 @@ public class Router {
 
 		case WAITING_LIST:
 			waitingListController.handle(req, client);
+			break;
+			
+		case EMPLOYEE:
+			employeeLoginController.handle(req, client);
 			break;
 
 		default:

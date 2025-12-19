@@ -33,4 +33,16 @@ public class Employee {
 	public void setPassword(int password) {
 		this.password = password;
 	}
+	public int getId() {
+		return employee_id;
+	}
+	public void setId(int employee_id) {
+		this.employee_id = employee_id;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
 }

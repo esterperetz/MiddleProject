@@ -10,5 +10,6 @@ public enum ResourceType implements Serializable {
     SUBSCRIBER,
     MANAGERTEAM,
     WAITING_LIST,
-    TABLE
+    TABLE,
+    EMPLOYEE
 }
