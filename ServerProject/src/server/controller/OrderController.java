@@ -24,232 +24,40 @@ public class OrderController {
 		try {
 			switch (req.getAction()) {
 			case GET_USER_ORDERS:
-				int subId;
-				if (req.getPayload() != null) {
-					if (req.getPayload() instanceof Integer) {
-						subId = (Integer) req.getPayload();
-						// called function from OrderDao
-
-						List<Order> history = orderdao.getOrdersBySubscriberId(subId);
-
-						// send to client what he send requast
-						client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
-								Response.ResponseStatus.SUCCESS, null, history));
-					} else {
-						client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
-								Response.ResponseStatus.ERROR, "Error: Subscriber ID is missing.", null));
-					}
-				} else
-					System.out.println("Error");
-
+				handleGetUserOrders(req, client);
 				break;
 			case GET_ALL:
-				List<Order> orders = orderdao.getAllOrders();
-				client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
-						null, orders));
+				handleGetAll(req, client);
 				break;
 			
 			case GET_ALL_BY_SUBSCRIBER_ID:
-				if(req.getId() == null) {
-					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,Response.ResponseStatus.ERROR,"Error: GET_BY_ID requires an ID.",null));
-					break;
-				}
-				List<Order> subOrders = orderdao.getOrdersBySubscriberId(req.getId());
-				client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
-						Response.ResponseStatus.SUCCESS, null, subOrders));
+				handleGetAllBySubscriberId(req, client);
 				break;
 				
-				
 			case GET_BY_ID:
-				if (req.getId() == null) {
-					client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,
-							Response.ResponseStatus.ERROR, "Error: GET_BY_ID requires an ID.", null));
-					break;
-				}
-				Order order = orderdao.getOrder(req.getId());
-				client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,
-						Response.ResponseStatus.SUCCESS, null, order));
+				handleGetById(req, client);
 				break;
 
 			case CREATE:
-				if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
-					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
-							Response.ResponseStatus.ERROR, "Error: CREATE action requires an Order payload.", null));
-					break;
-				}
-				Order o = (Order) req.getPayload();
-
-				// Validate Mandatory Identification
-				if (o.getClient_email() == null || o.getClient_Phone() == null) {
-					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
-							Response.ResponseStatus.ERROR, "Error: Identification details are mandatory.", null));
-					break;
-				}
-				// Generate a random 4-digit confirmation code for the customer
-				int generatedCode = 1000 + (int) (Math.random() * 9000);
-				o.setConfirmation_code(generatedCode);
-				boolean created = orderdao.createOrder(o);
-
-				if (created) {
-					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
-							Response.ResponseStatus.SUCCESS, "Success: Order created.", null));
-					sendOrdersToAllClients();
-				} else {
-					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
-							Response.ResponseStatus.ERROR, "Error: Failed to create order.", null));
-				}
+				handleCreate(req, client);
 				break;
 
 			case UPDATE:
-				if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
-					client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
-							Response.ResponseStatus.ERROR, "Error: UPDATE action requires an Order payload.", null));
-					break;
-				}
-				Order updatedOrder = (Order) req.getPayload();
-				boolean updated = orderdao.updateOrder(updatedOrder);
-				if (updated) {
-					client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
-							Response.ResponseStatus.SUCCESS, "Success: Order updated.", null));
-					sendOrdersToAllClients();
-				} else {
-					client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
-							Response.ResponseStatus.ERROR, "Error: Failed to update order.", null));
-				}
+				handleUpdate(req, client);
 				break;
 
 			case DELETE:
-				if (req.getId() == null) {
-					client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
-							Response.ResponseStatus.ERROR, "Error: DELETE requires an ID.", null));
-					break;
-				}
-				boolean deleted = orderdao.deleteOrder(req.getId());
-				if (deleted) {
-					client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
-							Response.ResponseStatus.SUCCESS, "Success: Order deleted.", null));
-					sendOrdersToAllClients();
-				} else {
-					client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
-							Response.ResponseStatus.ERROR, "Error: Failed to delete order.", null));
-				}
+				handleDelete(req, client);
 				break;
 
 			case CHECK_AVAILABILITY:
-				if (req.getPayload() instanceof Order) {
-					Order requestedOrder = (Order) req.getPayload();
-					int guests = requestedOrder.getNumber_of_guests();
-
-					try {
-						// Check how many tables can physically fit this many guests
-						int totalSuitableTables = tabledao.countSuitableTables(guests);
-
-						// If no table in the restaurant is big enough for this group
-						if (totalSuitableTables == 0) {
-							client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
-									Response.ResponseStatus.ERROR,
-									"Error: No tables in the restaurant can accommodate " + guests + " guests.", null));
-							break;
-						}
-
-						// Check how many of those suitable tables are already booked
-						int existingOrdersInTimeRange = orderdao
-								.countActiveOrdersInTimeRange(requestedOrder.getOrder_date(), guests);
-
-						// Calculate remaining availability
-						int availableTables = totalSuitableTables - existingOrdersInTimeRange;
-
-						if (availableTables > 0) {
-
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-									Response.ResponseStatus.SUCCESS, "Available tables", true));
-						} else {
-
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-									Response.ResponseStatus.SUCCESS, "No available tables", false));
-						}
-
-					} catch (SQLException e) {
-						e.printStackTrace();
-						client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-								Response.ResponseStatus.DATABASE_ERROR,
-								"Database Error during availability check:" + e.getMessage(), false));
-					}
-				}
+				handleCheckAvailability(req, client);
 				break;
 			case IDENTIFY_AT_TERMINAL:
-				if (req.getId() != null) {
-					Order order_at_bistro = orderdao.getByConfirmationCode(req.getId()); // only if approved
-
-					if (order_at_bistro != null && order_at_bistro.getOrder_status() == Order.OrderStatus.APPROVED) {
-						long now = new Date().getTime();
-						long orderTime = order_at_bistro.getOrder_date().getTime();
-						long diffInMinutes = (now - orderTime) / 60000;
-
-						// 15-minute rule enforcement
-						if (diffInMinutes > 15) {
-							order_at_bistro.setOrder_status(Order.OrderStatus.CANCELLED);
-							orderdao.updateOrder(order_at_bistro);
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-									Response.ResponseStatus.DATABASE_ERROR, "Order Expired (15 min late)", null));
-						} else {
-							// Success - Move to SEATED status
-							order_at_bistro.setOrder_status(Order.OrderStatus.SEATED);
-
-							// Subscriber recognition for 10% discount later
-							if (order_at_bistro.getSubscriber_id() != null) {
-								System.out.println("Subscriber " + order_at_bistro.getSubscriber_id()
-										+ " confirmed. 10% discount flag is set.");
-							}
-
-							orderdao.updateOrder(order_at_bistro);
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-									Response.ResponseStatus.SUCCESS, null, order_at_bistro.getOrder_number()));
-						}
-						sendOrdersToAllClients();
-					} else {
-						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-								Response.ResponseStatus.NOT_FOUND, null, false));
-					}
-				}
+				handleIdentifyAtTerminal(req, client);
+				// No break here in original code - falling through to PAY_BILL
 			case PAY_BILL:
-				if (req.getId() != null) {
-					Order orderToPay = orderdao.getOrder(req.getId());
-
-					// Verification: Only a SEATED order can be paid
-					if (orderToPay != null && orderToPay.getOrder_status() == Order.OrderStatus.SEATED) {
-
-						double finalAmount = orderToPay.getTotal_price();
-
-						// Apply 10% Subscriber Discount
-						if (orderToPay.getSubscriber_id() != null) {
-							finalAmount = finalAmount * 0.9;
-							System.out.println("Subscriber discount applied (10%). Original: "
-									+ orderToPay.getTotal_price() + ", Final: " + finalAmount);
-						}
-
-						// Update the order object with the final calculated price and status
-						orderToPay.setTotal_price(finalAmount);
-						orderToPay.setOrder_status(Order.OrderStatus.PAID);
-
-						if (orderdao.updateOrder(orderToPay)) {
-							// Return success to the terminal/client with the final amount to display
-							client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
-									Response.ResponseStatus.SUCCESS, "Order_number:" + orderToPay.getOrder_number(),
-									finalAmount));
-
-							sendOrdersToAllClients();
-						} else {
-							client.sendToClient(
-									new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
-											"Error: Failed to update payment in database.", null));
-						}
-					} else {
-						client.sendToClient(
-								new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
-										"Error: Order not found or not currently seated.", null));
-					}
-				}
+				handlePayBill(req, client);
 				break;
 			default:
 				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
@@ -258,6 +66,237 @@ public class OrderController {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			client.sendToClient("Database error: " + e.getMessage());
+		}
+	}
+
+	private void handleGetUserOrders(Request req, ConnectionToClient client) throws SQLException, IOException {
+		int subId;
+		if (req.getPayload() != null) {
+			if (req.getPayload() instanceof Integer) {
+				subId = (Integer) req.getPayload();
+				// called function from OrderDao
+
+				List<Order> history = orderdao.getOrdersBySubscriberId(subId);
+
+				// send to client what he send requast
+				client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+						Response.ResponseStatus.SUCCESS, null, history));
+			} else {
+				client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+						Response.ResponseStatus.ERROR, "Error: Subscriber ID is missing.", null));
+			}
+		} else
+			System.out.println("Error");
+	}
+
+	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
+		List<Order> orders = orderdao.getAllOrders();
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
+				null, orders));
+	}
+
+	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if(req.getId() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,Response.ResponseStatus.ERROR,"Error: GET_BY_ID requires an ID.",null));
+			return;
+		}
+		List<Order> subOrders = orderdao.getOrdersBySubscriberId(req.getId());
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
+				Response.ResponseStatus.SUCCESS, null, subOrders));
+	}
+
+	private void handleGetById(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getId() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,
+					Response.ResponseStatus.ERROR, "Error: GET_BY_ID requires an ID.", null));
+			return;
+		}
+		Order order = orderdao.getOrder(req.getId());
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,
+				Response.ResponseStatus.SUCCESS, null, order));
+	}
+
+	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.ERROR, "Error: CREATE action requires an Order payload.", null));
+			return;
+		}
+		Order o = (Order) req.getPayload();
+
+		// Validate Mandatory Identification
+		if (o.getClient_email() == null || o.getClient_Phone() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.ERROR, "Error: Identification details are mandatory.", null));
+			return;
+		}
+		// Generate a random 4-digit confirmation code for the customer
+		int generatedCode = 1000 + (int) (Math.random() * 9000);
+		o.setConfirmation_code(generatedCode);
+		boolean created = orderdao.createOrder(o);
+
+		if (created) {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.SUCCESS, "Success: Order created.", null));
+			sendOrdersToAllClients();
+		} else {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.ERROR, "Error: Failed to create order.", null));
+		}
+	}
+
+	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getPayload() == null || !(req.getPayload() instanceof Order)) {
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
+					Response.ResponseStatus.ERROR, "Error: UPDATE action requires an Order payload.", null));
+			return;
+		}
+		Order updatedOrder = (Order) req.getPayload();
+		boolean updated = orderdao.updateOrder(updatedOrder);
+		if (updated) {
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
+					Response.ResponseStatus.SUCCESS, "Success: Order updated.", null));
+			sendOrdersToAllClients();
+		} else {
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,
+					Response.ResponseStatus.ERROR, "Error: Failed to update order.", null));
+		}
+	}
+
+	private void handleDelete(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getId() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
+					Response.ResponseStatus.ERROR, "Error: DELETE requires an ID.", null));
+			return;
+		}
+		boolean deleted = orderdao.deleteOrder(req.getId());
+		if (deleted) {
+			client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
+					Response.ResponseStatus.SUCCESS, "Success: Order deleted.", null));
+			sendOrdersToAllClients();
+		} else {
+			client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
+					Response.ResponseStatus.ERROR, "Error: Failed to delete order.", null));
+		}
+	}
+
+	private void handleCheckAvailability(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getPayload() instanceof Order) {
+			Order requestedOrder = (Order) req.getPayload();
+			int guests = requestedOrder.getNumber_of_guests();
+
+			try {
+				// Check how many tables can physically fit this many guests
+				int totalSuitableTables = tabledao.countSuitableTables(guests);
+
+				// If no table in the restaurant is big enough for this group
+				if (totalSuitableTables == 0) {
+					client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
+							Response.ResponseStatus.ERROR,
+							"Error: No tables in the restaurant can accommodate " + guests + " guests.", null));
+					return;
+				}
+
+				// Check how many of those suitable tables are already booked
+				int existingOrdersInTimeRange = orderdao
+						.countActiveOrdersInTimeRange(requestedOrder.getOrder_date(), guests);
+
+				// Calculate remaining availability
+				int availableTables = totalSuitableTables - existingOrdersInTimeRange;
+
+				if (availableTables > 0) {
+
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+							Response.ResponseStatus.SUCCESS, "Available tables", true));
+				} else {
+
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+							Response.ResponseStatus.SUCCESS, "No available tables", false));
+				}
+
+			} catch (SQLException e) {
+				e.printStackTrace();
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+						Response.ResponseStatus.DATABASE_ERROR,
+						"Database Error during availability check:" + e.getMessage(), false));
+			}
+		}
+	}
+
+	private void handleIdentifyAtTerminal(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getId() != null) {
+			Order order_at_bistro = orderdao.getByConfirmationCode(req.getId()); // only if approved
+
+			if (order_at_bistro != null && order_at_bistro.getOrder_status() == Order.OrderStatus.APPROVED) {
+				long now = new Date().getTime();
+				long orderTime = order_at_bistro.getOrder_date().getTime();
+				long diffInMinutes = (now - orderTime) / 60000;
+
+				// 15-minute rule enforcement
+				if (diffInMinutes > 15) {
+					order_at_bistro.setOrder_status(Order.OrderStatus.CANCELLED);
+					orderdao.updateOrder(order_at_bistro);
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
+							Response.ResponseStatus.DATABASE_ERROR, "Order Expired (15 min late)", null));
+				} else {
+					// Success - Move to SEATED status
+					order_at_bistro.setOrder_status(Order.OrderStatus.SEATED);
+
+					// Subscriber recognition for 10% discount later
+					if (order_at_bistro.getSubscriber_id() != null) {
+						System.out.println("Subscriber " + order_at_bistro.getSubscriber_id()
+								+ " confirmed. 10% discount flag is set.");
+					}
+
+					orderdao.updateOrder(order_at_bistro);
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
+							Response.ResponseStatus.SUCCESS, null, order_at_bistro.getOrder_number()));
+				}
+				sendOrdersToAllClients();
+			} else {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
+						Response.ResponseStatus.NOT_FOUND, null, false));
+			}
+		}
+	}
+
+	private void handlePayBill(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getId() != null) {
+			Order orderToPay = orderdao.getOrder(req.getId());
+
+			// Verification: Only a SEATED order can be paid
+			if (orderToPay != null && orderToPay.getOrder_status() == Order.OrderStatus.SEATED) {
+
+				double finalAmount = orderToPay.getTotal_price();
+
+				// Apply 10% Subscriber Discount
+				if (orderToPay.getSubscriber_id() != null) {
+					finalAmount = finalAmount * 0.9;
+					System.out.println("Subscriber discount applied (10%). Original: "
+							+ orderToPay.getTotal_price() + ", Final: " + finalAmount);
+				}
+
+				// Update the order object with the final calculated price and status
+				orderToPay.setTotal_price(finalAmount);
+				orderToPay.setOrder_status(Order.OrderStatus.PAID);
+
+				if (orderdao.updateOrder(orderToPay)) {
+					// Return success to the terminal/client with the final amount to display
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
+							Response.ResponseStatus.SUCCESS, "Order_number:" + orderToPay.getOrder_number(),
+							finalAmount));
+
+					sendOrdersToAllClients();
+				} else {
+					client.sendToClient(
+							new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
+									"Error: Failed to update payment in database.", null));
+				}
+			} else {
+				client.sendToClient(
+						new Response(ResourceType.ORDER, ActionType.PAY_BILL, Response.ResponseStatus.ERROR,
+								"Error: Order not found or not currently seated.", null));
+			}
 		}
 	}
 
