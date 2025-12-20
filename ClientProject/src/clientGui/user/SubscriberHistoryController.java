@@ -49,7 +49,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private OrderLogic orderLogic;
 	private int currentSubscriberId;
-
+	private boolean isSubscriber;
 	
 	
     @Override
@@ -65,9 +65,10 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	}
 
 	// public void initData(ClientUi clientUi, int subscriberId) {
-	public void initData(int subscriberId) {
+	public void initData(int subscriberId,boolean isSubscriber) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
+		this.isSubscriber=isSubscriber;
 		this.currentSubscriberId = subscriberId;
 		this.orderLogic = new OrderLogic(clientUi);
 		System.out.println("Fetching history for subscriber: " + subscriberId);
@@ -116,7 +117,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	void goBackBtn(ActionEvent event) {
 //		clientUi.removeListener(this);
 		SubscriberOptionController subscriberOptionController = super.loadScreen("user/SubscriberOption", event, clientUi);
-		subscriberOptionController.initData(clientUi, SubscriberOptionController.isSubscriber(), currentSubscriberId);
+		subscriberOptionController.initData(clientUi, isSubscriber, currentSubscriberId);
 	}
 
 	@Override
