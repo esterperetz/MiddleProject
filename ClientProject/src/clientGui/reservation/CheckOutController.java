@@ -28,7 +28,7 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 	private Label lblResult;
 
 	private int currentSubscriberId;
-
+	private boolean isSubsriber;
 	private OrderLogic orderLogic;
 	private int tableId;
 
@@ -80,15 +80,16 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-    		controller.initData(clientUi,SubscriberOptionController.isSubscriber(), currentSubscriberId);
+    		controller.initData(clientUi,isSubsriber, currentSubscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
 	}
 	
-	public void initData(int subscriberId, int tableId) {
+	public void initData(int subscriberId,boolean isSubsriber, int tableId) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
+		this.isSubsriber=isSubsriber;
 		this.currentSubscriberId = subscriberId;
 		this.orderLogic = new OrderLogic(clientUi);
 		System.out.println("Fetching history for subscriber: " + subscriberId);
