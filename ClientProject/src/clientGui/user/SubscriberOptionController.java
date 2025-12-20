@@ -25,7 +25,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
-	private int subscriberId;
+	private Integer subscriberId;
 	private int tableId; //check how to initialize it
 	
 	
@@ -48,9 +48,9 @@ public class SubscriberOptionController extends MainNavigator implements Initial
             btnSubscriberSpecial.setManaged(true);
         }
     }
-    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
     	this.clientUi = clientUi;
-        this.isSubscriber = isSubscriberStatus;
+        //this.isSubscriber = isSubscriberStatus;
         this.subscriberId = subId;
         System.out.println("Loaded options for subscriber: " + subId);
         // 1. רישום לקבלת הודעות (אם צריך בדף זה)
@@ -61,7 +61,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         */
 
         // 2. לוגיקה גרפית לפי סוג המשתמש
-        if (this.isSubscriber) {
+        if (subscriberId!=null) {
             // אם הוא מנוי - מציגים את הכפתור
             btnSubscriberSpecial.setVisible(true);
             btnSubscriberSpecial.setManaged(true);
