@@ -27,7 +27,7 @@ public class ReservationController extends MainNavigator implements  MessageList
     @FXML private TextField emailField;
     @FXML private Label errorLabel;
 
-    private boolean isSubscriber = false;
+    private boolean isSubscriber;
 	private int subscriberId;
 
     @FXML
@@ -174,7 +174,7 @@ public class ReservationController extends MainNavigator implements  MessageList
     	SubscriberOptionController controller = 
     	        super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(clientUi,SubscriberOptionController.isSubscriber(),subscriberId);
+            controller.initData(clientUi,isSubscriber,subscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
