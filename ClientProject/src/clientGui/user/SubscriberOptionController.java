@@ -89,37 +89,56 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	@FXML
 	void goToReservationBtn(ActionEvent event)
 	{
+		//fix
 		ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
 
 	    if (controller != null) {
 //	        controller.setData(isSubscriber, "", "", ""); 
-	    	controller.initData(clientUi, isSubscriber, subscriberId);
+	    	if(subscriberId!=null)	
+	    		controller.initData(clientUi, true, subscriberId);
+	    	else
+	    		controller.initData(clientUi, false, subscriberId);
+	    		
 	    }	
 	 }
 	
 	@FXML
 	void goToSeatTableBtn(ActionEvent event)
 	{
+		//fix
 		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
-		getTableController.initData(clientUi, isSubscriber, subscriberId);
+		if(subscriberId!=null)	
+			getTableController.initData(clientUi, true, subscriberId);
+    	else
+    		getTableController.initData(clientUi, false, subscriberId);
+		//getTableController.initData(clientUi, subscriberId, subscriberId);
 	}
 	/**
      * Action handler for the special subscriber-only button.
      */
     @FXML
     void subscriberActionBtn(ActionEvent event) {
+    	//fix
         // Logic specific to subscribers goes here
         System.out.println("Subscriber specific action executed.");
         
         SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory",event,clientUi);
-        subHistoryController.initData(subscriberId);
+        if(subscriberId!=null)	
+        	subHistoryController.initData(subscriberId,true);
+    	else
+    		subHistoryController.initData(subscriberId,false);
+        //subHistoryController.initData(subscriberId);
 
     }
 
     @FXML
     void CheckOutActionBtn(ActionEvent event) {
     	CheckOutController checkOutController = super.loadScreen("reservation/CheckOutScreen",event,clientUi);
-    	checkOutController.initData(subscriberId, tableId);
+    	 if(subscriberId!=null)	
+    		 checkOutController.initData(subscriberId,true, tableId);
+     	else
+     		checkOutController.initData(subscriberId,true, tableId);
+    	//checkOutController.initData(subscriberId, tableId);
     }
 	
 	@Override
