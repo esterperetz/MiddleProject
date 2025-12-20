@@ -72,11 +72,10 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		        // חייבים להשתמש ב-Platform.runLater כי שינוי UI חייב לקרות ב-JavaFX Thread
 		        Platform.runLater(() -> {
 		            if (isSuccess) {
-		            	
 		            	System.out.println(res.getStatus().getString());
 		                SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
 		                if (controller != null) {
-		                    controller.initData(clientUi, SubscriberOptionController.isSubscriber(), lastEnteredSubId);
+		                    controller.initData(clientUi, true, lastEnteredSubId);
 		                   
 		                }
 		            } else {
