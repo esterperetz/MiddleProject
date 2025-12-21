@@ -3,7 +3,7 @@ package clientGui.user;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -12,7 +12,6 @@ import Entities.ActionType;
 import Entities.Order;
 import Entities.Response;
 import client.MessageListener;
-import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
@@ -22,12 +21,10 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.stage.Stage;
 public class SubscriberHistoryController extends MainNavigator implements MessageListener<Object>,Initializable{
 
 	// we need to bring the join between subscriber and order
@@ -60,8 +57,10 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 		colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
 		colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
 		colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-		
-
+		//adding listener that help the filter between the dates working whith the mouse
+		filterDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
+	        handleDateFilter(null); // קורא לפונקציית הסינון אוטומטית
+	    });
 	}
 
 	// public void initData(ClientUi clientUi, int subscriberId) {
@@ -155,19 +154,31 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	private void updateTable(List<Order> orders) {
 		fullDataList.clear(); // מחיקת נתונים ישנים
 
-		SimpleDateFormat dateFmt = new SimpleDateFormat("dd/MM/yyyy");
-		SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm");
-
+		//SimpleDateFormat dateFmt = new SimpleDateFormat("dd/MM/yyyy");
+		//SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm");
+		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 		for (Order o : orders) {
-			String dateStr = dateFmt.format(o.getOrder_date());
-			String timeStr = timeFmt.format(o.getOrder_date());
-			String priceStr = String.format("%.2f ₪", o.getTotal_price());
-			String statusStr = o.getOrder_status().toString();
+			LocalDate localDate = o.getOrder_date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	        
+	        // יצירת המחרוזת באמצעות אותו formatter שהוגדר בראש המחלקה!
+	        // זה מה שמונע את הבאגים בסינון
+	        String dateStr = localDate.format(formatter); 
+	        
+	        // יצירת מחרוזת שעה
+	        String timeStr = o.getOrder_date().toInstant().atZone(ZoneId.systemDefault()).format(timeFormatter);
+	        
+	        String priceStr = String.format("%.2f ₪", o.getTotal_price());
+	        String statusStr = o.getOrder_status().toString();
 
-			// create new row in table
-			fullDataList.add(new OrderHistoryItem(o.getOrder_number(), dateStr, timeStr, priceStr, statusStr));
+	        // יצירת שורה חדשה
+	        fullDataList.add(new OrderHistoryItem(o.getOrder_number(), dateStr, timeStr, priceStr, statusStr));
 		}
-		ordersTable.setItems(fullDataList);
+		//ordersTable.setItems(fullDataList);
+		if (filterDatePicker.getValue() != null) {
+	        handleDateFilter(null);
+	    } else {
+	        ordersTable.setItems(fullDataList);
+	    }
 	}
 
 	// --- מחלקה פנימית לייצוג שורה בטבלה ---
