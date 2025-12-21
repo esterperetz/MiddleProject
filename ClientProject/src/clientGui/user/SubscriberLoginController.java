@@ -21,7 +21,6 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	private ActionEvent currentEvent;
 	private int lastEnteredSubId;
 	
-	
 	@FXML
 	public void initialize() {
 	    Platform.runLater(() -> {
@@ -56,12 +55,8 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
             e.printStackTrace();
         }
 		
-		//
-	
-//			System.exit(0);
-
 	}
-
+	 
 	@Override
 	public void onMessageReceive(Object msg) {
 		try {
