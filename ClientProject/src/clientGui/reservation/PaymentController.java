@@ -29,7 +29,7 @@ public class PaymentController extends MainNavigator implements  MessageListener
 	private double amountToPay;
 	private int tableId;
 	private int subscriberId;
-
+	private boolean isSub;
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
 		this.tableId = tableId;
@@ -69,14 +69,23 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		//Alert pay good 
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",event,clientUi);
 		
-		controller.initData(clientUi, SubscriberOptionController.isSubscriber(), subscriberId);
+		if(isSub)
+			controller.initData(clientUi, true, subscriberId);
+		else
+			controller.initData(clientUi, false, subscriberId);
 
+		//public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId)
 	}
 
 	@FXML
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill",event,clientUi);
-		billController.initData(null, amountToPay, SubscriberOptionController.isSubscriber(), tableId, subscriberId);
+		if(isSub)
+			billController.initData(amountToPay, subscriberId ,true, tableId);
+		else
+			billController.initData(amountToPay, subscriberId ,false, tableId);
+
+			
 	
 	}
 
@@ -90,7 +99,12 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		stage.close();
 	}
 
-	
+	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+		this.tableId = tableId;
+        this.subscriberId = subId;
+        //itemsList.setItems(items);
+        isSub=isSubscriber;
+	}
 
 	@Override
 	public void onMessageReceive(Object msg) {
