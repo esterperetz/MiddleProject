@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 
 public class SubscriberOptionController extends MainNavigator implements Initializable , MessageListener<Object>{
-	private static boolean isSubscriber=true;
+	private boolean isSubscriber;
 	//private ClientUi client_ui;
 
 	// Link to the special button in the FXML file
@@ -59,14 +59,14 @@ public class SubscriberOptionController extends MainNavigator implements Initial
             this.client_ui.addListener(this);
         }
         */
-
         // 2. לוגיקה גרפית לפי סוג המשתמש
         if (subscriberId!=null) {
-            // אם הוא מנוי - מציגים את הכפתור
+        	isSubscriber=true;
             btnSubscriberSpecial.setVisible(true);
             btnSubscriberSpecial.setManaged(true);
         } else {
-            // אם הוא אורח - מסתירים
+            // 
+        	isSubscriber=false;
             btnSubscriberSpecial.setVisible(false);
             btnSubscriberSpecial.setManaged(false);
         }
@@ -92,7 +92,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		//fix
 		ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
 
-	    if (controller != null) {
+	    if (isSubscriber) {
 //	        controller.setData(isSubscriber, "", "", ""); 
 	    	if(subscriberId!=null)	
 	    		controller.initData(clientUi, true, subscriberId);
@@ -107,7 +107,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	{
 		//fix
 		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
-		if(subscriberId!=null)	
+		if(isSubscriber)	
 			getTableController.initData(clientUi, true, subscriberId);
     	else
     		getTableController.initData(clientUi, false, subscriberId);
@@ -123,7 +123,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         System.out.println("Subscriber specific action executed.");
         
         SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory",event,clientUi);
-        if(subscriberId!=null)	
+        if(isSubscriber)	
         	subHistoryController.initData(subscriberId,true);
     	else
     		subHistoryController.initData(subscriberId,false);
@@ -134,10 +134,10 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     @FXML
     void CheckOutActionBtn(ActionEvent event) {
     	CheckOutController checkOutController = super.loadScreen("reservation/CheckOutScreen",event,clientUi);
-    	 if(subscriberId!=null)	
+    	 if(isSubscriber)	
     		 checkOutController.initData(subscriberId,true, tableId);
      	else
-     		checkOutController.initData(subscriberId,true, tableId);
+     		checkOutController.initData(subscriberId,false, tableId);
     	//checkOutController.initData(subscriberId, tableId);
     }
 	
@@ -146,9 +146,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		// TODO Auto-generated method stub
 		
 	}
-	public static boolean isSubscriber() {
-		return isSubscriber;
-	}
+	
 	public void setSubscriber(boolean isSubscriber) {
 		this.isSubscriber = isSubscriber;
 	}
