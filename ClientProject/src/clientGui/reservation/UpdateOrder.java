@@ -19,6 +19,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
@@ -76,9 +77,13 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		orderIdField.setText(String.valueOf(o.getOrder_number()));
 
 		if (o.getSubscriber_id() != null && o.getSubscriber_id() != 0) {
+			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
 			subscriberIdField.setText(String.valueOf(o.getSubscriber_id()));
+			setClientFieldsEditable(false); // נעילה
 		} else {
+			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
 			subscriberIdField.setText("");
+			setClientFieldsEditable(true); // פתיחה
 		}
 
 		// 2. מילוי פרטי לקוח (Strings)
@@ -117,21 +122,39 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			arrivalTimeField.setText(String.format("%02d:%02d", arrivalLdt.getHour(), arrivalLdt.getMinute()));
 		}
 	}
+
+	private void setClientFieldsEditable(boolean isEditable) {
+		// הגדרת מצב עריכה
+		clientNameField.setEditable(isEditable);
+		phoneField.setEditable(isEditable);
+		emailField.setEditable(isEditable);
+
+		// שינוי עיצוב ויזואלי (אפור אם נעול, לבן אם פתוח)
+		String style = isEditable ? "-fx-background-color: white; -fx-background-radius: 5;"
+				: "-fx-background-color: #e0e0e0; -fx-background-radius: 5;";
+
+		clientNameField.setStyle(style);
+		phoneField.setStyle(style);
+		emailField.setStyle(style);
+	}
+
 //asdassadasd
 	public void loadStudent(Order o1) {
 		this.o = o1;
 	}
+
 	@FXML
-	private void handleCancel(ActionEvent event)
-	{
+	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 		if (controller != null) {
 			controller.initData();
 		} else {
-			System.err.println("Error: Could not load OrderUi_controllerr.");
+			Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
+			// System.err.println("Error: Could not load OrderUi_controllerr.");
 		}
 	}
+
 	@FXML
 	private void handleUpdate(ActionEvent event) {
 		try {
@@ -197,19 +220,11 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				if (controller != null) {
 					controller.initData();
 				} else {
-					System.err.println("Error: Could not load OrderUi_controllerr.");
+					Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
 				}
 				// רענון הטבלה במסך הראשי (אם העברנו אותו ב-initData)
 				if (mainController != null) {
 					mainController.refreshTableData(); // הנחה שיש פונקציה כזו שקוראת ל-GET_ALL
-					// }
-
-					// סגירת החלון הנוכחי (הכי נכון ל-Popup)
-					// closeWindow();
-
-					// הודעת הצלחה (אופציונלי, כי לרוב ה-ClientUi יקפיץ הודעה מהשרת)
-					// Alarm.showAlert("Success", "Update request sent.",
-					// Alert.AlertType.INFORMATION);
 				}
 			}
 
@@ -224,59 +239,4 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			e.printStackTrace();
 		}
 	}
-	/*
-	 * @FXML private void onUpdate(ActionEvent event) { try { // 1. פתיחת TRY String
-	 * OrderNum = txtId.getText().trim(); String Number_Of_Guests =
-	 * txtName.getText().trim(); String OrderDate = txtName1.getText(); int guests =
-	 * Integer.parseInt(guestsField.getText()); double price =
-	 * Double.parseDouble(priceField.getText()); OrderStatus status =
-	 * statusComboBox.getValue(); Date date = dateFormat.parse(OrderDate);
-	 * 
-	 * if (OrderNum.isEmpty()) { String header = "Input Error"; String context =
-	 * "Please Enter Order ID (This field is now locked)."; Alarm.showAlert(header,
-	 * context, Alert.AlertType.ERROR); } else { // פתיחת ELSE // יצירת האובייקט
-	 * Order updatedOrder = new Order(Integer.parseInt(OrderNum), // order_number
-	 * (מהטופס) date, // order_date (מהטופס) Integer.parseInt(Number_Of_Guests), //
-	 * number_of_guests (מהטופס) o.getConfirmation_code(), // שמירה על הקוד המקורי
-	 * o.getSubscriber_id(), // שמירה על המנוי המקורי o.getDate_of_placing_order(),
-	 * // שמירה על תאריך היצירה o.getClient_name(), // שמירה על השם (השדה החדש)
-	 * o.getClient_email(), // שמירה על האימייל (השדה החדש) o.getClient_Phone(), //
-	 * שמירה על הטלפון (השדה החדש) o.getArrivalTime(), // שמירה על שעת ההגעה (השדה
-	 * החדש) o.getTotal_price(), // שמירה על המחיר o.getOrder_status() // שמירה על
-	 * הסטטוס (השדה החדש) );
-	 * 
-	 * if (ol != null) { ol.updateOrder(updatedOrder); OrderUi_controller controller
-	 * = super.loadScreen("reservation/orderUi", event, this.clientUi);
-	 * 
-	 * if (controller != null) { controller.initData(); } else {
-	 * System.err.println("Error: Could not load OrderUi_controllerr."); }
-	 * 
-	 * if (mainController != null) { mainController.refreshTableData(); }
-	 * 
-	 * // אופציונלי: סגירת החלון // ((Node)
-	 * event.getSource()).getScene().getWindow().hide(); } // סגירת IF (ol != null)
-	 * } // סגירת ELSE
-	 * 
-	 * } catch (NumberFormatException | ParseException e) { // <--- כאן היה חסר סוגר
-	 * סוגר של ה-TRY לפני ה-CATCH String header = "Format Error"; String context =
-	 * "Please verify that Order ID and Guests are valid numbers, and Date is 'yyyy-MM-dd'."
-	 * ; Alarm.showAlertWithException(header, context, Alert.AlertType.ERROR, e);
-	 * e.printStackTrace(); } catch (Exception e) { String header = "Error"; String
-	 * context = "An unexpected error occurred during update.";
-	 * Alarm.showAlertWithException(header, context, Alert.AlertType.ERROR, e);
-	 * e.printStackTrace(); } }
-	 */
-	/*
-	 * /**
-	 * 
-	 * @param title
-	 * 
-	 * @param content
-	 * 
-	 * @param type Shows a simple alert dialog with a title, content and type.
-	 * 
-	 * public void showAlert(String title, String content, Alert.AlertType type) {
-	 * Alert alert = new Alert(type); alert.setTitle(title);
-	 * alert.setContentText(content); alert.showAndWait(); }
-	 */
 }
