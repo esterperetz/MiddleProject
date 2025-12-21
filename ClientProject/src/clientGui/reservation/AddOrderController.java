@@ -1,26 +1,34 @@
 package clientGui.reservation;
 
+import java.net.URL;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 import Entities.Alarm;
 import Entities.Order;
 import Entities.Order.OrderStatus;
+import Entities.Response;
+import Entities.ResourceType;
+import Entities.Subscriber;
+import Entities.ActionType;
+import client.MessageListener;
 import clientGui.ClientUi;
-import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
+import clientLogic.UserLogic;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
-public class AddOrderController extends MainNavigator {
+public class AddOrderController extends MainNavigator implements MessageListener<Object>, Initializable {
 
 	@FXML
 	private TextField clientNameField; // במקום fullNameField
@@ -43,20 +51,63 @@ public class AddOrderController extends MainNavigator {
 	@FXML
 	private ComboBox<OrderStatus> statusComboBox;
 	private OrderLogic orderLogic;
+	private UserLogic userLogic;
+	private Subscriber verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
+	//private boolean isSubscriberVerified = false;
+	private boolean isSubscriberVerified=false;
 
-	@FXML
-	public void initialize() {
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
 		statusComboBox.getItems().setAll(OrderStatus.values());
 		statusComboBox.setValue(OrderStatus.APPROVED); // Default
 		datePicker.setValue(LocalDate.now());
 		// הגדרת שעה ברירת מחדל
 		timeField.setText("12:00");
+		subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+            // בדיקה 2: האם המאזין עובד?
+            if (!isNowFocused) {
+                System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
+                checkSubscriberId();
+            }
+        });
+	}
 
+	// public void initData(ClientUi clientUi) {
+	public void initData() {
+		// this.clientUi = clientUi;
+		this.orderLogic = new OrderLogic(this.clientUi);
+		this.userLogic = new UserLogic(this.clientUi);
+	}
+
+	private void checkSubscriberId() {
+		String subIdStr = subscriberIdField.getText().trim();
+
+		// subscriber_id empty
+		if (subIdStr.isEmpty()) {
+			isSubscriberVerified = false;
+			this.verifiedSubscriber = null;
+			enableClientFields(); //open fields to edit
+			return;
+		}
+
+		//
+		try {
+			int subId = Integer.parseInt(subIdStr);
+			// שולח בקשה לשרת. התשובה תגיע ל-onMessageReceive
+			userLogic.getSubscriberById(subId);
+
+		} catch (NumberFormatException e) {
+			handleInvalidSubscriber("Invalid format. Subscriber ID must be numbers only.");
+		}
 	}
 
 	@FXML
 	private void handleSave(ActionEvent event) {
-		// 1. ולידציה בסיסית - חובה שהשדות לא יהיו ריקים
+		// 1.
+		if (!subscriberIdField.getText().trim().isEmpty() && !isSubscriberVerified) {
+			Alarm.showAlert("Verification Required", "Waiting for subscriber verification...", Alert.AlertType.WARNING);
+			return;
+		}
 		if (clientNameField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()
 				|| guestsField.getText().trim().isEmpty() || datePicker.getValue() == null) {
 
@@ -67,9 +118,21 @@ public class AddOrderController extends MainNavigator {
 
 		try {
 			// 2. איסוף נתונים מהשדות
-			String clientName = clientNameField.getText().trim();
-			String clientPhone = phoneField.getText().trim();
-			String clientEmail = emailField.getText().trim(); // יכול להיות ריק
+			String clientName;
+	        String clientPhone;
+	        String clientEmail;
+
+	        if (isSubscriberVerified && verifiedSubscriber != null) {
+	            // אם זה מנוי מאומת - לוקחים ישר מהמקור (האובייקט) ולא מהשדות!
+	            clientName = verifiedSubscriber.getSubscriber_name();
+	            clientPhone = verifiedSubscriber.getPhone_number();
+	            clientEmail = verifiedSubscriber.getEmail();
+	        } else {
+	            // אם זה לקוח מזדמן - לוקחים מהשדות שהמשתמש הקליד
+	            clientName = clientNameField.getText().trim();
+	            clientPhone = phoneField.getText().trim();
+	            clientEmail = emailField.getText().trim();
+	        }
 
 			// המרת מנוי (אם יש)
 			Integer subId = null;
@@ -144,14 +207,8 @@ public class AddOrderController extends MainNavigator {
 			Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
 		} catch (Exception e) {
 			Alarm.showAlert("Error", "An error occurred while saving.", Alert.AlertType.ERROR);
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
-	}
-
-	// public void initData(ClientUi clientUi) {
-	public void initData() {
-		// this.clientUi = clientUi;
-		this.orderLogic = new OrderLogic(this.clientUi);
 	}
 
 	@FXML
@@ -164,6 +221,82 @@ public class AddOrderController extends MainNavigator {
 		}
 	}
 
+	@Override
+	public void onMessageReceive(Object msg) {
+		Platform.runLater(() -> {
+			if (msg instanceof Response) {
+				Response res = (Response) msg;
+
+				if (res.getResource() == ResourceType.SUBSCRIBER && res.getAction() == ActionType.GET_BY_ID) {
+
+					// בדיקה האם המנוי נמצא
+					if (res.getStatus() == Response.ResponseStatus.SUCCESS && res.getData() instanceof Subscriber) {
+						// === מקרה 2: מנוי קיים ותקין ===
+						Subscriber sub = (Subscriber) res.getData();
+						this.verifiedSubscriber = sub;
+						fillAndLockFields(sub);
+						isSubscriberVerified = true;
+
+					} else {
+						// === מקרה 3: מנוי לא קיים (Exception) ===
+						// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
+						handleInvalidSubscriber(
+								"Subscriber ID " + subscriberIdField.getText() + " does not exist in the system.");
+					}
+				}
+			}
+		});
+	}
+
+	private void handleInvalidSubscriber(String errorMessage) {
+		isSubscriberVerified = false;
+		this.verifiedSubscriber = null;
+		// 1. הקפצת הודעת שגיאה (Exception למשתמש)
+		Alarm.showAlert("Subscriber Not Found", errorMessage, Alert.AlertType.ERROR);
+
+		// 2. ניקוי שדה ה-ID השגוי (כדי לא לאפשר שמירה איתו)
+		subscriberIdField.clear();
+		subscriberIdField.requestFocus(); // מחזיר את הפוקוס לשדה כדי שינסה שוב
+
+		// 3. איפוס שדות הלקוח (כדי שיוכל להזין ידנית אם ירצה להיות לקוח מזדמן)
+		enableClientFields();
+	}
+
+	private void fillAndLockFields(Subscriber sub) {
+		clientNameField.setText(sub.getSubscriber_name());
+		phoneField.setText(sub.getPhone_number());
+		emailField.setText(sub.getEmail());
+
+		// נעילה
+		clientNameField.setEditable(false);
+		phoneField.setEditable(false);
+		emailField.setEditable(false);
+
+		// סימון ויזואלי שהשדות נעולים
+		String lockedStyle = "-fx-background-color: #e0e0e0; -fx-background-radius: 5;";
+		clientNameField.setStyle(lockedStyle);
+		phoneField.setStyle(lockedStyle);
+		emailField.setStyle(lockedStyle);
+	}
+
+	private void enableClientFields() {
+		// אם השדות היו נעולים קודם -> ננקה אותם (כי זה אומר שהיה שם מידע של מנוי)
+		if (!clientNameField.isEditable()) {
+			clientNameField.clear();
+			phoneField.clear();
+			emailField.clear();
+		}
+
+		// פתיחה לעריכה
+		clientNameField.setEditable(true);
+		phoneField.setEditable(true);
+		emailField.setEditable(true);
+
+		String defaultStyle = "-fx-background-color: white; -fx-background-radius: 5;";
+		clientNameField.setStyle(defaultStyle);
+		phoneField.setStyle(defaultStyle);
+		emailField.setStyle(defaultStyle);
+	}
 	// private void closeWindow() {
 	// Stage stage = (Stage) fullNameField.getScene().getWindow();
 	// stage.close();
