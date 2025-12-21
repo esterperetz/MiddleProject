@@ -50,7 +50,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     }
     public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
     	this.clientUi = clientUi;
-        //this.isSubscriber = isSubscriberStatus;
+        this.isSubscriber = isSubscriberStatus;
         this.subscriberId = subId;
         System.out.println("Loaded options for subscriber: " + subId);
         // 1. רישום לקבלת הודעות (אם צריך בדף זה)
@@ -60,13 +60,13 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         }
         */
         // 2. לוגיקה גרפית לפי סוג המשתמש
-        if (subscriberId!=null) {
-        	isSubscriber=true;
+        if (isSubscriber) {
+        	//isSubscriber=true;
             btnSubscriberSpecial.setVisible(true);
             btnSubscriberSpecial.setManaged(true);
         } else {
             // 
-        	isSubscriber=false;
+        	//isSubscriber=false;
             btnSubscriberSpecial.setVisible(false);
             btnSubscriberSpecial.setManaged(false);
         }
@@ -74,16 +74,29 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	@FXML
 	 void goBackBtn(ActionEvent event)
 	{
-		int flag=1;
+		if (isSubscriber) {
+        	//isSubscriber=true;
+            btnSubscriberSpecial.setVisible(true);
+            btnSubscriberSpecial.setManaged(true);
+            super.loadScreen("user/SubscriberLogin",event,clientUi);
+        } else {
+            // 
+        	//isSubscriber=false;
+            btnSubscriberSpecial.setVisible(false);
+            btnSubscriberSpecial.setManaged(false);
+			super.loadScreen("navigation/SelectionScreen",event,clientUi);
+
+        }
+		//int flag=1;
 		//when we succeed to log in, we dont go back to navigation screen
-		if(flag==1)
-		{
+		//if(flag==1)
+		//{
 			//we need to check if the user is subscriber and if the code is correct
-			super.loadScreen("user/SubscriberLogin",event,clientUi);
-			flag=0;
-		}
-		else
-	        super.loadScreen("navigation/SelectionScreen" ,event,clientUi);
+			//super.loadScreen("user/SubscriberLogin",event,clientUi);
+			//flag=0;
+		//}
+		//else
+	      //  super.loadScreen("navigation/SelectionScreen" ,event,clientUi);
 
 	}
 	@FXML
