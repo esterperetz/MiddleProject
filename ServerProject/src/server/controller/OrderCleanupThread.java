@@ -7,6 +7,7 @@ import entities.ActionType;
 import entities.Order;
 import entities.Request;
 import entities.ResourceType;
+import entities.Response;
 
 /**
  * Background thread that runs every minute to check for late orders.
@@ -35,29 +36,31 @@ public class OrderCleanupThread extends Thread {
 
     private void checkAndCancelLateOrders() {
         try {
-            List<Order> orders = orderDao.getAllOrders();
+            // Fetch only APPROVED orders
+            List<Order> activeOrders = orderDao.getOrdersByStatus(Order.OrderStatus.APPROVED);
             long now = new Date().getTime();
+            boolean hasChanges = false;
 
-            for (Order order : orders) {
-                // Check only APPROVED orders (future ones or promoted from waiting list)
-                if (order.getOrderStatus() == Order.OrderStatus.APPROVED) {
-                    long orderTime = order.getOrderDate().getTime();
-                    long diffInMinutes = (now - orderTime) / 60000;
+            for (Order order : activeOrders) {
+                long orderTime = order.getOrderDate().getTime();
+                long diffInMinutes = (now - orderTime) / 60000;
 
-                    // If more than 15 minutes have passed since the scheduled time
-                    if (diffInMinutes > 15) {
-                        System.out.println("Auto-cancelling late order: " + order.getOrderNumber());
-                        
-                        // Update DB status to CANCELLED
-                        order.setOrderStatus(Order.OrderStatus.CANCELLED);
-                        orderDao.updateOrder(order);
-
-                        Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderDao.getAllOrders()));
-                    }
+                // 15-minute late rule enforcement [cite: 32]
+                if (diffInMinutes > 15) {
+                    System.out.println("System: Auto-cancelling late order #" + order.getOrderNumber());
+                    order.setOrderStatus(Order.OrderStatus.CANCELLED);
+                    orderDao.updateOrder(order);
+                    hasChanges = true;
                 }
             }
+
+            // Broadcast update to all clients only if changes occurred
+            if (hasChanges) {
+                Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL, 
+                        Response.ResponseStatus.SUCCESS, "Cleanup completed", orderDao.getAllOrders()));
+            }
         } catch (Exception e) {
-            System.err.println("Cleanup thread error: " + e.getMessage());
+            System.err.println("Cleanup Thread Error: " + e.getMessage());
         }
     }
 
