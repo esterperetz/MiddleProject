@@ -1,7 +1,7 @@
 package server.gui;
 
 import DBConnection.DBConnection;
-import Entities.Alarm;
+import entities.Alarm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;

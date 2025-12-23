@@ -3,7 +3,7 @@ package clientGui.navigation;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.reservation.ReservationController;
-import Entities.Alarm;
+import entities.Alarm;
 import client.MessageListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;

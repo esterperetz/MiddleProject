@@ -3,10 +3,10 @@ package server.controller;
 import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
-import Entities.Order;
-import Entities.Request;
-import Entities.ResourceType;
-import Entities.ActionType;
+import entities.ActionType;
+import entities.Order;
+import entities.Request;
+import entities.ResourceType;
 
 /**
  * Background thread that runs every minute to check for late orders.

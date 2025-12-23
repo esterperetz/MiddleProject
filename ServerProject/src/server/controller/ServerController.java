@@ -3,8 +3,8 @@ package server.controller;
 import java.io.IOException;
 
 
-import DBConnection.DBConnection; 
-import Entities.Request;
+import DBConnection.DBConnection;
+import entities.Request;
 import ocsf.server.AbstractServer;
 import ocsf.server.ConnectionToClient;
 import server.gui.ServerViewController;

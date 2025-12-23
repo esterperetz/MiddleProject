@@ -9,11 +9,11 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.ResourceBundle;
 
-import Entities.Alarm;
-import Entities.Order;
-import Entities.Order.OrderStatus;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
+import entities.Alarm;
+import entities.Order;
+import entities.Order.OrderStatus;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;

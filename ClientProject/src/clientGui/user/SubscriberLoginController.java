@@ -1,11 +1,11 @@
 package clientGui.user;
 
-import Entities.Alarm;
-import Entities.Response;
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.UserLogic;
+import entities.Alarm;
+import entities.Response;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;

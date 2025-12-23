@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
 import DAO.TableDAO;
-import Entities.*;
+import entities.*;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
 
@@ -218,7 +218,7 @@ public class OrderController {
 			}
 		}
 	}
-
+	//CALLED WHEN SUBSCRIBER WITH ORDER ARRIVED TO THE RESTAURANT
 	private void handleIdentifyAtTerminal(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() != null) {
 			Order order_at_bistro = orderdao.getByConfirmationCode(req.getId());

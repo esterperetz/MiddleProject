@@ -1,10 +1,10 @@
 package clientLogic;
 
 import clientGui.ClientUi;
-import Entities.ActionType;
-import Entities.Order;
-import Entities.Request;
-import Entities.ResourceType;
+import entities.ActionType;
+import entities.Order;
+import entities.Request;
+import entities.ResourceType;
 
 public class OrderLogic {
 
