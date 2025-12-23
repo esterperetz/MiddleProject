@@ -4,7 +4,7 @@ public class Employee {
 	
 	private int employee_id;
 	private String userName;
-	private String phone_number;
+	private String phoneNumber;
 	private String email;
 	private int password;
 	private String role;
@@ -44,11 +44,11 @@ public class Employee {
 	}
 
 	public String getPhone_number() {
-		return phone_number;
+		return phoneNumber;
 	}
 
 	public void setPhone_number(String phone_number) {
-		this.phone_number = phone_number;
+		this.phoneNumber = phone_number;
 	}
 
 	public String getEmail() {
