@@ -21,7 +21,7 @@ public class TableDAO {
 
             List<Table> list = new ArrayList<>();
             while (rs.next()) {
-                Table t = new Table(rs.getInt("table_number"), rs.getInt("number_of_seats"));
+                Table t = new Table(rs.getInt("table_number"), rs.getInt("number_of_seats"),rs.getBoolean("is_occupied"));
                 list.add(t);
             }
             return list;
@@ -91,7 +91,7 @@ public class TableDAO {
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return new Table(rs.getInt("table_number"), rs.getInt("number_of_seats"));
+                return new Table(rs.getInt("table_number"), rs.getInt("number_of_seats"),rs.getBoolean("is_occupied"));
             }
             return null;
         } finally {

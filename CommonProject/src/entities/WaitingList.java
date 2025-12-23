@@ -6,7 +6,7 @@ import java.util.Date;
 public class WaitingList implements Serializable {
 	private int waitingId;
 	private Integer subscriberId;
-	private String identificationDetails;
+	private String identificationDetails; //Phone or Email for non subscriber
 	private String fullName;
 	private int numberOfGuests;
 	private Date enterTime;
