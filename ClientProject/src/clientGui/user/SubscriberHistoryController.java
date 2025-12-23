@@ -158,20 +158,20 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 		//SimpleDateFormat timeFmt = new SimpleDateFormat("HH:mm");
 		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 		for (Order o : orders) {
-			LocalDate localDate = o.getOrder_date().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+			LocalDate localDate = o.getOrderDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 	        
 	        // יצירת המחרוזת באמצעות אותו formatter שהוגדר בראש המחלקה!
 	        // זה מה שמונע את הבאגים בסינון
 	        String dateStr = localDate.format(formatter); 
 	        
 	        // יצירת מחרוזת שעה
-	        String timeStr = o.getOrder_date().toInstant().atZone(ZoneId.systemDefault()).format(timeFormatter);
+	        String timeStr = o.getOrderDate().toInstant().atZone(ZoneId.systemDefault()).format(timeFormatter);
 	        
-	        String priceStr = String.format("%.2f ₪", o.getTotal_price());
-	        String statusStr = o.getOrder_status().toString();
+	        String priceStr = String.format("%.2f ₪", o.getTotalPrice());
+	        String statusStr = o.getOrderStatus().toString();
 
 	        // יצירת שורה חדשה
-	        fullDataList.add(new OrderHistoryItem(o.getOrder_number(), dateStr, timeStr, priceStr, statusStr));
+	        fullDataList.add(new OrderHistoryItem(o.getOrderNumber(), dateStr, timeStr, priceStr, statusStr));
 		}
 		//ordersTable.setItems(fullDataList);
 		if (filterDatePicker.getValue() != null) {

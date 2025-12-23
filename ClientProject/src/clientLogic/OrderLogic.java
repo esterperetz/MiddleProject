@@ -39,7 +39,7 @@ public class OrderLogic {
 
 
     public void updateOrder(Order order) {
-        Request req = new Request(ResourceType.ORDER, ActionType.UPDATE, order.getOrder_number(), order);
+        Request req = new Request(ResourceType.ORDER, ActionType.UPDATE, order.getOrderNumber(), order);
         client.sendRequest(req);
     }
 

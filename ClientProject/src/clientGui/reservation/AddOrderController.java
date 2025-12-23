@@ -124,8 +124,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 	        if (isSubscriberVerified && verifiedSubscriber != null) {
 	            // אם זה מנוי מאומת - לוקחים ישר מהמקור (האובייקט) ולא מהשדות!
-	            clientName = verifiedSubscriber.getSubscriber_name();
-	            clientPhone = verifiedSubscriber.getPhone_number();
+	            clientName = verifiedSubscriber.getSubscriberName();
+	            clientPhone = verifiedSubscriber.getPhoneNumber();
 	            clientEmail = verifiedSubscriber.getEmail();
 	        } else {
 	            // אם זה לקוח מזדמן - לוקחים מהשדות שהמשתמש הקליד
@@ -183,6 +183,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					clientEmail, // client_email (השדה החדש)
 					clientPhone, // client_Phone (השדה החדש)
 					arrivalDate, // ArrivalTime (השדה החדש)
+					null,
 					price, // total_price
 					status // order_status
 			);
@@ -263,8 +264,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	private void fillAndLockFields(Subscriber sub) {
-		clientNameField.setText(sub.getSubscriber_name());
-		phoneField.setText(sub.getPhone_number());
+		clientNameField.setText(sub.getSubscriberName());
+		phoneField.setText(sub.getPhoneNumber());
 		emailField.setText(sub.getEmail());
 
 		// נעילה

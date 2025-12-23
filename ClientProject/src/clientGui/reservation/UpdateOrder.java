@@ -74,11 +74,11 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		this.o = order;
 		this.ol = orderLogic;
 		this.mainController = mainController; // Store main controller reference
-		orderIdField.setText(String.valueOf(o.getOrder_number()));
+		orderIdField.setText(String.valueOf(o.getOrderNumber()));
 
-		if (o.getSubscriber_id() != null && o.getSubscriber_id() != 0) {
+		if (o.getSubscriberId() != null && o.getSubscriberId() != 0) {
 			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
-			subscriberIdField.setText(String.valueOf(o.getSubscriber_id()));
+			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
 			setClientFieldsEditable(false); // נעילה
 		} else {
 			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
@@ -87,25 +87,25 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		}
 
 		// 2. מילוי פרטי לקוח (Strings)
-		clientNameField.setText(o.getClient_name());
-		phoneField.setText(o.getClient_Phone());
-		emailField.setText(o.getClient_email());
+		clientNameField.setText(o.getClientName());
+		phoneField.setText(o.getClientPhone());
+		emailField.setText(o.getClientEmail());
 
 		// 3. מילוי מספרים
-		guestsField.setText(String.valueOf(o.getNumber_of_guests()));
-		priceField.setText(String.valueOf(o.getTotal_price()));
+		guestsField.setText(String.valueOf(o.getNumberOfGuests()));
+		priceField.setText(String.valueOf(o.getTotalPrice()));
 
 		// 4. מילוי סטטוס (ComboBox)
-		if (o.getOrder_status() != null) {
-			statusComboBox.setValue(o.getOrder_status());
+		if (o.getOrderStatus() != null) {
+			statusComboBox.setValue(o.getOrderStatus());
 		}
 
 		// 5. טיפול מיוחד בתאריך ושעה (Order Date)
 		// אנחנו מפרקים את ה-Date של ג'אווה ל-LocalDate (לתאריכון) ו-LocalTime (לשדה
 		// השעה)
-		if (o.getOrder_date() != null) {
+		if (o.getOrderDate() != null) {
 			// המרה מ-Date ל-LocalDateTime
-			java.time.LocalDateTime ldt = o.getOrder_date().toInstant().atZone(java.time.ZoneId.systemDefault())
+			java.time.LocalDateTime ldt = o.getOrderDate().toInstant().atZone(java.time.ZoneId.systemDefault())
 					.toLocalDateTime();
 
 			datePicker.setValue(ldt.toLocalDate()); // הצגת התאריך
@@ -198,16 +198,17 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				// 4. יצירת האובייקט המעודכן
 				// שים לב: אנחנו לוקחים את הנתונים החדשים מהמשתנים שיצרנו למעלה,
 				// ואת הנתונים הקבועים (כמו ID וקוד אישור) מהאובייקט המקורי (selectedOrder/o)
-				Order updatedOrder = new Order(o.getOrder_number(), // ID מקורי
+				Order updatedOrder = new Order(o.getOrderNumber(), // ID מקורי
 						newOrderDate, // תאריך חדש
 						guests, // אורחים חדש
-						o.getConfirmation_code(), // קוד מקורי
-						o.getSubscriber_id(), // מנוי מקורי
-						o.getDate_of_placing_order(), // תאריך יצירה מקורי
+						o.getConfirmationCode(), // קוד מקורי
+						o.getSubscriberId(), // מנוי מקורי
+						o.getDateOfPlacingOrder(), // תאריך יצירה מקורי
 						name, // שם חדש
 						email, // אימייל חדש
 						phone, // טלפון חדש
 						newArrivalTime, // הגעה חדש
+						null,
 						price, // מחיר חדש
 						status // סטטוס חדש
 				);

@@ -32,7 +32,7 @@ public class UserLogic {
 	}
 
 	public void updateSubscriber(Subscriber subscriber) {
-		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.UPDATE, subscriber.getSubscriber_id(),
+		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.UPDATE, subscriber.getSubscriberId(),
 				subscriber);
 		client.sendRequest(req);
 	}
