@@ -45,6 +45,7 @@ public class DBConnection {
 		instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
 		createTableSubscriber(instance.connection);
 		createTableOrder(instance.connection);
+		createTableEmployee(instance.connection);
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
 	}
@@ -145,7 +146,6 @@ public class DBConnection {
 	                 "phone_number VARCHAR(20), " +
 	                 "email VARCHAR(100), " +
 	                 "role ENUM('MANAGER', 'REPRESENTATIVE') NOT NULL, " +
-	                 "is_logged_in BOOLEAN DEFAULT FALSE, " +
 	                 "PRIMARY KEY (employee_id)" +
 	                 ");";
 	    try {
