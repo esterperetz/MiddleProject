@@ -112,37 +112,51 @@ public class DBConnection {
 
 	}
 	
-	
 	public static void createTableOrder(Connection con1) {
-		Statement stmt;
-		String sql = "CREATE TABLE IF NOT EXISTS bistro.order(" +
-                "order_number INT NOT NULL AUTO_INCREMENT, " +
-                "order_date DATETIME NOT NULL, " +
-                "number_of_guests INT NOT NULL, " +
-                "confirmation_code INT NOT NULL, " +
-                "subscriber_id INT DEFAULT NULL, " + 
-                "date_of_placing_order DATETIME NOT NULL, " +
-                "client_name VARCHAR(255) NOT NULL, " +  
-                "client_email VARCHAR(255) NOT NULL, " + 
-                "client_phone VARCHAR(20) NOT NULL, " +  
-                "arrival_time DATETIME, " +             
-                "total_price DECIMAL(10, 2), " +
-                "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
-                "PRIMARY KEY (order_number), " +
-                "CONSTRAINT fk_order_subscriber " +
-                "FOREIGN KEY (subscriber_id) REFERENCES bistro.subscriber(subscriber_id) " +
-                "ON DELETE SET NULL " +
-                "ON UPDATE CASCADE" +
-                ");";
-		try {
-			stmt = con1.createStatement();
-			stmt.executeUpdate(sql);
-
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
+	    Statement stmt;
+	    String sql = "CREATE TABLE IF NOT EXISTS bistro.order(" +
+	            "order_number INT NOT NULL AUTO_INCREMENT, " +
+	            "order_date DATETIME NOT NULL, " +
+	            "number_of_guests INT NOT NULL, " +
+	            "confirmation_code INT NOT NULL, " +
+	            "subscriber_id INT DEFAULT NULL, " + 
+	            "date_of_placing_order DATETIME NOT NULL, " +
+	            "client_name VARCHAR(255) NOT NULL, " +  
+	            "client_email VARCHAR(255) NOT NULL, " + 
+	            "client_phone VARCHAR(20) NOT NULL, " +  
+	            "arrival_time DATETIME, " +             
+	            "leaving_time DATETIME, " + // New field
+	            "total_price DECIMAL(10, 2), " +
+	            "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
+	            "PRIMARY KEY (order_number), " +
+	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	            ");";
+	    try {
+	        stmt = con1.createStatement();
+	        stmt.executeUpdate(sql);
+	    } catch (SQLException e) { e.printStackTrace(); }
 	}
+	public static void createTableEmployee(Connection con) {
+	    Statement stmt;
+	    String sql = "CREATE TABLE IF NOT EXISTS bistro.employees (" +
+	                 "employee_id INT NOT NULL AUTO_INCREMENT, " +
+	                 "user_name VARCHAR(100) NOT NULL UNIQUE, " +
+	                 "password VARCHAR(255) NOT NULL, " + 
+	                 "phone_number VARCHAR(20), " +
+	                 "email VARCHAR(100), " +
+	                 "role ENUM('MANAGER', 'REPRESENTATIVE') NOT NULL, " +
+	                 "is_logged_in BOOLEAN DEFAULT FALSE, " +
+	                 "PRIMARY KEY (employee_id)" +
+	                 ");";
+	    try {
+	        stmt = con.createStatement();
+	        stmt.executeUpdate(sql);
+	        System.out.println("Table 'employees' is ready.");
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
 	
 	
 
