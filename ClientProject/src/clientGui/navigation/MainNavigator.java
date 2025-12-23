@@ -83,6 +83,7 @@ public class MainNavigator implements BaseController {
 			this.mainStage = stage;
 			stage.setScene(new Scene(root));
 			stage.show();
+		
 
 			return controller; 
 
@@ -91,6 +92,7 @@ public class MainNavigator implements BaseController {
 			System.out.println("Error loading screen: " + fxmlPath);
 			return null;
 		}
+		
 	}
 
 	

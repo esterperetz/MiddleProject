@@ -27,7 +27,7 @@ public class OrderLogic {
     }
     
 	public void getOrdersBySubscriberId(int subscriberId) {
-		Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_ID, subscriberId, null);
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_ALL_BY_SUBSCRIBER_ID, subscriberId, null);
 		client.sendRequest(req);
 	}
 

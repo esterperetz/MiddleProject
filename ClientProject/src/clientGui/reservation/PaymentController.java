@@ -4,6 +4,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import clientGui.user.SubscriberOptionController;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -27,7 +28,8 @@ public class PaymentController extends MainNavigator implements  MessageListener
 	// משתנה לשמירת הסכום לתשלום (אופציונלי, כדי להציג בלוג)
 	private double amountToPay;
 	private int tableId;
-
+	private int subscriberId;
+	private boolean isSub;
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
 		this.tableId = tableId;
@@ -65,13 +67,25 @@ public class PaymentController extends MainNavigator implements  MessageListener
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
 		//Alert pay good 
-		super.loadScreen("user/SubscriberOption",event,clientUi);
+		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",event,clientUi);
+		
+		if(isSub)
+			controller.initData(clientUi, true, subscriberId);
+		else
+			controller.initData(clientUi, false, subscriberId);
 
+		//public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId)
 	}
 
 	@FXML
 	void cancel(ActionEvent event) {
-		super.loadScreen("reservation/Bill",event,clientUi);
+		BillController billController = super.loadScreen("reservation/Bill",event,clientUi);
+		if(isSub)
+			billController.initData(amountToPay, subscriberId ,true, tableId);
+		else
+			billController.initData(amountToPay, subscriberId ,false, tableId);
+
+			
 	
 	}
 
@@ -85,7 +99,12 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		stage.close();
 	}
 
-	
+	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+		this.tableId = tableId;
+        this.subscriberId = subId;
+        //itemsList.setItems(items);
+        isSub=isSubscriber;
+	}
 
 	@Override
 	public void onMessageReceive(Object msg) {

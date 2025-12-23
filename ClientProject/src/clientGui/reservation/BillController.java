@@ -21,8 +21,9 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
     @FXML private HBox discountBox; // הקופסה שמחזיקה את שורת ההנחה
     @FXML private Label lblDiscountAmount;
     @FXML private Label lblFinalPrice;
-
+    private boolean isSub;
     private int tableId;
+	private int subscriberId;
     
     /**
      * פונקציה זו נקראת ע"י המסך הקודם כדי לטעון את הנתונים
@@ -31,10 +32,12 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
      * @param isSubscriber - האם הלקוח הוא מנוי
      * @param tableId - מספר השולחן (כדי לשחרר אותו בסוף)
      */
-    public void initData(ObservableList<String> items, double originalTotal, boolean isSubscriber, int tableId) {
-        this.tableId = tableId;
-        itemsList.setItems(items);
-        
+   // public void initData(ObservableList<String> items, double originalTotal, boolean isSubscriber, int tableId, int subId) {
+	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+		this.tableId = tableId;
+        this.subscriberId = subId;
+        //itemsList.setItems(items);
+        isSub=isSubscriber;
         lblOriginalPrice.setText(String.format("%.2f $", originalTotal));
 
         if (isSubscriber) {
@@ -59,8 +62,13 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
 
     @FXML
     void payAndReleaseTable(ActionEvent event) {
-        
-		super.loadScreen("reservation/Payment" , event,clientUi);
+    	PaymentController payment = super.loadScreen("reservation/Payment",event,clientUi);
+   	 	if(isSub)	
+   	 		payment.initData(2.3,subscriberId,true, tableId);
+    	else
+    		payment.initData(2.3,subscriberId,false, tableId);
+		
+   	 //super.loadScreen("reservation/Payment" , event,clientUi);
         
     }
 

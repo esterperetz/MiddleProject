@@ -23,9 +23,7 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-			case GET_USER_ORDERS:
-				handleGetUserOrders(req, client);
-				break;
+
 			case GET_ALL:
 				handleGetAll(req, client);
 				break;

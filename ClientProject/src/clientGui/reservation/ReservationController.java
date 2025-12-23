@@ -27,7 +27,8 @@ public class ReservationController extends MainNavigator implements  MessageList
     @FXML private TextField emailField;
     @FXML private Label errorLabel;
 
-    private boolean isSubscriber = false;
+    private boolean isSubscriber;
+	private int subscriberId;
 
     @FXML
     public void initialize() {
@@ -48,17 +49,28 @@ public class ReservationController extends MainNavigator implements  MessageList
     /**
      * פונקציה זו נקראת מבחוץ כדי לאתחל את המסך עם פרטי מנוי
      */
-    public void setData(boolean isSubscriber, String phone, String email, String name) {
-        this.isSubscriber = isSubscriber;
-        if (isSubscriber) {
-            phoneField.setText(phone);
-            emailField.setText(email);
-            nameField.setText(name);
-            
-            // אפשר לחסום עריכה למנויים אם רוצים:
-            // phoneField.setDisable(true);
-        }
+    
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+    	this.clientUi = clientUi;
+        this.isSubscriber = isSubscriberStatus;
+        this.subscriberId = subId;
+        System.out.println("Loaded options for subscriber: " + subId);
+        //check what we do with the hidden button for non subscriber.
+ 
+
+      
     }
+//    public void setData(boolean isSubscriber, String phone, String email, String name) {
+//        this.isSubscriber = isSubscriber;
+//        if (isSubscriber) {
+//            phoneField.setText(phone);
+//            emailField.setText(email);
+//            nameField.setText(name);
+//            
+//            // אפשר לחסום עריכה למנויים אם רוצים:
+//            // phoneField.setDisable(true);
+//        }
+//    }
 
     private void setupDateConstraints() {
         // הגדרת "מפעל תאים" שמבטל ימים בעבר או ימים מעבר לחודש מהיום
@@ -162,7 +174,7 @@ public class ReservationController extends MainNavigator implements  MessageList
     	SubscriberOptionController controller = 
     	        super.loadScreen("user/SubscriberOption", event,clientUi);
     	if (controller != null) {
-//            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+            controller.initData(clientUi,isSubscriber,subscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }

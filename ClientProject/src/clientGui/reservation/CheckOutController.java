@@ -1,14 +1,20 @@
 package clientGui.reservation;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
+import clientLogic.OrderLogic;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -17,7 +23,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-public class CheckOutController extends MainNavigator implements  MessageListener<Object>{
+public class CheckOutController extends MainNavigator implements  Initializable , MessageListener<Object>{
 
 	@FXML
 	private TextField txtOrderId;
@@ -25,6 +31,20 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 	@FXML
 	private Label lblResult;
 
+	private int currentSubscriberId;
+	private boolean isSubsriber;
+	private OrderLogic orderLogic;
+	private int tableId;
+	
+	@Override
+    public void initialize(URL location, ResourceBundle resources) {
+        // By default, the button is hidden in FXML (visible="false", managed="false").
+        
+        // --- Check if the current user is a subscriber ---
+        // TODO: Replace 'true' with your actual logic, e.g., ClientUI.currentUser.isSubscriber()
+        //isSubscriber = true; 
+
+	}
 
 	/**
 	 * Triggered when the "Check out" button is clicked.
@@ -40,7 +60,12 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
 			return;
 		}
-		super.loadScreen("reservation/Bill", event,clientUi);
+		BillController bill_controller = super.loadScreen("reservation/Bill",event,clientUi);
+   	 if(isSubsriber)	
+   		bill_controller.initData(2.3,currentSubscriberId,true, tableId);
+    	else
+    		bill_controller.initData(2.3,currentSubscriberId,false, tableId);
+		//super.loadScreen("reservation/Bill", event,clientUi);
 
 
 		// 2. Server Simulation (Replace this with real server call later)
@@ -72,13 +97,23 @@ public class CheckOutController extends MainNavigator implements  MessageListene
 		//MainNavigator.loadScreen("user/SubscriberOption", clientUi);
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
-    	if (controller != null) {
-//            controller.initData(clientUi,SubscriberOptionController.isSubscriber());
+    	if (isSubsriber) {
+    		controller.initData(clientUi,isSubsriber, currentSubscriberId);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
 	}
-
+	
+	public void initData(int subscriberId,boolean isSubsriber, int tableId) {
+		// this.clientUi = clientUi;
+//		this.clientUi.addListener(this);
+		this.isSubsriber=isSubsriber;
+		this.currentSubscriberId = subscriberId;
+		this.orderLogic = new OrderLogic(clientUi);
+		System.out.println("Fetching history for subscriber: " + subscriberId);
+//		orderLogic.getOrdersBySubscriberCode(subscriberId);
+	
+	}
 
 
 	

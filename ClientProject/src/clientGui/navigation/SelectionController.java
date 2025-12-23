@@ -6,6 +6,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.reservation.OrderUi_controller;
+import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -47,8 +48,11 @@ public class SelectionController extends MainNavigator implements  MessageListen
     @FXML
     void pressCasualCustomer(ActionEvent event) {
         System.out.println("Navigating to Casual Customer screen...");
-        //MainNavigator.loadReservationScreen(false, "", "", "");
-        super.loadScreen("user/SubscriberOption", event,clientUi);
+        SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
+        if (controller != null) {
+            controller.initData(clientUi, false, null);
+        }
+        //super.loadScreen("user/SubscriberOption", event,clientUi);
     }
     
     /**

@@ -1,5 +1,6 @@
 package clientGui.user;
 
+import Entities.Alarm;
 import Entities.Response;
 import client.MessageListener;
 import clientGui.ClientUi;
@@ -19,7 +20,6 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	private TextField SubscriberCode;
 	private ActionEvent currentEvent;
 	private int lastEnteredSubId;
-	
 	
 	@FXML
 	public void initialize() {
@@ -55,12 +55,8 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
             e.printStackTrace();
         }
 		
-		//
-	
-//			System.exit(0);
-
 	}
-
+	 
 	@Override
 	public void onMessageReceive(Object msg) {
 		try {
@@ -71,15 +67,14 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		        // חייבים להשתמש ב-Platform.runLater כי שינוי UI חייב לקרות ב-JavaFX Thread
 		        Platform.runLater(() -> {
 		            if (isSuccess) {
-		            	
 		            	System.out.println(res.getStatus().getString());
 		                SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
 		                if (controller != null) {
-		                    controller.initData(clientUi, SubscriberOptionController.isSubscriber(), lastEnteredSubId);
+		                    controller.initData(clientUi, true, lastEnteredSubId);
 		                   
 		                }
 		            } else {
-		                super.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
+		                Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
 		            }
 		            
 		        });
