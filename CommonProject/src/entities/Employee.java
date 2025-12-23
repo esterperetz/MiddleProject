@@ -2,7 +2,7 @@ package entities;
 
 public class Employee {
 	
-	private int employee_id;
+	private int employeeId;
 	private String userName;
 	private String phoneNumber;
 	private String email;
@@ -35,12 +35,12 @@ public class Employee {
 		this.password = password;
 	}
 
-	public int getEmployee_id() {
-		return employee_id;
+	public int getEmployeeId() {
+		return employeeId;
 	}
 
-	public void setEmployee_id(int employee_id) {
-		this.employee_id = employee_id;
+	public void setEmployeeId(int employee_id) {
+		this.employeeId = employee_id;
 	}
 
 	public String getPhone_number() {
