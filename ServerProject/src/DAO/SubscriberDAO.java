@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 
 import DBConnection.DBConnection;
-import entities.Subscriber;
+import Entities.Subscriber;
 
 public class SubscriberDAO {
     private Connection dbConnection;

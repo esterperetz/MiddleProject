@@ -5,11 +5,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 import DAO.SubscriberDAO;
-import entities.ActionType;
-import entities.Request;
-import entities.ResourceType;
-import entities.Response;
-import entities.Subscriber;
+import Entities.ActionType;
+import Entities.Request;
+import Entities.ResourceType;
+import Entities.Response;
+import Entities.Subscriber;
 import ocsf.server.ConnectionToClient;
 
 public class SubscriberController {

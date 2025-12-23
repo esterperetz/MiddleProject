@@ -4,13 +4,13 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import Entities.Response;
+import Entities.Subscriber;
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 import clientLogic.UserLogic;
-import entities.Response;
-import entities.Subscriber;
 
 public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>{
 	@FXML

@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import DBConnection.DBConnection;
-import entities.WaitingList;
+import Entities.WaitingList;
 
 public class WaitingListDAO {
 

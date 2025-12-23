@@ -1,4 +1,4 @@
-package entities;
+package Entities;
 
 import javafx.scene.control.Alert;
 

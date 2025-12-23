@@ -4,8 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import DBConnection.DBConnection;
-import entities.Order;
-import entities.Order.OrderStatus;
+import Entities.Order;
+import Entities.Order.OrderStatus;
 
 public class OrderDAO {
 

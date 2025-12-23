@@ -5,10 +5,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 import DAO.TableDAO;
-import entities.ActionType;
-import entities.Request;
-import entities.ResourceType;
-import entities.Table;
+import Entities.ActionType;
+import Entities.Request;
+import Entities.ResourceType;
+import Entities.Table;
 import ocsf.server.ConnectionToClient;
 
 public class TableController {

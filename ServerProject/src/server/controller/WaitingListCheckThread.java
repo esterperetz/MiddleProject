@@ -3,7 +3,7 @@ package server.controller;
 import java.util.Date;
 import java.util.List;
 import DAO.WaitingListDAO;
-import entities.WaitingList;
+import Entities.WaitingList;
 import DAO.TableDAO;
 import DAO.OrderDAO;
 
@@ -41,7 +41,7 @@ public class WaitingListCheckThread extends Thread {
 	            int guests = entry.getNumberOfGuests(); // [cite: 37]
 	            
 	            // Get tables with no current diners ('SITTING' or 'ARRIVED') [cite: 40, 51]
-	            List<entities.Table> vacantTables = tableDao.getAvailableTablesNow(guests);
+	            List<Entities.Table> vacantTables = tableDao.getAvailableTablesNow(guests);
 	            
 	            // Count 'APPROVED' orders starting within 15 minutes 
 	            int reservedSoon = orderDao.countActiveOrdersInTimeRange(new Date(), guests);
@@ -49,7 +49,7 @@ public class WaitingListCheckThread extends Thread {
 	            // Check if enough vacant tables exist after saving spots for reservations
 	            if (vacantTables.size() > reservedSoon) {
 	                // Assign the first available table from the list 
-	                entities.Table tableToAssign = vacantTables.get(0);
+	                Entities.Table tableToAssign = vacantTables.get(0);
 	                
 	                // Promote entry and assign the specific table number 
 	                boolean promoted = controller.promoteToOrder(entry, tableToAssign.getTableNumber());

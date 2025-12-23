@@ -7,12 +7,12 @@ import java.util.List;
 
 import DAO.OrderDAO;
 import DAO.WaitingListDAO;
-import entities.ActionType;
-import entities.Order;
-import entities.Request;
-import entities.ResourceType;
-import entities.WaitingList;
-import entities.Order.OrderStatus;
+import Entities.ActionType;
+import Entities.Order;
+import Entities.Order.OrderStatus;
+import Entities.Request;
+import Entities.ResourceType;
+import Entities.WaitingList;
 import ocsf.server.ConnectionToClient;
 
 public class WaitingListController {

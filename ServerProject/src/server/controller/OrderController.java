@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
 import DAO.TableDAO;
-import entities.*;
+import Entities.*;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
 

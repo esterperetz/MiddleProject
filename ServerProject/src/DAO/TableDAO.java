@@ -4,7 +4,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import DBConnection.DBConnection;
-import entities.Table;
+import Entities.Table;
 
 public class TableDAO {
 

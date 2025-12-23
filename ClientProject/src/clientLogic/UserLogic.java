@@ -1,10 +1,10 @@
 package clientLogic;
 
 import clientGui.ClientUi;
-import entities.ActionType;
-import entities.Request;
-import entities.ResourceType;
-import entities.Subscriber;
+import Entities.ActionType;
+import Entities.Request;
+import Entities.ResourceType;
+import Entities.Subscriber;
 
 public class UserLogic {
 
