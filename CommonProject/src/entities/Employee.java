@@ -1,20 +1,30 @@
 package entities;
 
 public class Employee {
-	
+
+	public enum Role {
+		MANAGER("MANAGER"), REPRESENTATIVE("REPRESENTATIVE");
+
+		private  final String RoleValue;
+
+		Role(String RoleValue) {
+			this.RoleValue = RoleValue;
+		}
+		public String getRoleValue() {
+			return RoleValue;
+		}
+		
+	}
+
 	private int employeeId;
 	private String userName;
 	private String phoneNumber;
 	private String email;
 	private int password;
-	private String role;
-	
-	
-	
-	
-	
-	public Employee(String userName,int password) {
-		
+	private Role role;
+
+	public Employee(String userName, int password) {
+
 		this.userName = userName;
 		this.password = password;
 	}
@@ -59,11 +69,20 @@ public class Employee {
 		this.email = email;
 	}
 
-	public String getRole() {
+	public String getPhoneNumber() {
+		return phoneNumber;
+	}
+
+	public void setPhoneNumber(String phoneNumber) {
+		this.phoneNumber = phoneNumber;
+	}
+
+	public void setRole(Role role) {
+		this.role = role;
+	}
+
+	public Role getRole() {
 		return role;
 	}
 
-	public void setRole(String role) {
-		this.role = role;
-	}
 }
