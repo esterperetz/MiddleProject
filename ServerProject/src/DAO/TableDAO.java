@@ -121,4 +121,30 @@ public class TableDAO {
             if (stmt != null) stmt.close();
         }
     }
+    public Integer findAvailableTable(int guests) throws SQLException {
+        String sql = "SELECT table_number FROM tables WHERE number_of_seats >= ? AND is_occupied = 0 LIMIT 1";
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, guests);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("table_number");
+                }
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Updates the physical occupancy status of a table[cite: 51].
+     */
+    public boolean updateTableStatus(int tableNumber, boolean isOccupied) throws SQLException {
+        String sql = "UPDATE tables SET is_occupied = ? WHERE table_number = ?";
+        try (Connection con = DBConnection.getInstance().getConnection();
+             PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setBoolean(1, isOccupied);
+            stmt.setInt(2, tableNumber);
+            return stmt.executeUpdate() > 0;
+        }
+    }
 }

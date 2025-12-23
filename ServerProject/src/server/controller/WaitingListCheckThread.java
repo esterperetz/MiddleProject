@@ -1,19 +1,21 @@
 package server.controller;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Calendar;
 import DAO.WaitingListDAO;
-import entities.WaitingList;
 import DAO.TableDAO;
 import DAO.OrderDAO;
+import entities.Order;
+import entities.WaitingList;
 
 /**
- * Background thread following the same style as OrderCleanupThread. Monitors
- * the waiting list and performs automatic promotion.
+ * Background thread monitoring the waiting list for safe seating gaps.
  */
 public class WaitingListCheckThread extends Thread {
 	private final WaitingListDAO waitingListDao = new WaitingListDAO();
-	private final WaitingListController controller = new WaitingListController();
+	private final WaitingListController waitingListController = new WaitingListController();
 	private final TableDAO tableDao = new TableDAO();
 	private final OrderDAO orderDao = new OrderDAO();
 	private boolean running = true;
@@ -22,53 +24,64 @@ public class WaitingListCheckThread extends Thread {
 	public void run() {
 		while (running) {
 			try {
-				// Sleep for 1 minute
+				// Interval check every minute 
 				Thread.sleep(60000);
-				checkWaitingList();
-			}
-			catch (InterruptedException e) {
+				processWaitingList();
+			} catch (InterruptedException e) {
 				running = false;
 			}
 		}
 	}
 
-	private void checkWaitingList() {
-	    try {
-	        // Fetch current waiting list entries (FIFO) [cite: 59, 66]
-	        List<WaitingList> entries = waitingListDao.getAllWaitingList();
+	private void processWaitingList() {
+		try {
+			// 1. Fetch entries in FIFO order 
+			List<WaitingList> entries = waitingListDao.getAllWaitingList();
 
-	        for (WaitingList entry : entries) {
-	            int guests = entry.getNumberOfGuests(); // [cite: 37]
-	            
-	            // Get tables with no current diners ('SITTING' or 'ARRIVED') [cite: 40, 51]
-	            List<entities.Table> vacantTables = tableDao.getAvailableTablesNow(guests);
-	            
-	            // Count 'APPROVED' orders starting within 15 minutes 
-	            int reservedSoon = orderDao.countActiveOrdersInTimeRange(new Date(), guests);
-	            
-	            // Check if enough vacant tables exist after saving spots for reservations
-	            if (vacantTables.size() > reservedSoon) {
-	                // Assign the first available table from the list 
-	                entities.Table tableToAssign = vacantTables.get(0);
-	                
-	                // Promote entry and assign the specific table number 
-	                boolean promoted = controller.promoteToOrder(entry, tableToAssign.getTableNumber());
+			for (WaitingList entry : entries) {
+				int guests = entry.getNumberOfGuests();
 
-	                if (promoted) {
-	                    System.out.println("Automation: Promoted " + entry.getFullName() + 
-	                            " to Table " + tableToAssign.getTableNumber());
-	                    
-	                    // Break to allow DB update and prevent double-assignment in one cycle
-	                    break; 
-	                }
-	            } else {
-	                System.out.println("Automation: " + entry.getFullName() + 
-	                        " waiting - tables reserved for upcoming bookings.");
-	            }
-	        }
-	    } catch (Exception e) {
-	        System.err.println("WaitingList thread error: " + e.getMessage());
-	    }
+				// 2. Total suitable tables in restaurant 
+				int totalSuitableTables = tableDao.countSuitableTables(guests);
+
+				// 3. Tables currently occupied by seated diners 
+				int occupiedTables = orderDao.countCurrentlySeatedOrders(guests);
+
+				// 4. Protect upcoming reservations within the next 2 hours
+				Date now = new Date();
+				Calendar cal = Calendar.getInstance();
+				cal.setTime(now);
+				cal.add(Calendar.HOUR_OF_DAY, 2);
+				Date twoHoursFromNow = cal.getTime();
+
+				int upcomingReservations = orderDao.countApprovedOrdersInRange(now, twoHoursFromNow, guests);
+
+				// 5. Calculate if a seat is available without bumping a future reservation
+				int realAvailability = totalSuitableTables - occupiedTables - upcomingReservations;
+
+				if (realAvailability > 0) {
+					// Safe gap found; promote entry
+					promoteEntry(entry);
+
+					// Break to prevent double-booking within the same cycle
+					break;
+				}
+			}
+		} catch (SQLException e) {
+			System.err.println("WaitingList Thread Error: " + e.getMessage());
+		}
+	}
+
+	private void promoteEntry(WaitingList entry) {
+		try {
+			// Notify client and convert entry to APPROVED order 
+			boolean success = waitingListController.handlePromoteToOrder(entry.getWaitingId(), null);
+			if (success) {
+				System.out.println("Waiting List: Entry for " + entry.getFullName() + " promoted.");
+			}
+		} catch (Exception e) {
+			System.err.println("Promotion failed: " + e.getMessage());
+		}
 	}
 
 	public void stopThread() {
@@ -76,3 +89,6 @@ public class WaitingListCheckThread extends Thread {
 		this.interrupt();
 	}
 }
+
+
+///TO ADD: ALGORITHM THAT ADDS THE PERSON FROM WAITING LIST AND ASSIGNS HIM TO THE BEST TABLE (חמדני) (YOHAD)
