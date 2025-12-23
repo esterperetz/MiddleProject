@@ -93,27 +93,27 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
         // מספר הזמנה
         Order_numberColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_number()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderNumber()));
 
         // שם לקוח (String)
         clientNameColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClient_name()));
+            new SimpleStringProperty(cellData.getValue().getClientName()));
 
         // טלפון (String)
         clientPhoneColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClient_Phone()));
+            new SimpleStringProperty(cellData.getValue().getClientPhone()));
 
         // אימייל (String)
         clientEmailColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClient_email()));
+            new SimpleStringProperty(cellData.getValue().getClientEmail()));
 
         // מזהה מנוי
         subscriber_idColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriber_id()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriberId()));
 
         // תאריך הזמנה
         DateColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_date()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderDate()));
 
         // שעת הגעה בפועל
         arrivalTimeColumn.setCellValueFactory(cellData -> 
@@ -121,23 +121,23 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
         // כמות אורחים
         itemColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getNumber_of_guests()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
 
         // מחיר כולל
         totalPriceColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getTotal_price()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getTotalPrice()));
 
         // סטטוס (שים לב: getOrder_status ולא getStatus)
         statusColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrder_status()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderStatus()));
 
         // קוד אישור
         confirmation_codeColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmation_code()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
 
         // תאריך יצירת ההזמנה
         date_of_placing_orderColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getDate_of_placing_order()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getDateOfPlacingOrder()));
 
         setupEditableColumns();
         orderTable.setItems(orderData);
@@ -360,7 +360,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	private void handleDeleteOrder() {
 		Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
 		if (selectedOrder != null) {
-			int orderIdToDelete = selectedOrder.getOrder_number();
+			int orderIdToDelete = selectedOrder.getOrderNumber();
 			orderLogic.deleteOrder(orderIdToDelete);
 		} else {
 			String header = "No Selection";
@@ -381,7 +381,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
 		itemColumn.setOnEditCommit(event -> {
 			Order o = event.getRowValue();
-			o.setNumber_of_guests(event.getNewValue());
+			o.setNumberOfGuests(event.getNewValue());
 			orderLogic.updateOrder(o);
 		});
 	}
