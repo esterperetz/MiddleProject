@@ -4,8 +4,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import DBConnection.DBConnection;
-import Entities.Order;
-import Entities.Order.OrderStatus;
+import entities.Order;
+import entities.Order.OrderStatus;
 
 public class OrderDAO {
 
@@ -34,6 +34,7 @@ public class OrderDAO {
 						rs.getString("client_email"), 
 						rs.getString("client_phone"), 
 						rs.getTimestamp("arrival_time"),
+						rs.getTimestamp("leaving_time"), 
 						rs.getDouble("total_price"), status);
 				list.add(o);
 			}
@@ -77,6 +78,7 @@ public class OrderDAO {
 	                rs.getString("client_email"), 
 	                rs.getString("client_phone"), 
 	                rs.getTimestamp("arrival_time"),
+	                rs.getTimestamp("leaving_time"),
 	                rs.getDouble("total_price"), 
 	                status
 	            );
@@ -115,6 +117,7 @@ public class OrderDAO {
 						rs.getString("client_email"), 
 						rs.getString("client_phone"), 
 						rs.getTimestamp("arrival_time"),
+						rs.getTimestamp("leaving_time"),
 						rs.getDouble("total_price"), status);
 			}
 			return null;
@@ -138,21 +141,21 @@ public class OrderDAO {
 		try {
 			con = DBConnection.getInstance().getConnection();
 			stmt = con.prepareStatement(sql);
-			stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrder_date().getTime()));
-			stmt.setInt(2, o.getNumber_of_guests());
-			stmt.setInt(3, o.getConfirmation_code());
+			stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrderDate().getTime()));
+			stmt.setInt(2, o.getNumberOfGuests());
+			stmt.setInt(3, o.getConfirmationCode());
 
-			if (o.getSubscriber_id() == null) {
+			if (o.getSubscriberId() == null) {
 				stmt.setNull(4, java.sql.Types.INTEGER);
 			} else {
-				stmt.setInt(4, o.getSubscriber_id());
+				stmt.setInt(4, o.getSubscriberId());
 			}
 
-			stmt.setTimestamp(5, new java.sql.Timestamp(o.getDate_of_placing_order().getTime()));
+			stmt.setTimestamp(5, new java.sql.Timestamp(o.getDateOfPlacingOrder().getTime()));
 
-			stmt.setString(6, o.getClient_name());
-			stmt.setString(7, o.getClient_email());
-			stmt.setString(8, o.getClient_Phone());
+			stmt.setString(6, o.getClientName());
+			stmt.setString(7, o.getClientEmail());
+			stmt.setString(8, o.getClientPhone());
 			if (o.getArrivalTime() != null) {
 				stmt.setTimestamp(9, new java.sql.Timestamp(o.getArrivalTime().getTime()));
 			} else {
@@ -160,9 +163,9 @@ public class OrderDAO {
 			}
 
 			// 10. total_price
-			stmt.setDouble(10, o.getTotal_price());
+			stmt.setDouble(10, o.getTotalPrice());
 			// 11. order_status
-			stmt.setString(11, o.getOrder_status().name());
+			stmt.setString(11, o.getOrderStatus().name());
 
 			return stmt.executeUpdate() > 0;
 		} finally {
@@ -184,21 +187,21 @@ public class OrderDAO {
 	        con = DBConnection.getInstance().getConnection();
 	        stmt = con.prepareStatement(sql);
 
-	        stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrder_date().getTime()));
-	        stmt.setInt(2, o.getNumber_of_guests());
-	        stmt.setInt(3, o.getConfirmation_code());
+	        stmt.setTimestamp(1, new java.sql.Timestamp(o.getOrderDate().getTime()));
+	        stmt.setInt(2, o.getNumberOfGuests());
+	        stmt.setInt(3, o.getConfirmationCode());
 
-	        if (o.getSubscriber_id() == null) {
+	        if (o.getSubscriberId() == null) {
 	            stmt.setNull(4, java.sql.Types.INTEGER);
 	        } else {
-	            stmt.setInt(4, o.getSubscriber_id());
+	            stmt.setInt(4, o.getSubscriberId());
 	        }
 
-	        stmt.setTimestamp(5, new java.sql.Timestamp(o.getDate_of_placing_order().getTime()));
+	        stmt.setTimestamp(5, new java.sql.Timestamp(o.getDateOfPlacingOrder().getTime()));
 	        
-	        stmt.setString(6, o.getClient_name());
-	        stmt.setString(7, o.getClient_email());
-	        stmt.setString(8, o.getClient_Phone());
+	        stmt.setString(6, o.getClientName());
+	        stmt.setString(7, o.getClientEmail());
+	        stmt.setString(8, o.getClientPhone());
 	        
 	        if (o.getArrivalTime() != null) {
 	            stmt.setTimestamp(9, new java.sql.Timestamp(o.getArrivalTime().getTime()));
@@ -206,11 +209,11 @@ public class OrderDAO {
 	            stmt.setNull(9, java.sql.Types.TIMESTAMP);
 	        }
 
-	        stmt.setDouble(10, o.getTotal_price());
+	        stmt.setDouble(10, o.getTotalPrice());
 	        
-	        stmt.setString(11, o.getOrder_status().name());
+	        stmt.setString(11, o.getOrderStatus().name());
 
-	        stmt.setInt(12, o.getOrder_number());
+	        stmt.setInt(12, o.getOrderNumber());
 
 	        return stmt.executeUpdate() > 0;
 	    } finally {
@@ -261,6 +264,7 @@ public class OrderDAO {
 				    rs.getString("client_email"),  
 				    rs.getString("client_Phone"),  
 				    rs.getTimestamp("ArrivalTime"),
+				    rs.getTimestamp("leaving_time"),
 				    rs.getDouble("total_price"),
 				    OrderStatus.valueOf(rs.getString("order_status")) 
 				);

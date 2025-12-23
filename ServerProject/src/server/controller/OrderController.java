@@ -1,3 +1,4 @@
+
 package server.controller;
 
 import java.sql.SQLException;
@@ -5,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
 import DAO.TableDAO;
-import Entities.*;
+import entities.*;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
 
@@ -51,12 +52,15 @@ public class OrderController {
 			case CHECK_AVAILABILITY:
 				handleCheckAvailability(req, client);
 				break;
+
 			case IDENTIFY_AT_TERMINAL:
 				handleIdentifyAtTerminal(req, client);
-				// No break here in original code - falling through to PAY_BILL
+				break;
+
 			case PAY_BILL:
 				handlePayBill(req, client);
 				break;
+
 			default:
 				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
 						"Unsupported action: " + req.getAction(), null));
@@ -72,11 +76,8 @@ public class OrderController {
 		if (req.getPayload() != null) {
 			if (req.getPayload() instanceof Integer) {
 				subId = (Integer) req.getPayload();
-				// called function from OrderDao
-
 				List<Order> history = orderdao.getOrdersBySubscriberId(subId);
 
-				// send to client what he send requast
 				client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
 						Response.ResponseStatus.SUCCESS, null, history));
 			} else {
@@ -121,16 +122,17 @@ public class OrderController {
 			return;
 		}
 		Order o = (Order) req.getPayload();
-
+		
 		// Validate Mandatory Identification
-		if (o.getClient_email() == null || o.getClient_Phone() == null) {
+		if (o.getClientEmail() == null || o.getClientPhone() == null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
 					Response.ResponseStatus.ERROR, "Error: Identification details are mandatory.", null));
 			return;
 		}
+		
 		// Generate a random 4-digit confirmation code for the customer
 		int generatedCode = 1000 + (int) (Math.random() * 9000);
-		o.setConfirmation_code(generatedCode);
+		o.setConfirmationCode(generatedCode);
 		boolean created = orderdao.createOrder(o);
 
 		if (created) {
@@ -181,12 +183,12 @@ public class OrderController {
 	private void handleCheckAvailability(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getPayload() instanceof Order) {
 			Order requestedOrder = (Order) req.getPayload();
-			int guests = requestedOrder.getNumber_of_guests();
+			// Check how many tables can physically fit this many guests
+			int guests = requestedOrder.getNumberOfGuests();
 
 			try {
-				// Check how many tables can physically fit this many guests
 				int totalSuitableTables = tabledao.countSuitableTables(guests);
-
+				
 				// If no table in the restaurant is big enough for this group
 				if (totalSuitableTables == 0) {
 					client.sendToClient(new Response(req.getResource(), ActionType.DELETE,
@@ -195,19 +197,15 @@ public class OrderController {
 					return;
 				}
 
-				// Check how many of those suitable tables are already booked
 				int existingOrdersInTimeRange = orderdao
-						.countActiveOrdersInTimeRange(requestedOrder.getOrder_date(), guests);
+						.countActiveOrdersInTimeRange(requestedOrder.getOrderDate(), guests);
 
-				// Calculate remaining availability
 				int availableTables = totalSuitableTables - existingOrdersInTimeRange;
 
 				if (availableTables > 0) {
-
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 							Response.ResponseStatus.SUCCESS, "Available tables", true));
 				} else {
-
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 							Response.ResponseStatus.SUCCESS, "No available tables", false));
 				}
@@ -223,32 +221,29 @@ public class OrderController {
 
 	private void handleIdentifyAtTerminal(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() != null) {
-			Order order_at_bistro = orderdao.getByConfirmationCode(req.getId()); // only if approved
+			Order order_at_bistro = orderdao.getByConfirmationCode(req.getId());
 
-			if (order_at_bistro != null && order_at_bistro.getOrder_status() == Order.OrderStatus.APPROVED) {
+			if (order_at_bistro != null && order_at_bistro.getOrderStatus() == Order.OrderStatus.APPROVED) {
 				long now = new Date().getTime();
-				long orderTime = order_at_bistro.getOrder_date().getTime();
+				long orderTime = order_at_bistro.getOrderDate().getTime();
 				long diffInMinutes = (now - orderTime) / 60000;
 
-				// 15-minute rule enforcement
 				if (diffInMinutes > 15) {
-					order_at_bistro.setOrder_status(Order.OrderStatus.CANCELLED);
+					order_at_bistro.setOrderStatus(Order.OrderStatus.CANCELLED);
 					orderdao.updateOrder(order_at_bistro);
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 							Response.ResponseStatus.DATABASE_ERROR, "Order Expired (15 min late)", null));
 				} else {
-					// Success - Move to SEATED status
-					order_at_bistro.setOrder_status(Order.OrderStatus.SEATED);
+					order_at_bistro.setOrderStatus(Order.OrderStatus.SEATED);
 
-					// Subscriber recognition for 10% discount later
-					if (order_at_bistro.getSubscriber_id() != null) {
-						System.out.println("Subscriber " + order_at_bistro.getSubscriber_id()
+					if (order_at_bistro.getSubscriberId() != null) {
+						System.out.println("Subscriber " + order_at_bistro.getSubscriberId()
 								+ " confirmed. 10% discount flag is set.");
 					}
 
 					orderdao.updateOrder(order_at_bistro);
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-							Response.ResponseStatus.SUCCESS, null, order_at_bistro.getOrder_number()));
+							Response.ResponseStatus.SUCCESS, null, order_at_bistro.getOrderNumber()));
 				}
 				sendOrdersToAllClients();
 			} else {
@@ -262,26 +257,24 @@ public class OrderController {
 		if (req.getId() != null) {
 			Order orderToPay = orderdao.getOrder(req.getId());
 
-			// Verification: Only a SEATED order can be paid
-			if (orderToPay != null && orderToPay.getOrder_status() == Order.OrderStatus.SEATED) {
+			if (orderToPay != null && orderToPay.getOrderStatus() == Order.OrderStatus.SEATED) {
 
-				double finalAmount = orderToPay.getTotal_price();
+				double finalAmount = orderToPay.getTotalPrice();
 
-				// Apply 10% Subscriber Discount
-				if (orderToPay.getSubscriber_id() != null) {
+				if (orderToPay.getSubscriberId() != null) {
 					finalAmount = finalAmount * 0.9;
 					System.out.println("Subscriber discount applied (10%). Original: "
-							+ orderToPay.getTotal_price() + ", Final: " + finalAmount);
+							+ orderToPay.getTotalPrice() + ", Final: " + finalAmount);
 				}
-
+				
 				// Update the order object with the final calculated price and status
-				orderToPay.setTotal_price(finalAmount);
-				orderToPay.setOrder_status(Order.OrderStatus.PAID);
+				orderToPay.setTotalPrice(finalAmount);
+				orderToPay.setOrderStatus(Order.OrderStatus.PAID);
 
 				if (orderdao.updateOrder(orderToPay)) {
 					// Return success to the terminal/client with the final amount to display
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
-							Response.ResponseStatus.SUCCESS, "Order_number:" + orderToPay.getOrder_number(),
+							Response.ResponseStatus.SUCCESS, "Order_number:" + orderToPay.getOrderNumber(),
 							finalAmount));
 
 					sendOrdersToAllClients();

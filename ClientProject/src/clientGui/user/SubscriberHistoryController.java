@@ -8,13 +8,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import Entities.ActionType;
-import Entities.Order;
-import Entities.Response;
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
+import entities.ActionType;
+import entities.Order;
+import entities.Response;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

@@ -3,10 +3,10 @@ package server.controller;
 import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
-import Entities.Order;
-import Entities.Request;
-import Entities.ResourceType;
-import Entities.ActionType;
+import entities.ActionType;
+import entities.Order;
+import entities.Request;
+import entities.ResourceType;
 
 /**
  * Background thread that runs every minute to check for late orders.
@@ -40,16 +40,16 @@ public class OrderCleanupThread extends Thread {
 
             for (Order order : orders) {
                 // Check only APPROVED orders (future ones or promoted from waiting list)
-                if (order.getOrder_status() == Order.OrderStatus.APPROVED) {
-                    long orderTime = order.getOrder_date().getTime();
+                if (order.getOrderStatus() == Order.OrderStatus.APPROVED) {
+                    long orderTime = order.getOrderDate().getTime();
                     long diffInMinutes = (now - orderTime) / 60000;
 
                     // If more than 15 minutes have passed since the scheduled time
                     if (diffInMinutes > 15) {
-                        System.out.println("Auto-cancelling late order: " + order.getOrder_number());
+                        System.out.println("Auto-cancelling late order: " + order.getOrderNumber());
                         
                         // Update DB status to CANCELLED
-                        order.setOrder_status(Order.OrderStatus.CANCELLED);
+                        order.setOrderStatus(Order.OrderStatus.CANCELLED);
                         orderDao.updateOrder(order);
 
                         Router.sendToAllClients(new Request(ResourceType.ORDER, ActionType.GET_ALL, null, orderDao.getAllOrders()));

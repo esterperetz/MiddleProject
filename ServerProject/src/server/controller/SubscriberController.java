@@ -2,41 +2,35 @@ package server.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-
 import DAO.SubscriberDAO;
-import DBConnection.DBConnection;
-import Entities.ActionType;
-import Entities.Request;
-import Entities.ResourceType;
-import Entities.Response;
-import Entities.Subscriber;
+import entities.ActionType;
+import entities.Request;
+import entities.ResourceType;
+import entities.Response;
+import entities.Subscriber;
 import ocsf.server.ConnectionToClient;
-
-//Controller responsible for handling all subscriber-related requests.
 
 public class SubscriberController {
 
 	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
-	
+
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
 		if (req.getResource() != ResourceType.SUBSCRIBER) {
-            try {
-                client.sendToClient("Error: Incorrect resource type. Expected SUBSCRIBER.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return;
-        }
+			try {
+				client.sendToClient("Error: Incorrect resource type. Expected SUBSCRIBER.");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return;
+		}
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 
 		try {
 			switch (action) {
 			case REGISTER_SUBSCRIBER:
-				System.out.println("four server");
 				registerSubscriber(req, client);
 				break;
 
@@ -44,7 +38,7 @@ public class SubscriberController {
 				getSubscriberById(req, client);
 				break;
 
-			case GET_ALL: // For manager reports/view
+			case GET_ALL:
 				getAllSubscribers(req, client);
 				break;
 
@@ -53,7 +47,8 @@ public class SubscriberController {
 				break;
 
 			default:
-				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Unknown action for User/Subscriber resource.",null));
+				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+						Response.ResponseStatus.ERROR, "Error: Unknown action for User/Subscriber resource.", null));
 				break;
 			}
 		} catch (IOException e) {
@@ -63,25 +58,27 @@ public class SubscriberController {
 		}
 	}
 
-	// --- Private Handling Methods ---
-
 	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
-		
+
 		Subscriber newSub = (Subscriber) req.getPayload();
-		System.out.println("client "+newSub.getEmail());
-		// Check if username already exists
-		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriber_name());
+		System.out.println("client " + newSub.getEmail());
+		
+		// Updated to camelCase
+		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriberName());
 		if (existing != null) {
-			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Username already exists.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+					Response.ResponseStatus.ERROR, "Error: Username already exists.", null));
 			return;
 		}
 
 		boolean success = subscriberDAO.createSubscriber(newSub);
 		if (success) {
-			// Send back the object (which now has the generated ID) or a success message
-			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.SUCCESS, "Subscriber_id"+newSub.getSubscriber_id(), newSub));
+			// Updated to camelCase
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+					Response.ResponseStatus.SUCCESS, "Subscriber_id" + newSub.getSubscriberId(), newSub));
 		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,Response.ResponseStatus.ERROR,"Error: Failed to create subscriber in DB.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+					Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
 		}
 	}
 
@@ -89,15 +86,17 @@ public class SubscriberController {
 		int id = req.getId();
 		Subscriber sub = subscriberDAO.getSubscriberById(id);
 		if (sub != null) {
-			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.SUCCESS, "id:"+id, sub));
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS,
+					"id:" + id, sub));
 		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID,Response.ResponseStatus.NOT_FOUND,"Error: Subscriber not found.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.NOT_FOUND,
+					"Error: Subscriber not found.", null));
 		}
 	}
 
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
 		List<Subscriber> list = subscriberDAO.getAllSubscribers();
-		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL,Response.ResponseStatus.SUCCESS, null, list));
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
@@ -105,9 +104,11 @@ public class SubscriberController {
 		boolean success = subscriberDAO.updateSubscriberDetails(subToUpdate);
 
 		if (success) {
-			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,Response.ResponseStatus.SUCCESS,"Success: Subscriber updated.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
+					"Success: Subscriber updated.", null));
 		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE,Response.ResponseStatus.ERROR,"Error: Failed to update subscriber.",null));
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
+					"Error: Failed to update subscriber.", null));
 		}
 	}
 }

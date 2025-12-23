@@ -7,12 +7,12 @@ import java.util.List;
 
 import DAO.OrderDAO;
 import DAO.WaitingListDAO;
-import Entities.ActionType;
-import Entities.Order;
-import Entities.Order.OrderStatus;
-import Entities.Request;
-import Entities.ResourceType;
-import Entities.WaitingList;
+import entities.ActionType;
+import entities.Order;
+import entities.Request;
+import entities.ResourceType;
+import entities.WaitingList;
+import entities.Order.OrderStatus;
 import ocsf.server.ConnectionToClient;
 
 public class WaitingListController {
@@ -112,20 +112,20 @@ public class WaitingListController {
         }
 
         Order promotedOrder = new Order(
-        	    0,                                  // order_number (Auto Increment)
-        	    new Date(),                         // order_date
-        	    entry.getNumberOfGuests(),          // number_of_guests
-        	    entry.getConfirmationCode(),        // confirmation_code
-        	    entry.getSubscriberId(),            // subscriber_id (יכול להיות null)
-        	    new Date(),                         // date_of_placing_order
-        	    null,              // client_name (השדה החדש)
-        	    null,             // client_email (השדה החדש)
-        	    null,             // client_phone (השדה החדש)
-        	    null,             // arrival_time (השדה החדש)
-        	    0.0,                                // total_price
-        	    OrderStatus.APPROVED                // order_status
+        	    0,
+        	    new Date(),
+        	    entry.getNumberOfGuests(),
+        	    entry.getConfirmationCode(),
+        	    entry.getSubscriberId(),
+        	    new Date(),
+        	    null,
+        	    null,
+        	    null,
+        	    null,
+        	    null,
+        	    0.0,
+        	    OrderStatus.APPROVED
         	);
-
         if (orderdao.createOrder(promotedOrder)) {
             // Remove from waiting list and sync clients
             waitingListDAO.exitWaitingList(waitingId);

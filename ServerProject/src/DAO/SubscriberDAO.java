@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 
 import DBConnection.DBConnection;
-import Entities.Subscriber;
+import entities.Subscriber;
 
 public class SubscriberDAO {
     private Connection dbConnection;
@@ -31,9 +31,9 @@ public class SubscriberDAO {
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) { 
         	
-        	ps.setInt(1, subscriber.getSubscriber_id());
-            ps.setString(2, subscriber.getSubscriber_name());
-            ps.setString(3, subscriber.getPhone_number());
+        	ps.setInt(1, subscriber.getSubscriberId());
+            ps.setString(2, subscriber.getSubscriberName());
+            ps.setString(3, subscriber.getPhoneNumber());
             ps.setString(4, subscriber.getEmail());
 
             int rowsAffected = ps.executeUpdate();
@@ -41,7 +41,7 @@ public class SubscriberDAO {
             if (rowsAffected > 0) {
                 ResultSet generatedKeys = ps.getGeneratedKeys(); //returns id number to ps
                 if (generatedKeys.next()) {
-                    subscriber.setSubscriber_id(generatedKeys.getInt(1));
+                    subscriber.setSubscriberId(generatedKeys.getInt(1));
                 }
                 return true;
             }
@@ -91,9 +91,9 @@ public class SubscriberDAO {
         String query = "UPDATE subscriber SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
         
         try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setInt(1, subscriber.getSubscriber_id());
-            ps.setString(2, subscriber.getSubscriber_name());
-            ps.setString(3, subscriber.getPhone_number());
+            ps.setInt(1, subscriber.getSubscriberId());
+            ps.setString(2, subscriber.getSubscriberName());
+            ps.setString(3, subscriber.getPhoneNumber());
             ps.setString(4, subscriber.getEmail());
          
 
@@ -133,7 +133,7 @@ public class SubscriberDAO {
             rs.getString("phone_number"),
             rs.getString("email")
         );
-        s.setSubscriber_id(rs.getInt("subscriber_id"));
+        s.setSubscriberId(rs.getInt("subscriber_id"));
         return s;
     }
 }
