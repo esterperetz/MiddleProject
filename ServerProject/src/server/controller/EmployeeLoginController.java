@@ -32,7 +32,8 @@ public class EmployeeLoginController {
 
     private void processLogin(Request req, ConnectionToClient client) throws SQLException, IOException {
         Employee credentials = (Employee) req.getPayload();
-        Employee authorized = employeeDAO.login(credentials.getUserName(), credentials.getPassword());
+       try { Employee authorized = employeeDAO.login(credentials.getUserName(), credentials.getPassword());
+        
         
         if (authorized != null) {
             client.sendToClient(new Response(ResourceType.EMPLOYEE, ActionType.LOGIN, 
@@ -41,6 +42,9 @@ public class EmployeeLoginController {
             client.sendToClient(new Response(ResourceType.EMPLOYEE, ActionType.LOGIN, 
                 Response.ResponseStatus.UNAUTHORIZED, "Invalid creds or already logged in", null));
         }
+       }catch(Exception e) {
+    	   e.printStackTrace();
+       }
     }
 
 //    private void processLogout(Request req, ConnectionToClient client) throws SQLException, IOException {

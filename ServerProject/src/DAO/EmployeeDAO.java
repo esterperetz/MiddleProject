@@ -11,13 +11,13 @@ public class EmployeeDAO {
 	 * Authenticates employee and populates all fields including ID and Role.
 	 * Updates login status in DB to prevent multiple sessions.
 	 */
-	public Employee login(String userName, int password) throws SQLException {
+	public Employee login(String userName, String password) throws SQLException {
 		Connection conn = DBConnection.getInstance().getConnection();
 		String sql = "SELECT * FROM bistro.employees WHERE user_name = ? AND password = ?";
 
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, userName);
-			stmt.setInt(2, password);
+			stmt.setString(2, password);
 			ResultSet rs = stmt.executeQuery();
 
 			if (rs.next()) {
@@ -29,7 +29,7 @@ public class EmployeeDAO {
 //				updateLoginStatus(empId, true);
 
 				// Create and populate the updated Employee entity
-				Employee emp = new Employee(rs.getString("user_name"), rs.getInt("password"));
+				Employee emp = new Employee(rs.getString("user_name"), rs.getString("password"));
 				emp.setEmployeeId(empId);
 				emp.setRole(Role.valueOf(rs.getString("role")));
 				return emp;
@@ -55,7 +55,7 @@ public class EmployeeDAO {
 		String sql = "INSERT INTO bistro.employees (user_name, password, role) VALUES (?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, emp.getUserName());
-			stmt.setInt(2, emp.getPassword());
+			stmt.setString(2, emp.getPassword());
 			stmt.setString(3, emp.getRole().getRoleValue());
 			return stmt.executeUpdate() > 0;
 		}
