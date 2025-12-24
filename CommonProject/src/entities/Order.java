@@ -2,9 +2,10 @@ package entities;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Objects;
 
 public class Order implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 
 	// Enum for Order Status
 	public enum OrderStatus {

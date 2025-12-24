@@ -5,6 +5,8 @@ import java.sql.Time;
 import java.util.Date;
 
 public class OpeningHours implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int id;
 	private Integer dayOfWeek; // 1-7 (Sun-Sat)
 	private Date specialDate; // Specific date override

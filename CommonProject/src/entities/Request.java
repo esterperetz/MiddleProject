@@ -13,6 +13,8 @@ import java.io.Serializable;
  * This class is serializable so it can be sent over the network.
  */
 public class Request implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 
     private final ResourceType resource; // ORDER / USER / ...
     private final ActionType action;     // GET_ALL / CREATE / ...

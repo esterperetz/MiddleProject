@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class WaitingList implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	private int waitingId;
 	private Integer subscriberId;
 	private String identificationDetails; //Phone or Email for non subscriber

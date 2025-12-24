@@ -1,9 +1,10 @@
 package entities;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 public class Response implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 
 	public enum ResponseStatus {
 		SUCCESS("SUCCESS"), ERROR("ERROR"), NOT_FOUND("NOT_FOUND"), UNAUTHORIZED("UNAUTHORIZED"),

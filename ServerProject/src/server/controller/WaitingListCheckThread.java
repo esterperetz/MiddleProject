@@ -7,7 +7,6 @@ import java.util.Calendar;
 import DAO.WaitingListDAO;
 import DAO.TableDAO;
 import DAO.OrderDAO;
-import entities.Order;
 import entities.WaitingList;
 
 /**

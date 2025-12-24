@@ -11,19 +11,19 @@ import DBConnection.DBConnection;
 import entities.Subscriber;
 
 public class SubscriberDAO {
-	private Connection dbConnection;
+//	private Connection dbConnection;
 
-	public SubscriberDAO() {
-		try {
-			this.dbConnection = DBConnection.getInstance().getConnection();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public SubscriberDAO(Connection dbConnection) {
-		this.dbConnection = dbConnection;
-	}
+//	public SubscriberDAO() {
+//		try {
+//			this.dbConnection = DBConnection.getInstance().getConnection();
+//		} catch (SQLException e) {
+//			e.printStackTrace();
+//		}
+//	}
+//
+//	public SubscriberDAO(Connection dbConnection) {
+//		this.dbConnection = dbConnection;
+//	}
 
 	// Creates a new subscriber in the DB and updates the object's ID
 	public boolean createSubscriber(Subscriber subscriber) {

@@ -1,6 +1,5 @@
 package server.controller;
 
-import java.io.IOException;
 
 import DBConnection.DBConnection;
 import entities.Request;
