@@ -104,7 +104,12 @@ public class OrderController {
 					"Order created.", null));
 			sendOrdersToAllClients();
 		}
-	}
+		else {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
+                    "Error: Could not save order to Database.", null));
+		}
+		}
+	
 
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
@@ -246,6 +251,7 @@ public class OrderController {
 			}
 		}
 	}
+	
 
 	private void sendOrdersToAllClients() {
 		try {

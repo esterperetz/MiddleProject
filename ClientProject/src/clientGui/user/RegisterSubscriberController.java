@@ -9,8 +9,10 @@ import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 import clientLogic.UserLogic;
+import entities.ActionType;
 import entities.Response;
 import entities.Subscriber;
+import javafx.application.Platform; // Added import for Platform
 
 public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>{
 	@FXML
@@ -26,6 +28,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	private Label lblMessage;
 
 	private UserLogic UserLogic;
+	private ActionEvent currentEvent; // Added to save the event for async navigation
 
 	/**
 	 * Handles the registration process when "Register Now" is clicked.
@@ -36,6 +39,8 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		String username = txtUsername.getText();
 		String phone = txtPhone.getText();
 		String email = txtEmail.getText();
+		
+		this.currentEvent = event; // Save current event
 
 		// 2. Validate Input (Basic checks)
 		if (username.isEmpty() || phone.isEmpty() || email.isEmpty()) {
@@ -52,8 +57,8 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		try {
 //		clientUi.addListener(this);//MUST DO NOT FORGER
 		UserLogic user = new UserLogic(clientUi);//MUST DO NOT FORGER
-		user.registerSubscriber(new Subscriber(123456, username, phone, email));
-		}catch(Exception e) {
+		user.registerSubscriber(new Subscriber(0, username, phone, email)); //CHANGED FROM 123456 TO 0 (AUTO INC)
+		} catch(Exception e) {
 			System.out.println("one ");
 		}
 
@@ -65,9 +70,22 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		if (msg instanceof Response) {
 			Response res = (Response) msg;
 			System.out.println(res.getStatus().getString());
+			
+			// Handle successful registration and navigate to Subscriber Options
+			if (res.getAction() == ActionType.REGISTER_SUBSCRIBER && res.getStatus() == Response.ResponseStatus.SUCCESS) {
+				Platform.runLater(() -> {
+					Subscriber newSub = (Subscriber) res.getData();
+					SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
+					if (controller != null) {
+						controller.initData(clientUi, true, newSub.getSubscriberId());
+					}
+				});
+			} else if (res.getStatus() == Response.ResponseStatus.ERROR) {
+				Platform.runLater(() -> lblMessage.setText(res.getMessage_from_server()));
+			}
 		} else
 			System.out.println("nothing works");
-		}catch(Exception e) {
+		} catch(Exception e) {
 			System.out.println("two ");
 		}
 
@@ -78,15 +96,10 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	 */
 	@FXML
 	void handleBackBtn(ActionEvent event) {
-		// Change "manager/ManagerOptions" to wherever you want to go back to
-		// MainNavigator.loadScene("managerTeam/workerOption");
-			ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event, clientUi);
-			if (controller != null) {
-				controller.initData(clientUi, ManagerOptionsController.isManager());
-			} else {
-				System.err.println("Error: Could not load ManagerOptionsController.");
-			}
+		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
+		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 	}
+	
 
 	/**
 	 * Clears the input fields after successful registration.
