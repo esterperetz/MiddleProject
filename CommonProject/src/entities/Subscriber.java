@@ -48,4 +48,11 @@ public class Subscriber implements Serializable {
 	public void setEmail(String email) {
 		this.email = email;
 	}
+	
+	
+	@Override
+	public String toString() {
+		return "Subscriber [subscriberId=" + subscriberId + ", subscriberName=" + subscriberName + ", phoneNumber="
+				+ phoneNumber + ", email=" + email + "]";
+	}
 }
