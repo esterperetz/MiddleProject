@@ -11,5 +11,6 @@ public enum ResourceType implements Serializable {
     MANAGERTEAM,
     WAITING_LIST,
     TABLE,
-    EMPLOYEE
+    EMPLOYEE,
+    BUSINESS_HOUR
 }

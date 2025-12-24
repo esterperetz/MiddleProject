@@ -191,6 +191,31 @@ public class DBConnection {
 	        e.printStackTrace();
 	    }
 	}
+	/**
+	 * Creates the unified opening_hours table.
+	 */
+	public static void createTableOpeningHours(Connection con) {
+	    Statement stmt;
+	    // Unified table for regular weekly hours and special date overrides 
+	    //There will be 7 rows with normal opening hours (day_of_week not null ones) 
+	    //And there will be special rows with null on day_of_week and special date set, for holiday,etc. 
+	    String sql = "CREATE TABLE IF NOT EXISTS bistro.opening_hours (" +
+	                 "id INT NOT NULL AUTO_INCREMENT, " +
+	                 "day_of_week INT DEFAULT NULL, " +          // 1 (Sun) to 7 (Sat) for regular hours
+	                 "special_date DATE DEFAULT NULL, " +        // Specific date for holidays/events
+	                 "open_time TIME DEFAULT NULL, " +           // Start time
+	                 "close_time TIME DEFAULT NULL, " +          // End time
+	                 "is_closed TINYINT(1) DEFAULT 0, " +        // 1 if closed all day 
+	                 "PRIMARY KEY (id)" +
+	                 ");";
+	    try {
+	        stmt = con.createStatement();
+	        stmt.executeUpdate(sql);
+	        System.out.println("Table 'opening_hours' is ready.");
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	
 

@@ -15,6 +15,7 @@ public class Router {
 	private final SubscriberController subscriberController;
 	private final TableController tableController;
 	private final WaitingListController waitingListController;
+	private final BusinessHourController businessHourController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
@@ -22,6 +23,7 @@ public class Router {
 		this.subscriberController = new SubscriberController();
 		this.tableController = new TableController();
 		this.waitingListController = new WaitingListController();
+		this.businessHourController = new BusinessHourController();
 
 		if (clients == null) {
 			clients = new ArrayList<>();
@@ -47,6 +49,9 @@ public class Router {
 		case WAITING_LIST:
 			waitingListController.handle(req, client);
 			break;
+		case BUSINESS_HOUR:
+			businessHourController.handle(req, client);
+            break;
 
 		default:
 			client.sendToClient("Unknown resource type: " + resource);

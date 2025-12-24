@@ -1,10 +1,12 @@
 package server.controller;
 
 import java.sql.SQLException;
+import java.sql.Time;
 import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
 import DAO.TableDAO;
+import DAO.BusinessHourDAO;
 import entities.*;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
@@ -12,6 +14,7 @@ import java.io.IOException;
 public class OrderController {
 	private final OrderDAO orderdao = new OrderDAO();
 	private final TableDAO tabledao = new TableDAO();
+	private final BusinessHourDAO businessHourDao = new BusinessHourDAO();
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
@@ -132,12 +135,41 @@ public class OrderController {
 
 	private void handleCheckAvailability(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order requestedOrder = (Order) req.getPayload();
+
+		// 1. Booking time rules: At least 1 hour and no more than 1 month in advance
+		long now = new Date().getTime();
+		long requestedMillis = requestedOrder.getOrderDate().getTime();
+		long diffInHours = (requestedMillis - now) / (1000 * 60 * 60);
+
+		if (diffInHours < 1 || requestedMillis > (now + (31L * 24 * 60 * 60 * 1000))) {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+					Response.ResponseStatus.ERROR, "Order must be between 1 hour and 1 month in advance", null));
+			return;
+		}
+
+		// 2. Business hours check: Priorities handle overrides for special dates
+		OpeningHours hours = businessHourDao.getHoursForDate(requestedOrder.getOrderDate());
+		if (hours == null || hours.isClosed()) {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+					Response.ResponseStatus.ERROR, "Restaurant is closed on this date", null));
+			return;
+		}
+
+		// Time validation
+		Time reqTime = new Time(requestedMillis);
+		if (reqTime.before(hours.getOpenTime()) || reqTime.after(hours.getCloseTime())) {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+					Response.ResponseStatus.ERROR, "Requested time is outside operating hours", null));
+			return;
+		}
+
+		// 3. Table capacity check
 		int guests = requestedOrder.getNumberOfGuests();
 		int totalSuitableTables = tabledao.countSuitableTables(guests);
 
 		if (totalSuitableTables == 0) {
 			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-					Response.ResponseStatus.ERROR, "No suitable tables", null));
+					Response.ResponseStatus.ERROR, "No suitable tables for this party size", null));
 			return;
 		}
 
