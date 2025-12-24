@@ -113,6 +113,16 @@ public class OrderController {
 	}
 
 	private void handleDelete(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getId() == null) return;
+		
+		// Safety check is a table needs to be released.
+		Order order = orderdao.getOrder(req.getId());
+		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
+			if (order.getTableNumber() != null) {
+				tabledao.updateTableStatus(order.getTableNumber(), false);
+			}
+		}
+
 		if (orderdao.deleteOrder(req.getId())) {
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
 					"Order deleted.", null));
@@ -123,8 +133,6 @@ public class OrderController {
 	private void handleCheckAvailability(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order requestedOrder = (Order) req.getPayload();
 		int guests = requestedOrder.getNumberOfGuests();
-
-		// Count tables with enough seats in the restaurant [cite: 10, 25]
 		int totalSuitableTables = tabledao.countSuitableTables(guests);
 
 		if (totalSuitableTables == 0) {
@@ -133,7 +141,6 @@ public class OrderController {
 			return;
 		}
 
-		// Count active APPROVED/SEATED orders in the +/- 2 hour window
 		int overlappingOrders = orderdao.countActiveOrdersInTimeRange(requestedOrder.getOrderDate(), guests);
 		boolean available = (totalSuitableTables - overlappingOrders) > 0;
 
@@ -153,21 +160,20 @@ public class OrderController {
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
 
-			if (diffInMinutes > 15) { // Late arrival rule 
+			if (diffInMinutes > 15) { 
 				order.setOrderStatus(Order.OrderStatus.CANCELLED);
 				orderdao.updateOrder(order);
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 						Response.ResponseStatus.ERROR, "Expired", null));
 			} else {
-				// Find a free physical table for immediate seating [cite: 40, 43]
 				Integer tableNum = tabledao.findAvailableTable(order.getNumberOfGuests());
 				if (tableNum != null) {
 					order.setOrderStatus(Order.OrderStatus.SEATED);
 					order.setArrivalTime(new Date());
+					order.setTableNumber(tableNum); // Assign table to order
 					orderdao.updateOrder(order);
 
-					// Mark table as occupied in DB [cite: 43]
-					tabledao.updateTableStatus(tableNum, true);
+					tabledao.updateTableStatus(tableNum, true); 
 
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 							Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum, order.getOrderNumber()));
@@ -190,15 +196,18 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
-			if (order.getSubscriberId() != null) //if he is a subscriber
-				amount *= 0.9; // 10% Subscriber discount 
+			if (order.getSubscriberId() != null) 
+				amount *= 0.9; 
 
 			order.setTotalPrice(amount);
 			order.setOrderStatus(Order.OrderStatus.PAID);
 			order.setLeavingTime(new Date());
 
 			if (orderdao.updateOrder(order)) {
-				// Note: Physical table status update should happen here
+				//release table in DB
+				if (order.getTableNumber() != null) {
+					tabledao.updateTableStatus(order.getTableNumber(), false);
+				}
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
 						Response.ResponseStatus.SUCCESS, "Paid", amount));
 				sendOrdersToAllClients();

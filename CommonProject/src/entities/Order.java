@@ -16,6 +16,7 @@ public class Order implements Serializable {
 	private int numberOfGuests;
 	private int confirmationCode;
 	private Integer subscriberId;
+	private Integer tableNumber;
 	private Date dateOfPlacingOrder;
 	private String clientName;
 	private String clientEmail;
@@ -26,14 +27,15 @@ public class Order implements Serializable {
 	private OrderStatus orderStatus;
 
 	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer subscriberId,
-	        Date dateOfPlacingOrder, String clientName, String clientEmail, String clientPhone, Date arrivalTime, Date leavingTime,
-	        double totalPrice, OrderStatus orderStatus) {
+			Integer tableNumber, Date dateOfPlacingOrder, String clientName, String clientEmail, String clientPhone, 
+			Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
 		
 		this.orderNumber = orderNumber;
 		this.orderDate = orderDate;
 		this.numberOfGuests = numberOfGuests;
 		this.confirmationCode = confirmationCode;
 		this.subscriberId = subscriberId;
+		this.tableNumber = tableNumber;
 		this.dateOfPlacingOrder = dateOfPlacingOrder;
 		this.clientName = clientName;
 		this.clientEmail = clientEmail;
@@ -42,6 +44,7 @@ public class Order implements Serializable {
 		this.leavingTime = leavingTime;
 		this.totalPrice = totalPrice;
 		this.orderStatus = orderStatus;
+		
 	}
 
 	// Getters and Setters
@@ -83,6 +86,14 @@ public class Order implements Serializable {
 
 		public void setSubscriberId(Integer subscriberId) {
 			this.subscriberId = subscriberId;
+		}
+
+		public Integer getTableNumber() {
+			return tableNumber;
+		}
+
+		public void setTableNumber(Integer tableNumber) {
+			this.tableNumber = tableNumber;
 		}
 
 		public Date getDateOfPlacingOrder() {

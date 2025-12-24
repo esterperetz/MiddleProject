@@ -105,7 +105,7 @@ public class WaitingListController {
 
 		// 2. Create new APPROVED order object
 		Order promotedOrder = new Order(0, new Date(), entry.getNumberOfGuests(), entry.getConfirmationCode(),
-				entry.getSubscriberId(), new Date(), entry.getFullName(), entry.getIdentificationDetails(),
+				entry.getSubscriberId(), null, new Date(), entry.getFullName(), entry.getIdentificationDetails(),
 				entry.getIdentificationDetails(), null, null, 0.0, OrderStatus.APPROVED);
 
 		// 3. Save to database and remove from waiting list

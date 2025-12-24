@@ -44,8 +44,10 @@ public class DBConnection {
 		Class.forName("com.mysql.cj.jdbc.Driver");
 		instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
 		createTableSubscriber(instance.connection);
-		createTableOrder(instance.connection);
 		createTableEmployee(instance.connection);
+		createTableTables(instance.connection); 
+		createTableOrder(instance.connection);
+		createTableWaitingList(instance.connection);
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
 	}
@@ -121,16 +123,18 @@ public class DBConnection {
 	            "number_of_guests INT NOT NULL, " +
 	            "confirmation_code INT NOT NULL, " +
 	            "subscriber_id INT DEFAULT NULL, " + 
+	            "table_number INT DEFAULT NULL, " +
 	            "date_of_placing_order DATETIME NOT NULL, " +
 	            "client_name VARCHAR(255) NOT NULL, " +  
 	            "client_email VARCHAR(255) NOT NULL, " + 
 	            "client_phone VARCHAR(20) NOT NULL, " +  
 	            "arrival_time DATETIME, " +             
-	            "leaving_time DATETIME, " + // New field
+	            "leaving_time DATETIME, " + 
 	            "total_price DECIMAL(10, 2), " +
 	            "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
 	            "PRIMARY KEY (order_number), " +
-	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
+	            "CONSTRAINT fk_order_table FOREIGN KEY (table_number) REFERENCES bistro.tables(table_number) ON DELETE SET NULL" +
 	            ");";
 	    try {
 	        stmt = con1.createStatement();
@@ -156,7 +160,37 @@ public class DBConnection {
 	        e.printStackTrace();
 	    }
 	}
-	
+	public static void createTableTables(Connection con) {
+	    String sql = "CREATE TABLE IF NOT EXISTS bistro.tables (" +
+	                 "table_number INT PRIMARY KEY, " +
+	                 "number_of_seats INT NOT NULL, " +
+	                 "is_occupied TINYINT(1) DEFAULT 0);"; //BOOLEAN
+	    try (Statement stmt = con.createStatement()) {
+	        stmt.executeUpdate(sql);
+	    } catch (SQLException e) { e.printStackTrace(); }
+	}
+	public static void createTableWaitingList(Connection con) {
+	    Statement stmt;
+	    String sql = "CREATE TABLE IF NOT EXISTS bistro.waiting_list (" +
+	                 "waiting_id INT NOT NULL AUTO_INCREMENT, " +
+	                 "subscriber_id INT DEFAULT NULL, " +
+	                 "identification_details VARCHAR(255) NOT NULL, " +
+	                 "full_name VARCHAR(255) NOT NULL, " +
+	                 "number_of_guests INT NOT NULL, " +
+	                 "enter_time DATETIME NOT NULL, " +
+	                 "confirmation_code INT NOT NULL, " +
+	                 "PRIMARY KEY (waiting_id), " +
+	                 "CONSTRAINT fk_waiting_subscriber FOREIGN KEY (subscriber_id) " +
+	                 "REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	                 ");";
+	    try {
+	        stmt = con.createStatement();
+	        stmt.executeUpdate(sql);
+	        System.out.println("Table 'waiting_list' is ready.");
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	
 
