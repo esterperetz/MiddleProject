@@ -33,7 +33,7 @@ public class ChatClient extends AbstractClient {
 	 */
 	@Override
 	public void handleMessageFromServer(Object msg) {
-		System.out.println("got from the server");
+		System.out.println(msg.toString());
 		this.clientUI.displayMessage(msg);
 		
 	}
