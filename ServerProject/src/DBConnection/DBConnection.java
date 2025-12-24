@@ -5,14 +5,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-/**
- * * Singleton class responsible for managing a single persistent connection to
- * a MySQL database.
- *
- * This class ensures: - Only one Connection object exists throughout the server
- * lifetime. - Reconnection happens automatically if the connection becomes
- * invalid. - Initialization is performed once with provided credentials.
- */
 public class DBConnection {
 
 	private static DBConnection instance;
@@ -26,8 +18,6 @@ public class DBConnection {
 	private DBConnection() {
 	}
 
-	// Initializes the Singleton instance and establishes the initial database
-	// connection.
 	public static synchronized void initializeConnection(String host, String schema, String user, String pass)
 			throws SQLException, ClassNotFoundException {
 		if (instance != null && conn_established == true) {
@@ -48,11 +38,11 @@ public class DBConnection {
 		createTableTables(instance.connection); 
 		createTableOrder(instance.connection);
 		createTableWaitingList(instance.connection);
+		createTableOpeningHours(instance.connection); // תיקון: נוסף לאתחול
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
 	}
 
-	// Returns the Singleton DBConnection instance.
 	public static synchronized DBConnection getInstance() {
 		if (instance == null) {
 			instance = new DBConnection();
@@ -60,19 +50,11 @@ public class DBConnection {
 		return instance;
 	}
 
-	/**
-	 * @return The active (or re-established) Connection object. Retrieves the
-	 *         persistent connection, attempting to re-establish it if closed or
-	 *         invalid.
-	 */
 	public Connection getConnection() throws SQLException {
-		// Check if connection is closed or invalid.
 		if (connection == null || connection.isClosed() || !connection.isValid(10)) {
 			System.out.println("Connection is stale or closed. Re-establishing connection.");
 			try {
-				// Re-establish connection using stored credentials.
 				this.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
-				
 				System.out.println("Connection re-established successfully.");
 			} catch (SQLException e) {
 				System.err.println("Could not re-establish DB connection.");
@@ -82,7 +64,6 @@ public class DBConnection {
 		return connection;
 	}
 
-	// Closes the single connection (called on server shutdown).
 	public void closeConnection() {
 		if (connection != null) {
 			try {
@@ -94,30 +75,23 @@ public class DBConnection {
 		}
 	}
 
-	////////////////////////////////////////////////////////////////////////////////////////
-	// VERIFY that the calls to these functions are UNCOMMENTED in initializeConnection() //
-	//                                                                                   //
-	////////////////////////////////////////////////////////////////////////////////////////
 	public static void createTableSubscriber(Connection con1) {
 		Statement stmt;
-		String sql = "CREATE TABLE IF NOT EXISTS bistro.subscriber (" + "subscriber_id INT NOT NULL AUTO_INCREMENT, "
+		String sql = "CREATE TABLE IF NOT EXISTS subscriber (" + "subscriber_id INT NOT NULL AUTO_INCREMENT, "
 				+ "subscriber_name VARCHAR(100) NOT NULL, "
 				+ "phone_number VARCHAR(255) UNIQUE NOT NULL, " + "email VARCHAR(20), " + "PRIMARY KEY (subscriber_id)"
 				+ ");";
 		try {
 			stmt = con1.createStatement();
 			stmt.executeUpdate(sql);
-//		stmt.executeUpdate("load data local infile \"courses.txt\" into table courses");
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-
 	}
 	
 	public static void createTableOrder(Connection con1) {
 	    Statement stmt;
-	    String sql = "CREATE TABLE IF NOT EXISTS bistro.order(" +
+	    String sql = "CREATE TABLE IF NOT EXISTS `order`(" +
 	            "order_number INT NOT NULL AUTO_INCREMENT, " +
 	            "order_date DATETIME NOT NULL, " +
 	            "number_of_guests INT NOT NULL, " +
@@ -133,17 +107,18 @@ public class DBConnection {
 	            "total_price DECIMAL(10, 2), " +
 	            "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
 	            "PRIMARY KEY (order_number), " +
-	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
-	            "CONSTRAINT fk_order_table FOREIGN KEY (table_number) REFERENCES bistro.tables(table_number) ON DELETE SET NULL" +
+	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
+	            "CONSTRAINT fk_order_table FOREIGN KEY (table_number) REFERENCES tables(table_number) ON DELETE SET NULL" +
 	            ");";
 	    try {
 	        stmt = con1.createStatement();
 	        stmt.executeUpdate(sql);
 	    } catch (SQLException e) { e.printStackTrace(); }
 	}
+
 	public static void createTableEmployee(Connection con) {
 	    Statement stmt;
-	    String sql = "CREATE TABLE IF NOT EXISTS bistro.employees (" +
+	    String sql = "CREATE TABLE IF NOT EXISTS employees (" +
 	                 "employee_id INT NOT NULL AUTO_INCREMENT, " +
 	                 "user_name VARCHAR(100) NOT NULL UNIQUE, " +
 	                 "password VARCHAR(255) NOT NULL, " + 
@@ -155,23 +130,24 @@ public class DBConnection {
 	    try {
 	        stmt = con.createStatement();
 	        stmt.executeUpdate(sql);
-	        System.out.println("Table 'employees' is ready.");
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
 	}
+
 	public static void createTableTables(Connection con) {
-	    String sql = "CREATE TABLE IF NOT EXISTS bistro.tables (" +
+	    String sql = "CREATE TABLE IF NOT EXISTS tables (" +
 	                 "table_number INT PRIMARY KEY, " +
 	                 "number_of_seats INT NOT NULL, " +
-	                 "is_occupied TINYINT(1) DEFAULT 0);"; //BOOLEAN
+	                 "is_occupied TINYINT(1) DEFAULT 0);";
 	    try (Statement stmt = con.createStatement()) {
 	        stmt.executeUpdate(sql);
 	    } catch (SQLException e) { e.printStackTrace(); }
 	}
+
 	public static void createTableWaitingList(Connection con) {
 	    Statement stmt;
-	    String sql = "CREATE TABLE IF NOT EXISTS bistro.waiting_list (" +
+	    String sql = "CREATE TABLE IF NOT EXISTS waiting_list (" +
 	                 "waiting_id INT NOT NULL AUTO_INCREMENT, " +
 	                 "subscriber_id INT DEFAULT NULL, " +
 	                 "identification_details VARCHAR(255) NOT NULL, " +
@@ -181,42 +157,32 @@ public class DBConnection {
 	                 "confirmation_code INT NOT NULL, " +
 	                 "PRIMARY KEY (waiting_id), " +
 	                 "CONSTRAINT fk_waiting_subscriber FOREIGN KEY (subscriber_id) " +
-	                 "REFERENCES bistro.subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	                 "REFERENCES subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
 	                 ");";
 	    try {
 	        stmt = con.createStatement();
 	        stmt.executeUpdate(sql);
-	        System.out.println("Table 'waiting_list' is ready.");
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
 	}
-	/**
-	 * Creates the unified opening_hours table.
-	 */
+
 	public static void createTableOpeningHours(Connection con) {
 	    Statement stmt;
-	    // Unified table for regular weekly hours and special date overrides 
-	    //There will be 7 rows with normal opening hours (day_of_week not null ones) 
-	    //And there will be special rows with null on day_of_week and special date set, for holiday,etc. 
-	    String sql = "CREATE TABLE IF NOT EXISTS bistro.opening_hours (" +
+	    String sql = "CREATE TABLE IF NOT EXISTS opening_hours (" +
 	                 "id INT NOT NULL AUTO_INCREMENT, " +
-	                 "day_of_week INT DEFAULT NULL, " +          // 1 (Sun) to 7 (Sat) for regular hours
-	                 "special_date DATE DEFAULT NULL, " +        // Specific date for holidays/events
-	                 "open_time TIME DEFAULT NULL, " +           // Start time
-	                 "close_time TIME DEFAULT NULL, " +          // End time
-	                 "is_closed TINYINT(1) DEFAULT 0, " +        // 1 if closed all day 
+	                 "day_of_week INT DEFAULT NULL, " +
+	                 "special_date DATE DEFAULT NULL, " +
+	                 "open_time TIME DEFAULT NULL, " +
+	                 "close_time TIME DEFAULT NULL, " +
+	                 "is_closed TINYINT(1) DEFAULT 0, " +
 	                 "PRIMARY KEY (id)" +
 	                 ");";
 	    try {
 	        stmt = con.createStatement();
 	        stmt.executeUpdate(sql);
-	        System.out.println("Table 'opening_hours' is ready.");
 	    } catch (SQLException e) {
 	        e.printStackTrace();
 	    }
 	}
-	
-	
-
 }
