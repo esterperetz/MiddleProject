@@ -12,19 +12,19 @@ public class ServerController extends AbstractServer {
 
 	private final ServerViewController view;
 	private final Router router;
-	private final OrderCleanupThread cleanupThread;
-	private final WaitingListCheckThread waitingListThread;
+//	private final OrderCleanupThread cleanupThread;
+//	private final WaitingListCheckThread waitingListThread;
 
 	public ServerController(int port, ServerViewController view) {
 		super(port);
 		this.view = view;
 		this.router = new Router();
 		view.setServerController(this);
-		this.cleanupThread = new OrderCleanupThread();
-		this.waitingListThread = new WaitingListCheckThread();
-		this.cleanupThread.start();
-		this.waitingListThread.start();
-		view.log("Background threads (Cleanup & WaitingList) initialized and started.");
+//		this.cleanupThread = new OrderCleanupThread();
+//		this.waitingListThread = new WaitingListCheckThread();
+//		this.cleanupThread.start();
+//		this.waitingListThread.start();
+//		view.log("Background threads (Cleanup & WaitingList) initialized and started.");
 	}
 
 	/**
@@ -80,10 +80,10 @@ public class ServerController extends AbstractServer {
 	 */
 	@Override
 	public void serverClosed() {
-		if (cleanupThread != null)
-			cleanupThread.stopThread();
-		if (waitingListThread != null)
-			waitingListThread.stopThread();
+//		if (cleanupThread != null)
+//			cleanupThread.stopThread();
+//		if (waitingListThread != null)
+//			waitingListThread.stopThread();
 		/// need to send all clients from here
 		Router.sendToAllClients("quit");
 		DBConnection.getInstance().closeConnection();
