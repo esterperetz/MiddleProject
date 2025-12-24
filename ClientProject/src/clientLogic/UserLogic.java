@@ -26,7 +26,6 @@ public class UserLogic {
 	
 
 	public void registerSubscriber(Subscriber subscriber) {
-		System.out.println("three");
 		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.REGISTER_SUBSCRIBER, null, subscriber);
 		client.sendRequest(req);
 	}
