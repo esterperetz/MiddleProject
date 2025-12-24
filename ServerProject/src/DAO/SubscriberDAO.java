@@ -7,133 +7,141 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-
 import DBConnection.DBConnection;
 import entities.Subscriber;
 
 public class SubscriberDAO {
-    private Connection dbConnection;
+	private Connection dbConnection;
 
-    public SubscriberDAO() {
-    	try {
+	public SubscriberDAO() {
+		try {
 			this.dbConnection = DBConnection.getInstance().getConnection();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-    }
-    public SubscriberDAO(Connection dbConnection) {
-        this.dbConnection = dbConnection;
-    }
+	}
 
-    // Creates a new subscriber in the DB and updates the object's ID
-    public boolean createSubscriber(Subscriber subscriber) {
-        String query = "INSERT INTO subscriber (subscriber_id ,subscriber_name, phone_number, email) VALUES (?, ?, ?, ?)";
-        
-        try (PreparedStatement ps = dbConnection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) { 
-        	
-        	ps.setInt(1, subscriber.getSubscriberId());
-            ps.setString(2, subscriber.getSubscriberName());
-            ps.setString(3, subscriber.getPhoneNumber());
-            ps.setString(4, subscriber.getEmail());
+	public SubscriberDAO(Connection dbConnection) {
+		this.dbConnection = dbConnection;
+	}
 
-            int rowsAffected = ps.executeUpdate();
-            
-            if (rowsAffected > 0) {
-                ResultSet generatedKeys = ps.getGeneratedKeys(); //returns id number to ps
-                if (generatedKeys.next()) {
-                    subscriber.setSubscriberId(generatedKeys.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            System.out.println("Error creating subscriber: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return false;
-    }
+	// Creates a new subscriber in the DB and updates the object's ID
+	public boolean createSubscriber(Subscriber subscriber) {
+		String query = "INSERT INTO subscriber (subscriber_id ,subscriber_name, phone_number, email) VALUES (?, ?, ?, ?)";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-    // Fetches a subscriber by their unique ID
-    public Subscriber getSubscriberById(int id) {
-        String query = "SELECT * FROM subscriber WHERE subscriber_id = ?";
-        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                return createSubscriberFromResultSet(rs);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error fetching subscriber by ID: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
+			ps.setInt(1, subscriber.getSubscriberId());
+			ps.setString(2, subscriber.getSubscriberName());
+			ps.setString(3, subscriber.getPhoneNumber());
+			ps.setString(4, subscriber.getEmail());
 
-    // Fetches a subscriber by their username 
-    public Subscriber getSubscriberBySubscriberName(String subscriberName) {
-        String query = "SELECT * FROM subscriber WHERE subscriber_name = ?";
-        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setString(1, subscriberName);
-            ResultSet rs = ps.executeQuery();
-            
-            if (rs.next()) {
-                return createSubscriberFromResultSet(rs);
-            }
-        } catch (SQLException e) {
-            System.out.println("Error fetching subscriber by username: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return null;
-    }
+			int rowsAffected = ps.executeUpdate();
 
-    // Updates editable details (name, phone, email) 
-    public boolean updateSubscriberDetails(Subscriber subscriber) {
-        String query = "UPDATE subscriber SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
-        
-        try (PreparedStatement ps = dbConnection.prepareStatement(query)) {
-            ps.setInt(1, subscriber.getSubscriberId());
-            ps.setString(2, subscriber.getSubscriberName());
-            ps.setString(3, subscriber.getPhoneNumber());
-            ps.setString(4, subscriber.getEmail());
-         
+			if (rowsAffected > 0) {
+				ResultSet generatedKeys = ps.getGeneratedKeys(); // returns id number to ps
+				if (generatedKeys.next()) {
+					subscriber.setSubscriberId(generatedKeys.getInt(1));
+				}
+				return true;
+			}
+		} catch (SQLException e) {
+			System.out.println("Error creating subscriber: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
 
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
+	// Fetches a subscriber by their unique ID
+	public Subscriber getSubscriberById(int id) {
 
-        } catch (SQLException e) {
-            System.out.println("Error updating subscriber: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return false;
-    }
+		String query = "SELECT * FROM subscriber WHERE subscriber_id = ?";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query)) {
+			ps.setInt(1, id);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				Subscriber s = new Subscriber(rs.getInt("subscriber_id"), rs.getString("subscriber_name"),
+						rs.getString("phone_number"), rs.getString("email"));
+				s.setSubscriberId(rs.getInt("subscriber_id"));
+				return s;
+				
+//				return createSubscriberFromResultSet(rs);
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching subscriber by ID: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
 
-    // Returns a list of all subscribers in the system
-    public ArrayList<Subscriber> getAllSubscribers() {
-        ArrayList<Subscriber> subscribers = new ArrayList<>();
-        String query = "SELECT * FROM subscriber";
-        
-        try (Statement stmt = dbConnection.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            
-            while (rs.next()) {
-                subscribers.add(createSubscriberFromResultSet(rs));
-            }
-        } catch (SQLException e) {
-            System.out.println("Error fetching all subscribers: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return subscribers;
-    }
+	// Fetches a subscriber by their username
+	public Subscriber getSubscriberBySubscriberName(String subscriberName) {
+		String query = "SELECT * FROM subscriber WHERE subscriber_name = ?";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query)) {
+			ps.setString(1, subscriberName);
+			ResultSet rs = ps.executeQuery();
 
-    // Helper method to map ResultSet to Subscriber object
-    private Subscriber createSubscriberFromResultSet(ResultSet rs) throws SQLException {
-        Subscriber s = new Subscriber(
-            rs.getInt("subscriber_id"),
-            rs.getString("subscriber_name"),
-            rs.getString("phone_number"),
-            rs.getString("email")
-        );
-        s.setSubscriberId(rs.getInt("subscriber_id"));
-        return s;
-    }
+			if (rs.next()) {
+				return createSubscriberFromResultSet(rs);
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching subscriber by username: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// Updates editable details (name, phone, email)
+	public boolean updateSubscriberDetails(Subscriber subscriber) {
+		String query = "UPDATE subscriber SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query)) {
+			ps.setInt(1, subscriber.getSubscriberId());
+			ps.setString(2, subscriber.getSubscriberName());
+			ps.setString(3, subscriber.getPhoneNumber());
+			ps.setString(4, subscriber.getEmail());
+
+			int rowsAffected = ps.executeUpdate();
+			return rowsAffected > 0;
+
+		} catch (SQLException e) {
+			System.out.println("Error updating subscriber: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	// Returns a list of all subscribers in the system
+	public ArrayList<Subscriber> getAllSubscribers() {
+		ArrayList<Subscriber> subscribers = new ArrayList<>();
+		String query = "SELECT * FROM subscriber";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				Statement stmt = con.createStatement()) {
+			ResultSet rs = stmt.executeQuery(query);
+
+			while (rs.next()) {
+				subscribers.add(createSubscriberFromResultSet(rs));
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching all subscribers: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return subscribers;
+	}
+
+	// Helper method to map ResultSet to Subscriber object
+	private Subscriber createSubscriberFromResultSet(ResultSet rs) throws SQLException {
+		try {
+			Subscriber s = new Subscriber(rs.getInt("subscriber_id"), rs.getString("subscriber_name"),
+					rs.getString("phone_number"), rs.getString("email"));
+			s.setSubscriberId(rs.getInt("subscriber_id"));
+			return s;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+
+	}
 }
