@@ -1,6 +1,7 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class Response implements Serializable {
 
@@ -55,4 +56,16 @@ public class Response implements Serializable {
 		return message_from_server;
 	}
 
+
+
+	@Override
+	public String toString() {
+		return "Response [resource=" + resource + ", action=" + action + ", status=" + status + ", data=" + data
+				+ ", message_from_server=" + message_from_server + "]";
+	}
+	
+	
+	
+
+	
 }
