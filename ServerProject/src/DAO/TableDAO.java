@@ -122,7 +122,11 @@ public class TableDAO {
         }
     }
     public Integer findAvailableTable(int guests) throws SQLException {
-        String sql = "SELECT table_number FROM tables WHERE number_of_seats >= ? AND is_occupied = 0 LIMIT 1";
+        // Greedy logic: Find the smallest table (ASC) that fits the guests and is free
+        String sql = "SELECT table_number FROM tables " +
+                     "WHERE is_occupied = 0 AND number_of_seats >= ? " +
+                     "ORDER BY number_of_seats ASC LIMIT 1";
+
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, guests);
@@ -130,7 +134,7 @@ public class TableDAO {
                 if (rs.next()) {
                     return rs.getInt("table_number");
                 }
-                return null;
+                return null; // No suitable table found right now
             }
         }
     }

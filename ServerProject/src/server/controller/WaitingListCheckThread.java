@@ -11,7 +11,8 @@ import entities.Order;
 import entities.WaitingList;
 
 /**
- * Background thread monitoring the waiting list for safe seating gaps.
+ * Background thread monitoring the waiting list for safe seating gaps. 
+ * This Thread only promotes from waiting list, but doesn't assign itself to a table. This happens in Identify At Terminal!!!
  */
 public class WaitingListCheckThread extends Thread {
 	private final WaitingListDAO waitingListDao = new WaitingListDAO();
@@ -91,4 +92,4 @@ public class WaitingListCheckThread extends Thread {
 }
 
 
-///TO ADD: ALGORITHM THAT ADDS THE PERSON FROM WAITING LIST AND ASSIGNS HIM TO THE BEST TABLE (חמדני) (YOHAD)
+

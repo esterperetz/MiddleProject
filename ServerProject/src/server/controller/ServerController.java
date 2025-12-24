@@ -14,14 +14,18 @@ public class ServerController extends AbstractServer {
     private final ServerViewController view;
     private final Router router;
     private final OrderCleanupThread cleanupThread;
-
+    private final WaitingListCheckThread waitingListThread;
+    
     public ServerController(int port, ServerViewController view) {
         super(port);
         this.view = view;
         this.router = new Router();
         view.setServerController(this);
         this.cleanupThread = new OrderCleanupThread(); 
-        this.cleanupThread.start();
+        this.waitingListThread = new WaitingListCheckThread();
+        this.cleanupThread.start(); 
+        this.waitingListThread.start();
+        view.log("Background threads (Cleanup & WaitingList) initialized and started.");
     }
 
     
