@@ -1,6 +1,7 @@
 package clientGui.reservation;
 
 import java.net.URL;
+import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -53,8 +54,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private OrderLogic orderLogic;
 	private UserLogic userLogic;
 	private Subscriber verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
-	//private boolean isSubscriberVerified = false;
-	private boolean isSubscriberVerified=false;
+	private boolean isSubscriberVerified = false;
+	private ActionEvent currentEvent;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -65,7 +66,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		timeField.setText("12:00");
 		subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
             // בדיקה 2: האם המאזין עובד?
-            if (!isNowFocused) {
+          
+			if (!isNowFocused) {
                 System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
                 checkSubscriberId();
             }
@@ -81,21 +83,20 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 	private void checkSubscriberId() {
 		String subIdStr = subscriberIdField.getText().trim();
-
 		// subscriber_id empty
-		if (subIdStr.isEmpty()) {
-			isSubscriberVerified = false;
-			this.verifiedSubscriber = null;
-			enableClientFields(); //open fields to edit
-			return;
-		}
+//		if (subIdStr.isEmpty()) {
+//			isSubscriberVerified = false;
+//			this.verifiedSubscriber = null;
+//			enableClientFields(); // open fields to edit
+//			return;
+//		}
 
 		//
+
 		try {
 			int subId = Integer.parseInt(subIdStr);
 			// שולח בקשה לשרת. התשובה תגיע ל-onMessageReceive
 			userLogic.getSubscriberById(subId);
-
 		} catch (NumberFormatException e) {
 			handleInvalidSubscriber("Invalid format. Subscriber ID must be numbers only.");
 		}
@@ -103,113 +104,123 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 	@FXML
 	private void handleSave(ActionEvent event) {
-		// 1.
-		if (!subscriberIdField.getText().trim().isEmpty() && !isSubscriberVerified) {
-			Alarm.showAlert("Verification Required", "Waiting for subscriber verification...", Alert.AlertType.WARNING);
-			return;
-		}
-		if (clientNameField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()
-				|| guestsField.getText().trim().isEmpty() || datePicker.getValue() == null) {
+//		checkSubscriberId();
+		this.currentEvent = event;
+		valid();
 
-			Alarm.showAlert("Missing Input", "Please fill in mandatory fields (Name, Phone, Guests, Date).",
-					Alert.AlertType.WARNING);
-			return;
-		}
+	}
 
-		try {
-			// 2. איסוף נתונים מהשדות
-			String clientName;
-	        String clientPhone;
-	        String clientEmail;
-
-	        if (isSubscriberVerified && verifiedSubscriber != null) {
-	            // אם זה מנוי מאומת - לוקחים ישר מהמקור (האובייקט) ולא מהשדות!
-	            clientName = verifiedSubscriber.getSubscriberName();
-	            clientPhone = verifiedSubscriber.getPhoneNumber();
-	            clientEmail = verifiedSubscriber.getEmail();
-	        } else {
-	            // אם זה לקוח מזדמן - לוקחים מהשדות שהמשתמש הקליד
-	            clientName = clientNameField.getText().trim();
-	            clientPhone = phoneField.getText().trim();
-	            clientEmail = emailField.getText().trim();
-	        }
-
-			// המרת מנוי (אם יש)
-			Integer subId = null;
-			if (!subscriberIdField.getText().trim().isEmpty()) {
-				subId = Integer.parseInt(subscriberIdField.getText().trim());
+	// input validate
+	public void valid() {
+		Platform.runLater(() -> {
+			if (!subscriberIdField.getText().trim().isEmpty() && !isSubscriberVerified) {
+				Alarm.showAlert("Verification Required", "Waiting for subscriber verification...",
+						Alert.AlertType.WARNING);
+				return;
 			}
+			if (clientNameField.getText().trim().isEmpty() || phoneField.getText().trim().isEmpty()
+					|| guestsField.getText().trim().isEmpty() || datePicker.getValue() == null) {
 
-			// המרת מספרים
-			int guests = Integer.parseInt(guestsField.getText().trim());
-			double price = priceField.getText().trim().isEmpty() ? 0.0
-					: Double.parseDouble(priceField.getText().trim());
-
-			// 3. טיפול בתאריך ושעה (Order Date)
-			LocalDate localDate = datePicker.getValue();
-			String timeString = timeField.getText().trim();
-
-			if (!timeString.matches("\\d{2}:\\d{2}")) {
-				Alarm.showAlert("Time Error", "Enter time in HH:mm format (e.g., 18:30)", Alert.AlertType.ERROR);
+				Alarm.showAlert("Missing Input", "Please fill in mandatory fields (Name, Phone, Guests, Date).",
+						Alert.AlertType.WARNING);
 				return;
 			}
 
-			LocalTime localTime = LocalTime.parse(timeString);
-			Date orderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
+			try {
+				// 2. איסוף נתונים מהשדות
+				String clientName;
+				String clientPhone;
+				String clientEmail;
 
-			// 4. טיפול בשעת הגעה (Arrival Time) - אופציונלי
-			Date arrivalDate = null;
-			String arrivalString = arrivalTimeField.getText().trim();
-			if (!arrivalString.isEmpty()) {
-				if (!arrivalString.matches("\\d{2}:\\d{2}")) {
-					Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.", Alert.AlertType.ERROR);
+				if (isSubscriberVerified && verifiedSubscriber != null) {
+					// אם זה מנוי מאומת - לוקחים ישר מהמקור (האובייקט) ולא מהשדות!
+					clientName = verifiedSubscriber.getSubscriberName();
+					clientPhone = verifiedSubscriber.getPhoneNumber();
+					clientEmail = verifiedSubscriber.getEmail();
+				} else {
+					// אם זה לקוח מזדמן - לוקחים מהשדות שהמשתמש הקליד
+					clientName = clientNameField.getText().trim();
+					clientPhone = phoneField.getText().trim();
+					clientEmail = emailField.getText().trim();
+				}
+
+				// המרת מנוי (אם יש)
+				Integer subId = null;
+				if (!subscriberIdField.getText().trim().isEmpty()) {
+					subId = Integer.parseInt(subscriberIdField.getText().trim());
+				}
+
+				// המרת מספרים
+				int guests = Integer.parseInt(guestsField.getText().trim());
+				double price = priceField.getText().trim().isEmpty() ? 0.0
+						: Double.parseDouble(priceField.getText().trim());
+
+				// 3. טיפול בתאריך ושעה (Order Date)
+				LocalDate localDate = datePicker.getValue();
+				String timeString = timeField.getText().trim();
+
+				if (!timeString.matches("\\d{2}:\\d{2}")) {
+					Alarm.showAlert("Time Error", "Enter time in HH:mm format (e.g., 18:30)", Alert.AlertType.ERROR);
 					return;
 				}
-				LocalTime arrivalTime = LocalTime.parse(arrivalString);
-				// משתמשים באותו תאריך שנבחר ב-DatePicker עבור שעת ההגעה
-				arrivalDate = Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
-			}
 
-			OrderStatus status = statusComboBox.getValue();
+				LocalTime localTime = LocalTime.parse(timeString);
+				Date orderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
 
-			// 5. יצירת האובייקט עם הבנאי החדש והמלא
-			Order newOrder = new Order(0, // order_number (אוטומטי ב-DB)
-					orderDate, // order_date (תאריך ושעה)
-					guests, // number_of_guests
-					0, // confirmation_code (נוצר בשרת)
-					subId, // subscriber_id
-					new Date(), // date_of_placing_order (עכשיו)
-					clientName, // client_name (השדה החדש)
-					clientEmail, // client_email (השדה החדש)
-					clientPhone, // client_Phone (השדה החדש)
-					arrivalDate, // ArrivalTime (השדה החדש)
-					null,
-					price, // total_price
-					status // order_status
-			);
-
-			// 6. שליחה לשרת ומעבר מסך
-			if (orderLogic != null) {
-				orderLogic.createOrder(newOrder);
-
-				// מעבר למסך הבא
-				OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
-
-				if (controller != null) {
-					controller.initData();
-				} else {
-					System.err.println("Error: Could not load OrderUi_controller.");
+				// 4. טיפול בשעת הגעה (Arrival Time) - אופציונלי
+				Date arrivalDate = null;
+				String arrivalString = arrivalTimeField.getText().trim();
+				if (!arrivalString.isEmpty()) {
+					if (!arrivalString.matches("\\d{2}:\\d{2}")) {
+						Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.", Alert.AlertType.ERROR);
+						return;
+					}
+					LocalTime arrivalTime = LocalTime.parse(arrivalString);
+					// משתמשים באותו תאריך שנבחר ב-DatePicker עבור שעת ההגעה
+					arrivalDate = Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
 				}
-			} else {
-				System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
-			}
 
-		} catch (NumberFormatException e) {
-			Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
-		} catch (Exception e) {
-			Alarm.showAlert("Error", "An error occurred while saving.", Alert.AlertType.ERROR);
-			//e.printStackTrace();
-		}
+				OrderStatus status = statusComboBox.getValue();
+
+				// 5. יצירת האובייקט עם הבנאי החדש והמלא
+				Order newOrder = new Order(0, // order_number (אוטומטי ב-DB)
+						orderDate, // order_date (תאריך ושעה)
+						guests, // number_of_guests
+						0, // confirmation_code (נוצר בשרת)
+						subId, // subscriber_id
+						null, new Date(), // date_of_placing_order (עכשיו)
+						clientName, // client_name (השדה החדש)
+						clientEmail, // client_email (השדה החדש)
+						clientPhone, // client_Phone (השדה החדש)
+						arrivalDate, // ArrivalTime (השדה החדש)
+						null, price, // total_price
+						status // order_status
+				);
+
+				// 6. שליחה לשרת ומעבר מסך
+				if (orderLogic != null) {
+					orderLogic.createOrder(newOrder);
+
+					// מעבר למסך הבא
+					OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
+
+					if (controller != null) {
+						controller.initData();
+					} else {
+						System.err.println("Error: Could not load OrderUi_controller.");
+					}
+				} else {
+					System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
+				}
+
+			} catch (NumberFormatException e) {
+				Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
+			} catch (Exception e) {
+				Alarm.showAlert("Error", "An error occurred while saving.", Alert.AlertType.ERROR);
+				// e.printStackTrace();
+			}
+		});
+
 	}
 
 	@FXML
@@ -222,14 +233,14 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		}
 	}
 
+	@SuppressWarnings({ "unlikely-arg-type" })
 	@Override
 	public void onMessageReceive(Object msg) {
+
 		Platform.runLater(() -> {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
-
 				if (res.getResource() == ResourceType.SUBSCRIBER && res.getAction() == ActionType.GET_BY_ID) {
-
 					// בדיקה האם המנוי נמצא
 					if (res.getStatus() == Response.ResponseStatus.SUCCESS && res.getData() instanceof Subscriber) {
 						// === מקרה 2: מנוי קיים ותקין ===
@@ -237,6 +248,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						this.verifiedSubscriber = sub;
 						fillAndLockFields(sub);
 						isSubscriberVerified = true;
+						valid();
 
 					} else {
 						// === מקרה 3: מנוי לא קיים (Exception) ===
@@ -244,6 +256,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						handleInvalidSubscriber(
 								"Subscriber ID " + subscriberIdField.getText() + " does not exist in the system.");
 					}
+				} else {
+					System.out.println("Check the if ");
 				}
 			}
 		});
@@ -298,8 +312,5 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		phoneField.setStyle(defaultStyle);
 		emailField.setStyle(defaultStyle);
 	}
-	// private void closeWindow() {
-	// Stage stage = (Stage) fullNameField.getScene().getWindow();
-	// stage.close();
-	// }
+
 }
