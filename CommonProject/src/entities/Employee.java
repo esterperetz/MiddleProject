@@ -1,7 +1,9 @@
 package entities;
 
-public class Employee {
+import java.io.Serializable;
 
+public class Employee implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public enum Role {
 		MANAGER("MANAGER"), REPRESENTATIVE("REPRESENTATIVE");
 
@@ -20,10 +22,10 @@ public class Employee {
 	private String userName;
 	private String phoneNumber;
 	private String email;
-	private int password;
+	private String password;
 	private Role role;
 
-	public Employee(String userName, int password) {
+	public Employee(String userName, String password) {
 
 		this.userName = userName;
 		this.password = password;
@@ -37,11 +39,11 @@ public class Employee {
 		this.userName = userName;
 	}
 
-	public int getPassword() {
+	public String getPassword() {
 		return password;
 	}
 
-	public void setPassword(int password) {
+	public void setPassword(String password) {
 		this.password = password;
 	}
 
