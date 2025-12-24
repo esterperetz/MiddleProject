@@ -73,6 +73,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
+	
+	//add button to register a new Employee by Manager.
 
 	/**
 	 * Called to initialize the controller after the FXML file has been loaded. Sets

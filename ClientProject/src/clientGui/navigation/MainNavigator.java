@@ -51,9 +51,10 @@ public class MainNavigator implements BaseController {
 			//add init  data here
 
 			T controller = loader.getController();
-			
-			if (controller instanceof BaseController) {
+			System.out.println(controller.getClass().toString());
+			if (controller instanceof MainNavigator) {
 				BaseController base = (BaseController) controller;
+				
 				base.setClientUi(c);
 				base.setMainNavigator(this);
 			}
