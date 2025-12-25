@@ -37,7 +37,8 @@ public class WaitingListController extends MainNavigator implements Initializabl
     private TableColumn<?, ?> colTime;
     @FXML
     private TableColumn<?, ?> colStatus;
-
+    private boolean isManager;
+    private int table_id;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Initialize table columns here
@@ -86,14 +87,20 @@ public class WaitingListController extends MainNavigator implements Initializabl
     	ManagerOptionsController controller = 
     	        super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(clientUi,ManagerOptionsController.isManager());
+    			controller.initData(clientUi,this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
 
 	
-
+    public void initData(ClientUi c,boolean isManager)
+    {
+    	this.clientUi=c;
+    	//this.table_id=table_id;
+    	this.isManager=isManager;
+    	
+    }
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
