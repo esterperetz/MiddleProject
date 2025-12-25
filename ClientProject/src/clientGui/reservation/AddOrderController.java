@@ -60,14 +60,20 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		datePicker.setValue(LocalDate.now());
 		// הגדרת שעה ברירת מחדל
 		timeField.setText("12:00");
-		subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            // בדיקה 2: האם המאזין עובד?
-          
-			if (!isNowFocused) {
-                System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
-                checkSubscriberId();
-            }
-        });
+		try{
+			subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+	            // בדיקה 2: האם המאזין עובד?
+	          
+				if (!isNowFocused) {
+	                checkSubscriberId();
+	            }
+	        });
+		}
+		catch(Exception e)
+		{
+            System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
+		}
+		
 	}
 
 	// public void initData(ClientUi clientUi) {
