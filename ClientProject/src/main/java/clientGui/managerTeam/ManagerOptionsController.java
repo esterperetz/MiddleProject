@@ -11,6 +11,8 @@ import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.reservation.OrderUi_controller;
 import clientGui.reservation.ReservationController;
+import clientGui.reservation.WaitingListController;
+import clientGui.user.RegisterSubscriberController;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -31,7 +33,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
 	// --- Internal Fields ---
 	/** Flag to store the user's permission level. */
-	private static boolean isManager=true;
+	private boolean isManager;
 
 	/** Data model for the special dates list view. */
 	private ObservableList<String> specialDatesModel;
@@ -90,8 +92,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		listSpecialDates.setItems(specialDatesModel);
 
 		// הסתרת כפתורים כברירת מחדל
-		btnViewReports.setVisible(false);
-		btnViewReports.setManaged(false);
+		//btnViewReports.setVisible(false);
+		//btnViewReports.setManaged(false);
 		/*
 		 * // --- 1. Permission Check --- // TODO: Replace with real logic (e.g.,
 		 * ClientUI.currentUser.getRole().equals("MANAGER")) isManager = true;
@@ -124,15 +126,25 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
 		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
 		//isManager = true; // בהמשך זה יגיע מ-User
-
-		// הצגת הכפתור אם צריך
-		if (isManager) {
+		if(isManager)
+		{
+			this.isManager=true;
 			btnViewReports.setVisible(true);
 			btnViewReports.setManaged(true);
-		} else {
+		}
+		else {
+			this.isManager=false;
 			btnViewReports.setVisible(false);
 			btnViewReports.setManaged(false);
 		}
+//		// הצגת הכפתור אם צריך
+//		//if (this.isManager) {
+//			//btnViewReports.setVisible(true);
+//			//btnViewReports.setManaged(true);
+//		} else {
+//			btnViewReports.setVisible(false);
+//			btnViewReports.setManaged(false);
+//		}
 		if (this.clientUi == null) {
 			System.err.println("Error: ClientUi is null in ManagerOptionsController!");
 			return;
@@ -268,7 +280,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	@FXML
 	void goToWaitingListBtn(ActionEvent event) {
-		super.loadScreen("reservation/WaitingList", event,clientUi);
+		
+			WaitingListController waiting_list=super.loadScreen("reservation/WaitingList", event,clientUi);
+			waiting_list.initData(this.clientUi, this.isManager);
 	}
 
 	/**
@@ -285,9 +299,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 //		clientUi.removeListener(this);
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
 		if (controller != null) {
-
+			//////////////////////////////////////////////////////////////check if button disapear
 			//controller.initData(clientUi, clientUi.getIp());
-			controller.initData();
+			controller.initData(this.isManager);
 			
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
@@ -299,7 +313,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	@FXML
 	void goToRegisterSubscriberBtn(ActionEvent event) {
-		super.loadScreen("user/RegisterSubscriber", event,clientUi);
+		RegisterSubscriberController r=super.loadScreen("user/RegisterSubscriber", event,clientUi);
+		if(r!=null)
+		{
+			r.initData(this.clientUi,this.isManager);
+		}
+		else {
+			System.out.println("Error: the object RegisterSubscriberController is null");
+		}
+		
 	}
 
 	/**
@@ -310,7 +332,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	void goToReportsBtn(ActionEvent event) {
 		// MainNavigator.loadScene("manager/ReportsScreen");
 		System.out.println("Navigate to Reports Screen...");
-		super.loadScreen("managerTeam/ReportsScreen", event,clientUi);
+		ReportsController r=super.loadScreen("managerTeam/ReportsScreen", event,clientUi);
+		if(r!=null)
+		{
+			r.initData(this.clientUi,this.isManager);
+		}
+		else {
+			System.out.println("Error: ReportsController is null!!");
+		}
 
 	}
 
@@ -320,7 +349,6 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	@FXML
 	void goBackBtn(ActionEvent event) {
 		// Logic for signing out or returning to the main selection screen
-
 		System.out.println("Going back / Signing out...");
 		super.loadScreen("navigation/SelectionScreen", event,clientUi);
 
@@ -331,11 +359,5 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		System.out.println("Manager Controller received: " + msg.toString());
 	}
 
-	public static boolean isManager() {
-		return isManager;
-	}
-
-	public void setManager(boolean isManager) {
-		this.isManager = isManager;
-	}
+	
 }
