@@ -51,6 +51,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	@FXML
 	private TextField priceField;
 	@FXML
+	private boolean isManager;
 	private ComboBox<OrderStatus> statusComboBox;
 	private Order o;
 	private OrderUi_controller mainController; // Field to hold the main controller reference
@@ -70,7 +71,8 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	 * @param mainController The reference to the main UI controller for data
 	 *                       refresh.
 	 */
-	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController) { // FIXED SIGNATURE
+	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController,boolean isManager) { // FIXED SIGNATURE
+		this.isManager=isManager;
 		this.o = order;
 		this.ol = orderLogic;
 		this.mainController = mainController; // Store main controller reference
@@ -148,7 +150,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 		if (controller != null) {
-			controller.initData();
+			controller.initData(this.isManager);
 		} else {
 			Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
 			// System.err.println("Error: Could not load OrderUi_controllerr.");
@@ -220,7 +222,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 				if (controller != null) {
-					controller.initData();
+					controller.initData(this.isManager);
 				} else {
 					Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
 				}
