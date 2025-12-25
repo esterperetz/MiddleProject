@@ -29,13 +29,13 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 	@FXML
 	private TextField usernameField;
-
 	@FXML
 	private PasswordField passwordField;
 	
 	private ActionEvent currentEvent;
 	@FXML
 	private Employee employee;
+	private boolean isManager;
 	
 	//if clicking in X add that server will knows and disccount this client.
 	@FXML
@@ -123,7 +123,8 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 			    Platform.runLater(() -> {
 
 			    	if(response.getStatus() == Response.ResponseStatus.SUCCESS) {
-			    		Alarm.showAlert("Login Succsesfully!", "Navigating to Manager Options...", AlertType.ERROR);
+			    		Alarm.showAlert("Login Succsesfully!", "Navigating to Manager Options...", AlertType.INFORMATION);
+			    		//check if manager or regular worker
 						ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", currentEvent,clientUi);
 
 						// 2. אתחול הנתונים במסך החדש
