@@ -26,7 +26,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 
 	@FXML
 	private Label lblMessage;
-
+	private boolean isManager;
 	private UserLogic UserLogic;
 	private ActionEvent currentEvent; // Added to save the event for async navigation
 
@@ -89,6 +89,11 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			System.out.println("two ");
 		}
 
+	}
+	public void initData(ClientUi clientUi,boolean isManager)
+	{
+		this.clientUi=clientUi;
+		this.isManager=isManager;
 	}
 
 	/**
