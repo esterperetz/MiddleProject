@@ -52,7 +52,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private Subscriber verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
 	private boolean isSubscriberVerified = false;
 	private ActionEvent currentEvent;
-
+	private boolean isManager;
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		statusComboBox.getItems().setAll(OrderStatus.values());
@@ -77,8 +77,9 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	// public void initData(ClientUi clientUi) {
-	public void initData() {
+	public void initData(boolean isManager) {
 		// this.clientUi = clientUi;
+		this.isManager=isManager;
 		this.orderLogic = new OrderLogic(this.clientUi);
 		this.userLogic = new UserLogic(this.clientUi);
 	}
@@ -206,7 +207,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
 
 					if (controller != null) {
-						controller.initData();
+						controller.initData(this.isManager);
 					} else {
 						System.err.println("Error: Could not load OrderUi_controller.");
 					}
@@ -228,7 +229,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
-			controller.initData();
+			controller.initData(this.isManager);
 		} else {
 			System.err.println("Error: Could not load OrderUi_controllerr.");
 		}
