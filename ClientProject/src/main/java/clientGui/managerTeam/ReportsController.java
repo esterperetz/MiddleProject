@@ -20,7 +20,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
     @FXML private LineChart<String, Number> lineChartOrders;
     @FXML private CategoryAxis xAxisTimes;
     @FXML private CategoryAxis xAxisDays;
-
+    private boolean isManager;
     @FXML
     public void initialize() {
         loadTimeChartData();
@@ -96,7 +96,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
         ManagerOptionsController controller = 
         		super.loadScreen("managerTeam/workerOption", event,clientUi);
     	if (controller != null) {
-            controller.initData(clientUi,ManagerOptionsController.isManager());
+            controller.initData(clientUi,this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
@@ -106,6 +106,11 @@ public class ReportsController extends MainNavigator implements MessageListener<
     @FXML
     void closeScreen(ActionEvent event) {
         ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
+    }
+    public void initData(ClientUi c, boolean isManager)
+    {
+    	this.clientUi=c;
+    	this.isManager=isManager;
     }
 
 	@Override
