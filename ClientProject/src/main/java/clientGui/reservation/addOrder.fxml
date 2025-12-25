@@ -14,161 +14,114 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="650.0" prefWidth="550.0"
-	style="-fx-background-color: #f4f4f4;"
-	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="clientGui.reservation.AddOrderController">
-	<children>
-		<VBox alignment="TOP_CENTER" layoutX="40.0" layoutY="30.0"
-			spacing="20.0" AnchorPane.bottomAnchor="30.0"
-			AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0"
-			AnchorPane.topAnchor="30.0">
-			<children>
-				<Label text="Add New Order" textFill="#2c3e50">
-					<font>
-						<Font name="System Bold" size="28.0" />
-					</font>
-				</Label>
+<AnchorPane prefHeight="650.0" prefWidth="550.0" style="-fx-background-color: #f4f4f4;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.reservation.AddOrderController">
+   <children>
+      <VBox alignment="TOP_CENTER" layoutX="40.0" layoutY="30.0" spacing="15.0" AnchorPane.bottomAnchor="30.0" AnchorPane.leftAnchor="40.0" AnchorPane.rightAnchor="40.0" AnchorPane.topAnchor="30.0">
+         <children>
+            <Label text="Add New Order" textFill="#2c3e50">
+               <font>
+                  <Font name="System Bold" size="28.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="10.0" />
+               </VBox.margin>
+            </Label>
 
-				<GridPane hgap="15.0" vgap="15.0">
-					<columnConstraints>
-						<ColumnConstraints hgrow="SOMETIMES"
-							maxWidth="150.0" minWidth="110.0" prefWidth="120.0" />
-						<ColumnConstraints hgrow="ALWAYS"
-							minWidth="200.0" />
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-						<RowConstraints minHeight="10.0" prefHeight="35.0" vgrow="SOMETIMES" />
-					</rowConstraints>
-					<children>
+            <GridPane hgap="15.0" vgap="8.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="110.0" prefWidth="120.0" />
+                  <ColumnConstraints hgrow="ALWAYS" minWidth="200.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="32.0" vgrow="SOMETIMES" />
+               </rowConstraints>
+               <children>
 
-						<Label text="Subscriber ID:" GridPane.rowIndex="0">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="subscriberIdField"
-							promptText="Enter ID for auto-fill (Optional)" style="-fx-background-radius: 5;"
-							GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  <Label text="Subscriber ID:" GridPane.rowIndex="0">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="subscriberIdField" promptText="Enter ID for auto-fill (Optional)" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-						<Label text="Client Name:" GridPane.rowIndex="1">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="clientNameField"
-							promptText="Full Name" style="-fx-background-radius: 5;"
-							GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Label text="Client Name:" GridPane.rowIndex="1">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="clientNameField" promptText="Full Name" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-						<Label text="Phone:" GridPane.rowIndex="2">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="phoneField" promptText="050-0000000"
-							style="-fx-background-radius: 5;" GridPane.columnIndex="1"
-							GridPane.rowIndex="2" />
+                  <Label text="Phone:" GridPane.rowIndex="2">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="phoneField" promptText="050-0000000" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-						<Label text="Email:" GridPane.rowIndex="3">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="emailField"
-							promptText="example@mail.com" style="-fx-background-radius: 5;"
-							GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <Label text="Email:" GridPane.rowIndex="3">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="emailField" promptText="example@mail.com" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-						<Label text="Guests:" GridPane.rowIndex="4">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="guestsField"
-							promptText="Number of people" style="-fx-background-radius: 5;"
-							GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <Label text="Guests:" GridPane.rowIndex="4">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="guestsField" promptText="Number of people" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-						<Label text="Date &amp; Time:" GridPane.rowIndex="5">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<HBox spacing="10.0" GridPane.columnIndex="1"
-							GridPane.rowIndex="5">
-							<children>
-								<DatePicker fx:id="datePicker" prefWidth="150.0"
-									promptText="Select Date" style="-fx-background-radius: 5;" />
-								<TextField fx:id="timeField" prefWidth="90.0"
-									promptText="HH:mm" style="-fx-background-radius: 5;"
-									text="12:00" />
-							</children>
-						</HBox>
+                  <Label text="Date &amp; Time:" GridPane.rowIndex="5">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <HBox spacing="10.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                     <children>
+                        <DatePicker fx:id="datePicker" prefWidth="150.0" promptText="Select Date" style="-fx-background-radius: 5;" />
+                        <TextField fx:id="timeField" prefWidth="90.0" promptText="HH:mm" style="-fx-background-radius: 5;" text="12:00" />
+                     </children>
+                  </HBox>
+                  
+                  <Label text="Status:" GridPane.rowIndex="6">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="statusComboBox" prefWidth="250.0" style="-fx-background-radius: 5;" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
-						<Label text="Arrival Time:" GridPane.rowIndex="6">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="arrivalTimeField"
-							promptText="HH:mm (Optional)" style="-fx-background-radius: 5;"
-							GridPane.columnIndex="1" GridPane.rowIndex="6" />
+               </children>
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </GridPane>
 
-						<Label text="Total Price:" GridPane.rowIndex="7">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<TextField fx:id="priceField" promptText="0.0"
-							style="-fx-background-radius: 5;" GridPane.columnIndex="1"
-							GridPane.rowIndex="7" />
+            <HBox alignment="CENTER" spacing="20.0">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#handleCancel" prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand;" text="Cancel">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#handleSave" prefHeight="40.0" prefWidth="120.0" style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand;" text="Create Order">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets top="80.0" />
+               </VBox.margin>
+            </HBox>
 
-						<Label text="Status:" GridPane.rowIndex="8">
-							<font>
-								<Font size="14.0" />
-							</font>
-						</Label>
-						<ComboBox fx:id="statusComboBox" prefWidth="250.0"
-							style="-fx-background-radius: 5;" GridPane.columnIndex="1"
-							GridPane.rowIndex="8" />
-
-					</children>
-					<VBox.margin>
-						<Insets top="10.0" />
-					</VBox.margin>
-				</GridPane>
-
-				<HBox alignment="CENTER" spacing="20.0">
-					<children>
-						<Button mnemonicParsing="false" onAction="#handleCancel"
-							prefHeight="40.0" prefWidth="120.0"
-							style="-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand;"
-							text="Cancel">
-							<font>
-								<Font name="System Bold" size="14.0" />
-							</font>
-						</Button>
-						<Button mnemonicParsing="false" onAction="#handleSave"
-							prefHeight="40.0" prefWidth="120.0"
-							style="-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-background-radius: 20; -fx-cursor: hand;"
-							text="Create Order">
-							<font>
-								<Font name="System Bold" size="14.0" />
-							</font>
-						</Button>
-					</children>
-					<VBox.margin>
-						<Insets top="20.0" />
-					</VBox.margin>
-				</HBox>
-
-			</children>
-		</VBox>
-	</children>
+         </children>
+      </VBox>
+   </children>
 </AnchorPane>

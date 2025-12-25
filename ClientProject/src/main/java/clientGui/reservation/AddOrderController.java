@@ -46,10 +46,6 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	@FXML
 	private TextField timeField;
 	@FXML
-	private TextField arrivalTimeField; // חדש!
-	@FXML
-	private TextField priceField;
-	@FXML
 	private ComboBox<OrderStatus> statusComboBox;
 	private OrderLogic orderLogic;
 	private UserLogic userLogic;
@@ -64,14 +60,20 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		datePicker.setValue(LocalDate.now());
 		// הגדרת שעה ברירת מחדל
 		timeField.setText("12:00");
-		subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-            // בדיקה 2: האם המאזין עובד?
-          
-			if (!isNowFocused) {
-                System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
-                checkSubscriberId();
-            }
-        });
+		try{
+			subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+	            // בדיקה 2: האם המאזין עובד?
+	          
+				if (!isNowFocused) {
+	                checkSubscriberId();
+	            }
+	        });
+		}
+		catch(Exception e)
+		{
+            System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
+		}
+		
 	}
 
 	// public void initData(ClientUi clientUi) {
@@ -84,12 +86,12 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private void checkSubscriberId() {
 		String subIdStr = subscriberIdField.getText().trim();
 		// subscriber_id empty
-//		if (subIdStr.isEmpty()) {
-//			isSubscriberVerified = false;
-//			this.verifiedSubscriber = null;
-//			enableClientFields(); // open fields to edit
-//			return;
-//		}
+		if (subIdStr.isEmpty()) {
+			isSubscriberVerified = false;
+			this.verifiedSubscriber = null;
+			enableClientFields(); // open fields to edit
+			return;
+		}
 
 		//
 
@@ -152,8 +154,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 				// המרת מספרים
 				int guests = Integer.parseInt(guestsField.getText().trim());
-				double price = priceField.getText().trim().isEmpty() ? 0.0
-						: Double.parseDouble(priceField.getText().trim());
+				//double price = priceField.getText().trim().isEmpty() ? 0.0
+					//	: Double.parseDouble(priceField.getText().trim());
 
 				// 3. טיפול בתאריך ושעה (Order Date)
 				LocalDate localDate = datePicker.getValue();
@@ -169,16 +171,15 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 				// 4. טיפול בשעת הגעה (Arrival Time) - אופציונלי
 				Date arrivalDate = null;
-				String arrivalString = arrivalTimeField.getText().trim();
-				if (!arrivalString.isEmpty()) {
-					if (!arrivalString.matches("\\d{2}:\\d{2}")) {
-						Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.", Alert.AlertType.ERROR);
-						return;
-					}
-					LocalTime arrivalTime = LocalTime.parse(arrivalString);
+				//if (!arrivalString.isEmpty()) {
+					//if (!arrivalString.matches("\\d{2}:\\d{2}")) {
+						//Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.", Alert.AlertType.ERROR);
+						//return;
+					//}
+					//LocalTime arrivalTime = LocalTime.parse(arrivalString);
 					// משתמשים באותו תאריך שנבחר ב-DatePicker עבור שעת ההגעה
-					arrivalDate = Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
-				}
+					//arrivalDate = Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
+				//}
 
 				OrderStatus status = statusComboBox.getValue();
 
@@ -193,7 +194,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						clientEmail, // client_email (השדה החדש)
 						clientPhone, // client_Phone (השדה החדש)
 						arrivalDate, // ArrivalTime (השדה החדש)
-						null, price, // total_price
+						null, 0, // total_price
 						status // order_status
 				);
 
