@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="server.gui.ServerViewController" prefWidth="500.0">
+
+  
+    <center>
+        <TableView fx:id="tblClients">
+            <columns>
+                <TableColumn fx:id="colIp" text="IP" prefWidth="150.0"/>
+                <TableColumn fx:id="colHost" text="Host" prefWidth="250.0"/>
+            </columns>
+        </TableView>
+    </center>
+
+  
+    <bottom>
+        <TextArea fx:id="txtLog" prefRowCount="5" BorderPane.alignment="CENTER"/>
+    </bottom>
+
+</BorderPane>
