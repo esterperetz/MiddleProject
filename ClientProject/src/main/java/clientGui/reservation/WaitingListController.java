@@ -83,9 +83,9 @@ public class WaitingListController extends MainNavigator implements Initializabl
 
     @FXML
     void handleBackBtn(ActionEvent event) {
-        //MainNavigator.loadScene("managerTeam/workerOption");
+        //MainNavigator.loadScene("managerTeam/EmployeeOption");
     	ManagerOptionsController controller = 
-    	        super.loadScreen("managerTeam/workerOption", event,clientUi);
+    	        super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
     	if (controller != null) {
     			controller.initData(clientUi,this.isManager);
         } else {
