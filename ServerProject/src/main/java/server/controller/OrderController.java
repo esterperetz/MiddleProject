@@ -52,6 +52,9 @@ public class OrderController {
 			case PAY_BILL:
 				handlePayBill(req, client);
 				break;
+			case SEND_EMAIL:
+				handleSendEmail(req, client);
+				break;
 			default:
 				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
 						"Unsupported action: " + req.getAction(), null));
@@ -100,8 +103,10 @@ public class OrderController {
 		int generatedCode = 1000 + (int) (Math.random() * 9000);
 		o.setConfirmationCode(generatedCode);
 		if (orderdao.createOrder(o)) {
+			EmailService.sendConfirmation(o.getClientEmail(),o);
+			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-					"Order created.", null));
+					"Order created.", o));
 			sendOrdersToAllClients();
 		}
 		else {
@@ -114,8 +119,10 @@ public class OrderController {
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
+			EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
+			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
-					"Order updated.", null));
+					"Order updated.", updatedOrder));
 			sendOrdersToAllClients();
 		}
 	}
@@ -132,8 +139,10 @@ public class OrderController {
 		}
 
 		if (orderdao.deleteOrder(req.getId())) {
+			EmailService.sendCancelation(order.getClientEmail(),order);
+			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
-					"Order deleted.", null));
+					"Order deleted.", order));
 			sendOrdersToAllClients();
 		}
 	}
@@ -251,7 +260,25 @@ public class OrderController {
 			}
 		}
 	}
-	
+	private void handleSendEmail(Request req, ConnectionToClient client) {
+		try {
+			if (req.getPayload() instanceof Order) {
+				Order order = (Order) req.getPayload();
+			
+				EmailService.sendConfirmation(order.getClientEmail(), order);
+				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
+						Response.ResponseStatus.SUCCESS, "Email has been sent!", EmailService.getContent()));
+			}
+			else {
+				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
+						Response.ResponseStatus.ERROR, null, null));
+			}
+			
+		}catch(Exception e) {
+			System.out.println("From handle send email.");
+		}
+
+	}
 
 	private void sendOrdersToAllClients() {
 		try {
