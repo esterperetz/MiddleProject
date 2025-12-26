@@ -14,7 +14,6 @@ public class EmployeeLogic {
     }
 	
 	public void getManagerByEmployee(Employee employee) {
-		
 		Request req = new Request(ResourceType.EMPLOYEE, ActionType.LOGIN, null, employee);
 		client.sendRequest(req);
 	}

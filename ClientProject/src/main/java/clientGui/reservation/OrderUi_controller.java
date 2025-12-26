@@ -1,6 +1,7 @@
 package clientGui.reservation;
 
 import java.net.URL;
+
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 
@@ -83,7 +84,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private ObservableList<Order> orderData = FXCollections.observableArrayList();
     private OrderLogic orderLogic;
     private String ip;
-
+    private boolean isManager;
     public OrderUi_controller() {
     }
 
@@ -151,8 +152,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param ip       The server IP address.
 	 */
 	//public void initData(ClientUi clientUi, String ip) {
-	public void initData() {
+	public void initData(boolean isManager) {
 		//this.clientUi = clientUi;
+		this.isManager=isManager;
 		this.ip = clientUi.getIp();
 
 //		clientUi.addListener(this);
@@ -298,7 +300,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			AddOrderController controller = 
 	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
 			if (controller != null) {
-	            controller.initData();
+	            controller.initData(this.isManager);
 	        } else {
 	            System.err.println("Error: Could not load AddOrderController.");
 	        }
@@ -330,7 +332,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			UpdateOrder controller = 
 	        		super.loadScreen("reservation/updateOrder", event,this.clientUi);
 	    	if (controller != null) {
-	            controller.initData(selectedOrder,orderLogic,this);
+	            controller.initData(selectedOrder,orderLogic,this,this.isManager);
 	        } else {
 	            System.err.println("Error: Could not load ManagerOptionsController.");
 	        }
@@ -391,7 +393,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		// MainNavigator.loadScene("managerTeam/workerOption");
 		ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event, clientUi);
 		if (controller != null) {
-			controller.initData(clientUi, ManagerOptionsController.isManager());
+			//controller.initData(clientUi, ManagerOptionsController.isManager());
+			controller.initData(clientUi, this.isManager);
 		} else {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}
