@@ -390,8 +390,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
 	@FXML
 	void handleBackBtn(ActionEvent event) {
-		// MainNavigator.loadScene("managerTeam/workerOption");
-		ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event, clientUi);
+		// MainNavigator.loadScene("managerTeam/EmployeeOption");
+		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		if (controller != null) {
 			//controller.initData(clientUi, ManagerOptionsController.isManager());
 			controller.initData(clientUi, this.isManager);
