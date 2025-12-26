@@ -92,9 +92,9 @@ public class ReportsController extends MainNavigator implements MessageListener<
         // Logic for signing out or returning to the main selection screen
       
         System.out.println("Going back / Signing out...");
-        //MainNavigator.loadScreen("managerTeam/workerOption" ,clientUi);
+        //MainNavigator.loadScreen("managerTeam/EmployeeOption" ,clientUi);
         ManagerOptionsController controller = 
-        		super.loadScreen("managerTeam/workerOption", event,clientUi);
+        		super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
     	if (controller != null) {
             controller.initData(clientUi,this.isManager);
         } else {

@@ -70,7 +70,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 		}
 
 		// 1. שימוש בפונקציה הגנרית וקבלת הקונטרולר
-//		ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", event,clientUi);
+//		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
 //
 //		// 2. אתחול הנתונים במסך החדש
 //		if (controller != null) {
@@ -133,7 +133,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 						} catch (Exception e) {
 							System.out.println("Error: You aren't MANAGER or REPRESENTATIVE");
 						}
-						ManagerOptionsController controller = super.loadScreen("managerTeam/workerOption", currentEvent,
+						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", currentEvent,
 								clientUi);
 
 						// 2. אתחול הנתונים במסך החדש

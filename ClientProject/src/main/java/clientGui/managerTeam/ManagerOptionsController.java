@@ -67,6 +67,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Input field for closing time on the special date. */
 	@FXML
 	private TextField txtSpecialClose;
+	
+	@FXML
+	private TextField sign_up;
 
 	/** List view to display the added special dates/hours. */
 	@FXML
