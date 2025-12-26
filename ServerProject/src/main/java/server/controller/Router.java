@@ -16,7 +16,7 @@ public class Router {
 	private final TableController tableController;
 	private final WaitingListController waitingListController;
 	private final BusinessHourController businessHourController;
-	private final EmployeeLoginController employeeLoginController;
+	private final EmployeeController employeeController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
@@ -25,7 +25,7 @@ public class Router {
 		this.tableController = new TableController();
 		this.waitingListController = new WaitingListController();
 		this.businessHourController = new BusinessHourController();
-		this.employeeLoginController = new EmployeeLoginController();
+		this.employeeController = new EmployeeController();
 		
 		if (clients == null) {
 			clients = new ArrayList<>();
@@ -55,8 +55,7 @@ public class Router {
 			businessHourController.handle(req, client);
             break;
 		case EMPLOYEE:
-			System.out.println("CHECK2");
-			employeeLoginController.handle(req, client);
+			employeeController.handle(req, client);
             break;
 
 		default:
