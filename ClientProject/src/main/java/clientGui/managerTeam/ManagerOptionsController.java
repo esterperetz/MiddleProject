@@ -134,11 +134,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			this.isManager=true;
 			btnViewReports.setVisible(true);
 			btnViewReports.setManaged(true);
+			btnSignUp.setVisible(true);
+			btnSignUp.setManaged(true);
 		}
 		else {
 			this.isManager=false;
 			btnViewReports.setVisible(false);
 			btnViewReports.setManaged(false);
+			btnSignUp.setVisible(false);
+			btnSignUp.setManaged(false);
 		}
 //		// הצגת הכפתור אם צריך
 //		//if (this.isManager) {
@@ -161,14 +165,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// הערה: את בדיקת isManager השארנו כרגע ב-initialize כמו שביקשת
 	}
 	
-	@FXML
-	public void signUpEmployee(ActionEvent event) {
-		System.out.println("Navigating to Sign Up screen...");
-		// טעינת מסך ההרשמה הקיים בפרויקט
-		super.loadScreen("user/RegisterSubscriber", event, clientUi);
-	
 
-	}
 
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
@@ -317,6 +314,21 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
 		}
 	}
+	
+	
+	@FXML
+	public void goToSignUpEmployee(ActionEvent event) {
+		System.out.println("Navigating to Sign Up screen...");
+		try {
+		RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event, clientUi);
+		registerEmployee.initData(this.clientUi, this.isManager);
+		}catch(NullPointerException e){
+			System.out.println("Error: the object RegisterEmployeeController is null");
+
+		}
+	
+
+	}
 
 	/**
 	 * Navigates to the Subscriber Registration screen.
@@ -324,11 +336,11 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	@FXML
 	void goToRegisterSubscriberBtn(ActionEvent event) {
 		RegisterSubscriberController r=super.loadScreen("user/RegisterSubscriber", event,clientUi);
-		if(r!=null)
+		try
 		{
 			r.initData(this.clientUi,this.isManager);
 		}
-		else {
+		catch(NullPointerException e){
 			System.out.println("Error: the object RegisterSubscriberController is null");
 		}
 		
