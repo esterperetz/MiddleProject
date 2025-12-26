@@ -15,6 +15,11 @@ public enum ActionType implements Serializable {
     LOGIN,
     LOGOUT,
 
+    
+    //employee
+    REGISTER_EMPLOYEE,
+    
+    
     // Subscriber specific
     GET_USER_ORDERS,
     REGISTER_SUBSCRIBER,
