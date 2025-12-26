@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
@@ -20,19 +21,28 @@
 	fx:controller="clientGui.managerTeam.ManagerOptionsController">
 
 	<content>
-		<VBox alignment="TOP_CENTER" spacing="25.0">
+		<VBox alignment="TOP_CENTER" spacing="20.0">
 			<padding>
-				<Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+				<Insets bottom="40.0" left="40.0" right="40.0" top="15.0" />
 			</padding>
 
 			<children>
-				<VBox alignment="CENTER_LEFT" spacing="5.0">
-					<Label styleClass="main-title" text="Manager Dashboard"
-						textFill="#0008f7" />
-					<Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
-						text="Manage restaurant operations, orders, and settings"
-						textFill="#8a8a8e" />
-				</VBox>
+				<HBox alignment="CENTER_LEFT" spacing="10.0">
+					<children>
+						<VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+							<Label styleClass="main-title" text="Manager Dashboard"
+								textFill="#0008f7" />
+							<Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
+								text="Manage restaurant operations, orders, and settings"
+								textFill="#8a8a8e" />
+						</VBox>
+						
+						<Region HBox.hgrow="ALWAYS" />
+						
+						<Button onAction="#goBackBtn" styleClass="back-button"
+							text="Sign Out / Back" />
+					</children>
+				</HBox>
 
 				<Separator opacity="0.5" />
 
@@ -80,37 +90,14 @@
 									prefWidth="198.0"
 									styleClass="dashboard-tile-button, report-button"
 									text="View Reports" visible="false" wrapText="true" />
-									<Button fx:id="btnSignUp" managed="false"
-									maxWidth="Infinity" onAction="#signUpEmployee" prefHeight="5.0"
+									
+								<Button fx:id="btnSignUp" managed="false"
+									maxWidth="Infinity" onAction="#goToSignUpEmployee" prefHeight="5.0"
 									prefWidth="198.0"
 									styleClass="dashboard-tile-button, report-button"
-									text="View Reports" visible="false" wrapText="true" />
-								
+									text="SignUp" visible="false" wrapText="true" />
 
-
-								<GridPane hgap="15.0" prefHeight="214.0"
-									prefWidth="242.0" vgap="15.0">
-									<columnConstraints>
-										<ColumnConstraints hgrow="ALWAYS"
-											percentWidth="50.0" />
-										<ColumnConstraints hgrow="ALWAYS"
-											percentWidth="50.0" />
-										<ColumnConstraints hgrow="ALWAYS"
-											percentWidth="50.0" />
-									</columnConstraints>
-
-
-									<rowConstraints>
-										<RowConstraints />
-										<RowConstraints maxHeight="0.0" minHeight="0.0"
-											prefHeight="0.0" />
-										<RowConstraints maxHeight="0.0" minHeight="0.0"
-											prefHeight="0.0" />
-										<RowConstraints maxHeight="0.0" minHeight="0.0"
-											prefHeight="0.0" />
-									</rowConstraints>
-								</GridPane>
-							</children>
+								</children>
 						</VBox>
 
 						<VBox spacing="20.0" styleClass="card-pane"
@@ -183,12 +170,6 @@
 						</VBox>
 					</children>
 				</GridPane>
-
-				<HBox alignment="CENTER" style="-fx-padding: 20 0 0 0;">
-					<Button onAction="#goBackBtn"
-						style="-fx-background-color: transparent; -fx-border-color: #bdc3c7; -fx-border-radius: 20; -fx-border-width: 1.5; -fx-text-fill: #7f8c8d; -fx-padding: 8 30;"
-						text="Sign Out / Back" />
-				</HBox>
 
 			</children>
 		</VBox>
