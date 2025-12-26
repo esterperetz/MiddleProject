@@ -31,6 +31,15 @@ public class Employee implements Serializable {
 		this.password = password;
 	}
 
+	public Employee(String userName, String password,String phoneNumber ,String email,Role role) {
+		this.userName = userName;
+		this.phoneNumber = phoneNumber;
+		this.email = email;
+		this.password = password;
+		this.role = role;
+	}
+
+
 	public String getUserName() {
 		return userName;
 	}
@@ -53,14 +62,6 @@ public class Employee implements Serializable {
 
 	public void setEmployeeId(int employee_id) {
 		this.employeeId = employee_id;
-	}
-
-	public String getPhone_number() {
-		return phoneNumber;
-	}
-
-	public void setPhone_number(String phone_number) {
-		this.phoneNumber = phone_number;
 	}
 
 	public String getEmail() {
