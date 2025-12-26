@@ -34,6 +34,7 @@ public enum ActionType implements Serializable {
     IDENTIFY_AT_TERMINAL,
     // Table & Billing management
     UPDATE_ORDER_STATUS,   // Change status to SEATED, etc.
-    PAY_BILL               // Complete payment and close order
+    PAY_BILL,             // Complete payment and close order
+    SEND_EMAIL
 
 }

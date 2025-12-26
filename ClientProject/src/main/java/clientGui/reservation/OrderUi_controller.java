@@ -212,6 +212,13 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 						}
 					}
 					break;
+				case SEND_EMAIL:
+					System.out.println((String)res.getData());
+					break;
+				case CREATE, UPDATE, DELETE:
+					Order order = (Order)res.getData();
+					Alarm.showAlert("Operation is done!", "We have sent details to your email: " + order.getClientEmail() + " ,Check you spam.", Alert.AlertType.INFORMATION);
+					break;
 
 				case GET_BY_ID:
 					// Handle single order retrieval
@@ -220,9 +227,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 					}
 					break;
 
-				//case CREATE:
-				//case UPDATE:
-				//case DELETE:
+				
 				default:
 					// Handle success or failure notification
 					if (data instanceof Boolean) {

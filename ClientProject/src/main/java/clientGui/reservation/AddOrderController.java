@@ -30,7 +30,8 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 
 public class AddOrderController extends MainNavigator implements MessageListener<Object>, Initializable {
-
+	
+	private Order newOrder;
 	@FXML
 	private TextField clientNameField; // במקום fullNameField
 	@FXML
@@ -185,7 +186,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 				OrderStatus status = statusComboBox.getValue();
 
 				// 5. יצירת האובייקט עם הבנאי החדש והמלא
-				Order newOrder = new Order(0, // order_number (אוטומטי ב-DB)
+				this.newOrder = new Order(0, // order_number (אוטומטי ב-DB)
 						orderDate, // order_date (תאריך ושעה)
 						guests, // number_of_guests
 						0, // confirmation_code (נוצר בשרת)
@@ -203,6 +204,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 				if (orderLogic != null) {
 					orderLogic.createOrder(newOrder);
 
+					
 					// מעבר למסך הבא
 					OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
 
@@ -251,6 +253,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						fillAndLockFields(sub);
 						isSubscriberVerified = true;
 						valid();
+						
 
 					} else {
 						// === מקרה 3: מנוי לא קיים (Exception) ===

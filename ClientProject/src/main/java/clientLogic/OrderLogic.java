@@ -52,4 +52,9 @@ public class OrderLogic {
         Request req = new Request(ResourceType.ORDER, ActionType.GET_USER_ORDERS, null, subscriberId);
         client.sendRequest(req);
     }
+    
+    public void sendEmail(Order order) {
+    	 Request req = new Request(ResourceType.ORDER, ActionType.SEND_EMAIL, null, order);
+         client.sendRequest(req);
+    }
 }
