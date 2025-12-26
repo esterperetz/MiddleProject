@@ -102,7 +102,15 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	@FXML
 	void handleBackBtn(ActionEvent event) {
 		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
-		super.loadScreen("navigation/SelectionScreen", event, clientUi);
+//		super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
+		// Fixed: Navigate back to EmployeeOption maybe the employee has more operation that he want to do before disconnecting 
+		ManagerOptionsController controller = 
+    	        super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
+    	if (controller != null) {
+    			controller.initData(clientUi,this.isManager);
+        } else {
+            System.err.println("Error: Could not load ManagerOptionsController.");
+        }
 	}
 	
 
