@@ -69,7 +69,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	private TextField txtSpecialClose;
 	
 	@FXML
-	private TextField sign_up;
+	private Button btnSignUp;
 
 	/** List view to display the added special dates/hours. */
 	@FXML
