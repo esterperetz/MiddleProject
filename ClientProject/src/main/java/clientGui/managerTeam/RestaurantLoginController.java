@@ -1,10 +1,7 @@
 package clientGui.managerTeam;
 
 import client.MessageListener;
-import clientGui.BaseController;
-import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
-import clientGui.user.SubscriberOptionController;
 import clientLogic.EmployeeLogic;
 import entities.Alarm;
 import entities.Employee;
@@ -15,10 +12,6 @@ import javafx.application.Platform;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
@@ -50,6 +43,10 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 		});
 	}
 
+	public void initData() {
+
+	}
+
 	@FXML
 	void performLogin(ActionEvent event) {
 		try {
@@ -62,7 +59,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 				EmployeeLogic employeeLogic = new EmployeeLogic(clientUi);
 				this.currentEvent = event;
-				employeeLogic.getManagerByEmployee(employee);
+				employeeLogic.loginEmployee(employee);
 			});
 
 		} catch (Exception e) {
@@ -105,14 +102,11 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 	}
 
-	public void initData() {
-
-	}
-
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
 		try {
+
 			if (msg instanceof Response) {
 				Response response = (Response) msg;
 				Platform.runLater(() -> {
@@ -122,26 +116,36 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 								AlertType.INFORMATION);
 						// check if manager or regular worker
 						try {
-							//Response r=(Response)msg;
-							Employee e = (Employee) response.getData();
-							//System.out.println(""+e.getRole());
-							if (e.getRole() == (Employee.Role.MANAGER)) {
-								isManager=true;
-							} else if (e.getRole() == (Employee.Role.REPRESENTATIVE)) {
-								isManager=false;
+							// Response r=(Response)msg;
+							Employee emp = (Employee) response.getData();
+							// System.out.println(""+e.getRole());
+							if (emp.getPassword().equals("newEmployee1234")) {
+
+								SetEmployeePasswordController controller = super.loadScreen(
+										"managerTeam/SetEmployeePassword", currentEvent, clientUi);
+								controller.initData(clientUi, emp);
+
+							} else {
+								if (emp.getRole() == (Employee.Role.MANAGER)) {
+									isManager = true;
+								} else if (emp.getRole() == (Employee.Role.REPRESENTATIVE)) {
+									isManager = false;
+
+								}
+								ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
+										currentEvent, clientUi);
+
+								// 2. אתחול הנתונים במסך החדש
+								if (controller != null) {
+									controller.initData(clientUi, isManager);
+								} else {
+									System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
+								}
 							}
 						} catch (Exception e) {
 							System.out.println("Error: You aren't MANAGER or REPRESENTATIVE");
 						}
-						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", currentEvent,
-								clientUi);
 
-						// 2. אתחול הנתונים במסך החדש
-						if (controller != null) {
-							controller.initData(clientUi, isManager);
-						} else {
-							System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
-						}
 					} else {
 						Alarm.showAlert("Incorrect Input", "Your username or password is invalid!", AlertType.ERROR);
 					}
