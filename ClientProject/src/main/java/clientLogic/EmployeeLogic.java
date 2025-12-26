@@ -12,9 +12,19 @@ public class EmployeeLogic {
 	public EmployeeLogic(ClientUi client) {
         this.client = client;
     }
-	
-	public void getManagerByEmployee(Employee employee) {
+	//change method name to loginEmployee
+	public void loginEmployee(Employee employee) {
 		Request req = new Request(ResourceType.EMPLOYEE, ActionType.LOGIN, null, employee);
+		client.sendRequest(req);
+	}
+
+	public void registerEmployee(Employee employee) {
+		Request req = new Request(ResourceType.EMPLOYEE, ActionType.REGISTER_EMPLOYEE, null, employee);
+		client.sendRequest(req);
+	}
+	
+	public void updatePassword(Employee employee) {
+		Request req = new Request(ResourceType.EMPLOYEE, ActionType.UPDATE, null, employee);
 		client.sendRequest(req);
 	}
 }
