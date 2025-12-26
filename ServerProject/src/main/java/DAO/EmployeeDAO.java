@@ -3,6 +3,7 @@ package DAO;
 import java.sql.*;
 import DBConnection.DBConnection;
 import entities.Employee;
+import entities.Subscriber;
 import entities.Employee.Role;
 
 public class EmployeeDAO {
@@ -11,6 +12,7 @@ public class EmployeeDAO {
 	 * Authenticates employee and populates all fields including ID and Role.
 	 * Updates login status in DB to prevent multiple sessions.
 	 */
+	
 	public Employee login(String userName, String password) throws SQLException {
 		Connection conn = DBConnection.getInstance().getConnection();
 		String sql = "SELECT * FROM employees WHERE user_name = ? AND password = ?";
@@ -21,12 +23,33 @@ public class EmployeeDAO {
 			ResultSet rs = stmt.executeQuery();
 
 			if (rs.next()) {
-//				if (rs.getBoolean("is_logged_in"))
-//					return null;
+
 
 				// Update login status
 				int empId = rs.getInt("employee_id");
 //				updateLoginStatus(empId, true);
+
+				// Create and populate the updated Employee entity
+				Employee emp = new Employee(rs.getString("user_name"), rs.getString("password"),rs.getString("phone_number"),rs.getString("Email"),Role.valueOf(rs.getString("role")));
+				emp.setEmployeeId(empId);
+				return emp;
+			}
+		}
+		return null;
+	}
+	
+	public Employee checkIfUsernameIsAlreadyTaken(String userName) throws SQLException {
+		Connection conn = DBConnection.getInstance().getConnection();
+		String sql = "SELECT * FROM employees WHERE user_name = ?";
+
+		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setString(1, userName);
+			ResultSet rs = stmt.executeQuery();
+
+			if (rs.next()) {
+
+				// Update login status
+				int empId = rs.getInt("employee_id");
 
 				// Create and populate the updated Employee entity
 				Employee emp = new Employee(rs.getString("user_name"), rs.getString("password"));
@@ -34,34 +57,61 @@ public class EmployeeDAO {
 				emp.setRole(Role.valueOf(rs.getString("role")));
 				return emp;
 			}
+		}catch(Exception e) {
+			System.out.println("user name is already taken ");
 		}
 		return null;
 	}
 
-//	/** Updates is_logged_in status for session management. */
-//	public void updateLoginStatus(int employeeId, boolean status) throws SQLException {
-//		Connection conn = DBConnection.getInstance().getConnection();
-//		String sql = "UPDATE bistro.employees SET is_logged_in = ? WHERE employee_id = ?";
-//		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-//			stmt.setBoolean(1, status);
-//			stmt.setInt(2, employeeId);
-//			stmt.executeUpdate();
-//		}
-//	}
-	
-
-	
 	/** Inserts a new employee into the DB. */
 	public boolean createEmployee(Employee emp) throws SQLException {
-		Connection conn = DBConnection.getInstance().getConnection();
-		String sql = "INSERT INTO employees (user_name, password, role) VALUES (?, ?, ?)";
-		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-			stmt.setString(1, emp.getUserName());
-			stmt.setString(2, emp.getPassword());
-			stmt.setString(3, emp.getRole().getRoleValue());
-			return stmt.executeUpdate() > 0;
+		String query = "INSERT INTO employees (user_name, password,phone_number,email, role) VALUES (?,?,?, ?, ?)";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query,Statement.RETURN_GENERATED_KEYS)) {
+
+			ps.setString(1, emp.getUserName());
+			ps.setString(2, emp.getPassword());
+			ps.setString(3, emp.getPhoneNumber());
+			ps.setString(4, emp.getEmail());
+			ps.setString(5, emp.getRole().getRoleValue());
+
+			int rowsAffected = ps.executeUpdate();
+
+			if (rowsAffected > 0) {
+				ResultSet generatedKeys = ps.getGeneratedKeys(); // returns id number to ps
+				if (generatedKeys.next()) {
+					emp.setEmployeeId(generatedKeys.getInt(1));
+				}
+				return true;
+			}
+		} catch (SQLException e) {
+			System.out.println("Error creating employee: " + e.getMessage());
+			e.printStackTrace();
 		}
+		return false;
 	}
+	
+	public boolean updateEmployeeDetails(Employee employee) {
+		String query = "UPDATE employees SET  password = ?, phone_number = ?, email = ? WHERE user_name = ?";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query)) {
+			ps.setString(1, employee.getPassword());
+			ps.setString(2, employee.getPhoneNumber());
+			ps.setString(3, employee.getEmail());
+			ps.setString(4, employee.getUserName());
+
+			int rowsAffected = ps.executeUpdate();
+			return rowsAffected > 0;
+
+		} catch (SQLException e) {
+			System.out.println("Error updating employee: " + e.getMessage());
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	
+	
 	
 
 	
