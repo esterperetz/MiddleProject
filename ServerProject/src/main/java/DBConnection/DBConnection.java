@@ -79,7 +79,7 @@ public class DBConnection {
 		Statement stmt;
 		String sql = "CREATE TABLE IF NOT EXISTS subscriber (" + "subscriber_id INT NOT NULL AUTO_INCREMENT, "
 				+ "subscriber_name VARCHAR(100) NOT NULL, "
-				+ "phone_number VARCHAR(255) UNIQUE NOT NULL, " + "email VARCHAR(20), " + "PRIMARY KEY (subscriber_id)"
+				+ "phone_number VARCHAR(255) UNIQUE NOT NULL, " + "email VARCHAR(40), " + "PRIMARY KEY (subscriber_id)"
 				+ ");";
 		try {
 			stmt = con1.createStatement();
