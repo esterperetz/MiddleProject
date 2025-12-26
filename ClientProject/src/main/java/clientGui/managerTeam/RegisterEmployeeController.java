@@ -95,7 +95,7 @@ public class RegisterEmployeeController extends MainNavigator implements Message
 	@FXML
 	void handleBackBtn(ActionEvent event) {
 		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
-		super.loadScreen("navigation/SelectionScreen", event, clientUi);
+		super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 	}
 	
 
