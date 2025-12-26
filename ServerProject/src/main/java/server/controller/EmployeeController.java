@@ -22,6 +22,7 @@ public class EmployeeController {
                 	break;
                 case UPDATE:
                 	processupdateEmploye(req,client);
+                	break; //added break here.
                 default:
                     client.sendToClient(new Response(req.getResource(), req.getAction(), 
                         Response.ResponseStatus.ERROR, "Unsupported Action", null));
