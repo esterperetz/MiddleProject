@@ -159,7 +159,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	}
 	
 	@FXML
-	public void signUpRepresentative(ActionEvent event) {
+	public void signUpEmployee(ActionEvent event) {
 		System.out.println("Navigating to Sign Up screen...");
 		// טעינת מסך ההרשמה הקיים בפרויקט
 		super.loadScreen("user/RegisterSubscriber", event, clientUi);
