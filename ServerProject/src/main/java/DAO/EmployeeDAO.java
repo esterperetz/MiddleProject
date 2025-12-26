@@ -13,7 +13,7 @@ public class EmployeeDAO {
 	 */
 	public Employee login(String userName, String password) throws SQLException {
 		Connection conn = DBConnection.getInstance().getConnection();
-		String sql = "SELECT * FROM bistro.employees WHERE user_name = ? AND password = ?";
+		String sql = "SELECT * FROM employees WHERE user_name = ? AND password = ?";
 
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, userName);
@@ -48,11 +48,13 @@ public class EmployeeDAO {
 //			stmt.executeUpdate();
 //		}
 //	}
+	
 
+	
 	/** Inserts a new employee into the DB. */
 	public boolean createEmployee(Employee emp) throws SQLException {
 		Connection conn = DBConnection.getInstance().getConnection();
-		String sql = "INSERT INTO bistro.employees (user_name, password, role) VALUES (?, ?, ?)";
+		String sql = "INSERT INTO employees (user_name, password, role) VALUES (?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, emp.getUserName());
 			stmt.setString(2, emp.getPassword());
@@ -60,13 +62,14 @@ public class EmployeeDAO {
 			return stmt.executeUpdate() > 0;
 		}
 	}
+	
 
 	
 	
 	/** Removes an employee record from the DB. */
 	public boolean deleteEmployee(int id) throws SQLException {
 		Connection conn = DBConnection.getInstance().getConnection();
-		String sql = "DELETE FROM bistro.employees WHERE employee_id = ?";
+		String sql = "DELETE FROM employees WHERE employee_id = ?";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setInt(1, id);
 			return stmt.executeUpdate() > 0;
