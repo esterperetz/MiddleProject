@@ -52,6 +52,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	private TextField priceField;
 	@FXML
 	private boolean isManager;
+	@FXML
 	private ComboBox<OrderStatus> statusComboBox;
 	private Order o;
 	private OrderUi_controller mainController; // Field to hold the main controller reference
