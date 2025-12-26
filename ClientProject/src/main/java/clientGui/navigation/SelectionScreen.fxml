@@ -38,8 +38,6 @@
               prefHeight="50.0" prefWidth="280.0" 
               styleClass="menu-button" text="Casual Customer" />
               
-      <Button fx:id="sign_up" mnemonicParsing="false" onAction="#pressSignUp" 
-        prefHeight="50.0" prefWidth="280.0" 
-        styleClass="menu-button" text="Sign Up" />
+      
    </children>
 </VBox>

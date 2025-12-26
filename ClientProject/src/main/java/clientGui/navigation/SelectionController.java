@@ -77,12 +77,7 @@ public class SelectionController extends MainNavigator implements  MessageListen
         });
 		
 	}
-	@FXML
-	void pressSignUp(ActionEvent event) {
-	    System.out.println("Navigating to Sign Up screen...");
-	    // טעינת מסך ההרשמה הקיים בפרויקט
-	    super.loadScreen("user/RegisterSubscriber", event, clientUi);
-	}
+
 /*
 	@Override
 	public void setClientUi(ClientUi clientUi) {
