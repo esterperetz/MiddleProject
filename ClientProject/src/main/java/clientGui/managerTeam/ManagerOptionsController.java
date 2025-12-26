@@ -31,7 +31,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
 	// --- Internal Fields ---
 	/** Flag to store the user's permission level. */
-	private static boolean isManager=true;
+	private static boolean isManager = true;
 
 	/** Data model for the special dates list view. */
 	private ObservableList<String> specialDatesModel;
@@ -66,6 +66,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	@FXML
 	private TextField txtSpecialClose;
 
+	@FXML
+	private TextField sign_up;
+
 	/** List view to display the added special dates/hours. */
 	@FXML
 	private ListView<String> listSpecialDates;
@@ -73,8 +76,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
-	
-	//add button to register a new Employee by Manager.
+
+	// add button to register a new Employee by Manager.
 
 	/**
 	 * Called to initialize the controller after the FXML file has been loaded. Sets
@@ -119,11 +122,11 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 * 
 	 * @param clientUi The connection instance.
 	 */
-	public void initData(ClientUi clientUi,boolean isManager) {
+	public void initData(ClientUi clientUi, boolean isManager) {
 		this.clientUi = clientUi;
 
 		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
-		//isManager = true; // בהמשך זה יגיע מ-User
+		// isManager = true; // בהמשך זה יגיע מ-User
 
 		// הצגת הכפתור אם צריך
 		if (isManager) {
@@ -146,7 +149,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// הערה: את בדיקת isManager השארנו כרגע ב-initialize כמו שביקשת
 	}
 
+	@FXML
+	public void signUpRepresentative(ActionEvent event) {
+		System.out.println("Navigating to Sign Up screen...");
+		// טעינת מסך ההרשמה הקיים בפרויקט
+		super.loadScreen("user/RegisterSubscriber", event, clientUi);
 	
+
+	}
 
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
@@ -268,7 +278,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	@FXML
 	void goToWaitingListBtn(ActionEvent event) {
-		super.loadScreen("reservation/WaitingList", event,clientUi);
+		super.loadScreen("reservation/WaitingList", event, clientUi);
 	}
 
 	/**
@@ -283,12 +293,12 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// clientGui.reservation.OrderUi_controller controller =
 		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
 //		clientUi.removeListener(this);
-		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event,clientUi);
+		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
 
-			//controller.initData(clientUi, clientUi.getIp());
+			// controller.initData(clientUi, clientUi.getIp());
 			controller.initData();
-			
+
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
 		}
@@ -299,7 +309,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	@FXML
 	void goToRegisterSubscriberBtn(ActionEvent event) {
-		super.loadScreen("user/RegisterSubscriber", event,clientUi);
+		super.loadScreen("user/RegisterSubscriber", event, clientUi);
 	}
 
 	/**
@@ -310,7 +320,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	void goToReportsBtn(ActionEvent event) {
 		// MainNavigator.loadScene("manager/ReportsScreen");
 		System.out.println("Navigate to Reports Screen...");
-		super.loadScreen("managerTeam/ReportsScreen", event,clientUi);
+		super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
 
 	}
 
@@ -322,7 +332,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// Logic for signing out or returning to the main selection screen
 
 		System.out.println("Going back / Signing out...");
-		super.loadScreen("navigation/SelectionScreen", event,clientUi);
+		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 
 	}
 
