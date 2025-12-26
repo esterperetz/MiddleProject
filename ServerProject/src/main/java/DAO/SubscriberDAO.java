@@ -27,7 +27,8 @@ public class SubscriberDAO {
 
 	// Creates a new subscriber in the DB and updates the object's ID
 	public boolean createSubscriber(Subscriber subscriber) {
-		String query = "INSERT INTO subscriber (subscriber_name, phone_number, email) VALUES (?, ?, ?)";		try (Connection con = DBConnection.getInstance().getConnection();
+		String query = "INSERT INTO subscriber (subscriber_name, phone_number, email) VALUES (?, ?, ?)";	
+		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
 			ps.setString(1, subscriber.getSubscriberName());
@@ -100,6 +101,7 @@ public class SubscriberDAO {
 			ps.setString(2, subscriber.getSubscriberName());
 			ps.setString(3, subscriber.getPhoneNumber());
 			ps.setString(4, subscriber.getEmail());
+			ps.setInt(5, subscriber.getSubscriberId());
 
 			int rowsAffected = ps.executeUpdate();
 			return rowsAffected > 0;
