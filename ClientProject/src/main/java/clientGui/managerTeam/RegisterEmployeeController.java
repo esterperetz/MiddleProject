@@ -99,6 +99,7 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 						&& res.getStatus() == Response.ResponseStatus.SUCCESS) {
 					Platform.runLater(() -> {
 						// will send a mail to the employee to make his own password
+						System.out.println(res.getMessage_from_server());
 						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 								currentEvent, clientUi);
 						if (controller != null) {

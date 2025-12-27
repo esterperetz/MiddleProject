@@ -65,8 +65,9 @@ public class EmployeeController {
         
         
         if (success) {
+        	EmailService.sendEmail(credentials.getEmail(),credentials);
             client.sendToClient(new Response(ResourceType.EMPLOYEE, ActionType.REGISTER_EMPLOYEE, 
-                Response.ResponseStatus.SUCCESS, "Manager Team Auth Successful", success));
+                Response.ResponseStatus.SUCCESS, "Manager Team Auth Successful, email details: "+ EmailService.getContent(), success));
         } else {
             client.sendToClient(new Response(ResourceType.EMPLOYEE, ActionType.REGISTER_EMPLOYEE, 
                 Response.ResponseStatus.ERROR, "Error: Failed to create employee in DB", null));

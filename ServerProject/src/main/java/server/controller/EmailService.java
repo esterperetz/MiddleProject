@@ -4,6 +4,7 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 
+import entities.Employee;
 import entities.Order;
 
 import java.io.IOException;
@@ -118,6 +119,50 @@ public class EmailService{
         } catch (IOException ex) {
             System.err.println("Error in communication: " + ex.getMessage());
         }
+	}
+	public static void sendEmail(String customerEmail,Employee employee) {
+		
+        String subject = "account creation in Bistro System";
+        Email to = new Email(customerEmail);
+        
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        
+
+        plainTextBody = String.format(
+            "Hello %s %s,\n\n" +
+            "Your account at BISTRO has been created succsefully! :) \n\n" +
+            "--- Account Details ---\n" +
+            "User Name: %s\n" +
+            "Temporary Password: %s\n" +
+            "Phone Number: %s\n\n" +
+            "If you wish to modify your temporary password, please login-in to Bistro system!\n\n",
+            employee.getRole().toString().toLowerCase(),
+            employee.getUserName() ,
+            employee.getUserName() ,
+            employee.getPassword(),
+            employee.getPhoneNumber()
+        );
+
+        Content content = new Content("text/plain", plainTextBody);
+        setService();
+        Mail mail = new Mail(from, subject, to, content);
+    
+
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+            
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                System.out.println("Your mail has been sent succsesfully!");
+            } else {
+                System.out.println("Error in Sending: " + response.getBody());
+            }
+        } catch (IOException ex) {
+            System.err.println("Error in communication: " + ex.getMessage());
+        }
+    
 	}
 	public static String getContent() {
 		return plainTextBody;
