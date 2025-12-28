@@ -61,9 +61,9 @@ public class SetEmployeePasswordController extends MainNavigator implements Mess
 	        return;
 	    }
 	    this.currentEvent = event;
-	    EmployeeLogic employee = new EmployeeLogic(clientUi);
+	    EmployeeLogic employeeLogic = new EmployeeLogic(clientUi);
 		emp.setPassword(confirmPass);
-	    employee.updatePassword(emp); // CHANGED FROM
+	    employeeLogic.updatePassword(emp); // CHANGED FROM
 	    
 
 	    System.out.println("Password set successfully: " + pass);
