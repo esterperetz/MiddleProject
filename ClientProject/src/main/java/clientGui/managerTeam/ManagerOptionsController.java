@@ -179,7 +179,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	
 
 	public void AnotherinitData(Employee em) {
-		this.em=em;
+		try {
+			System.out.println(em);
+			this.em=em;
+			
+		}
+		catch(Exception e)
+		{
+			
+		}
 	}
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
@@ -335,7 +343,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		System.out.println("Navigating to Sign Up screen...");
 		try {
 		RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event, clientUi);
-		registerEmployee.initData(this.clientUi, this.isManager);
+		registerEmployee.initData(this.clientUi, this.isManager,this.em);
 		}catch(NullPointerException e){
 			System.out.println("Error: the object RegisterEmployeeController is null");
 
