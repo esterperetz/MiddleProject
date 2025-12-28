@@ -42,15 +42,16 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 	private ActionEvent currentEvent; // Added to save the event for async navigation
 
 	private boolean isManager;
-
+	private Employee em;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		selectRole.getItems().setAll(Role.values());
 	}
 
-	public void initData(ClientUi clientUi, boolean isManager) {
+	public void initData(ClientUi clientUi, boolean isManager,Employee em) {
 		this.clientUi = clientUi;
 		this.isManager = isManager;
+		this.em=em;
 	}
 
 	/**
@@ -103,6 +104,7 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 								currentEvent, clientUi);
 						if (controller != null) {
+							controller.AnotherinitData(em);
 							controller.initData(clientUi, isManager);
 						}
 					});
@@ -126,6 +128,7 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		try {
 			controller.initData(clientUi, this.isManager);
+			
 		} catch (NullPointerException e) {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}
