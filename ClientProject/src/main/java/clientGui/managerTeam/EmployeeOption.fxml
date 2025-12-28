@@ -29,16 +29,19 @@
 			<children>
 				<HBox alignment="CENTER_LEFT" spacing="10.0">
 					<children>
-						<VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
-							<Label styleClass="main-title" text="Manager Dashboard"
-								textFill="#0008f7" />
-							<Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
+						<VBox alignment="CENTER_LEFT" spacing="5.0"
+							HBox.hgrow="ALWAYS">
+							<Label fx:id="lblDashboardTitle" styleClass="main-title"
+								text="Manager Dashboard" textFill="#0008f7" />
+
+							<Label fx:id="lblDashboardSubtitle"
+								style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
 								text="Manage restaurant operations, orders, and settings"
 								textFill="#8a8a8e" />
 						</VBox>
-						
+
 						<Region HBox.hgrow="ALWAYS" />
-						
+
 						<Button onAction="#goBackBtn" styleClass="back-button"
 							text="Sign Out / Back" />
 					</children>
@@ -90,14 +93,14 @@
 									prefWidth="198.0"
 									styleClass="dashboard-tile-button, report-button"
 									text="View Reports" visible="false" wrapText="true" />
-									
-								<Button fx:id="btnSignUp" managed="false"
-									maxWidth="Infinity" onAction="#goToSignUpEmployee" prefHeight="5.0"
-									prefWidth="198.0"
-									styleClass="dashboard-tile-button, report-button"
-									text="SignUp" visible="false" wrapText="true" />
 
-								</children>
+								<Button fx:id="btnSignUp" managed="false"
+									maxWidth="Infinity" onAction="#goToSignUpEmployee"
+									prefHeight="5.0" prefWidth="198.0"
+									styleClass="dashboard-tile-button, report-button" text="SignUp"
+									visible="false" wrapText="true" />
+
+							</children>
 						</VBox>
 
 						<VBox spacing="20.0" styleClass="card-pane"
