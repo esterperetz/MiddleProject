@@ -13,6 +13,7 @@ import clientGui.reservation.OrderUi_controller;
 import clientGui.reservation.ReservationController;
 import clientGui.reservation.WaitingListController;
 import clientGui.user.RegisterSubscriberController;
+import entities.Employee;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -43,6 +44,11 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Button to view reports - hidden for non-managers. */
 	@FXML
 	private Button btnViewReports;
+	@FXML
+    private Label lblDashboardTitle;
+
+    @FXML
+    private Label lblDashboardSubtitle;
 
 	// --- Standard Opening Hours UI ---
 
@@ -78,7 +84,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
-	
+	private Employee em;
 	//add button to register a new Employee by Manager.
 
 	/**
@@ -132,17 +138,23 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		if(isManager)
 		{
 			this.isManager=true;
+			
 			btnViewReports.setVisible(true);
 			btnViewReports.setManaged(true);
 			btnSignUp.setVisible(true);
 			btnSignUp.setManaged(true);
+			lblDashboardTitle.setText("Hello Manager, " + em.getUserName());
+            lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
 		}
 		else {
 			this.isManager=false;
+			
 			btnViewReports.setVisible(false);
 			btnViewReports.setManaged(false);
 			btnSignUp.setVisible(false);
 			btnSignUp.setManaged(false);
+			lblDashboardTitle.setText("Hello, " + em.getUserName());
+            lblDashboardSubtitle.setText("Employee Dashboard");
 		}
 //		// הצגת הכפתור אם צריך
 //		//if (this.isManager) {
@@ -166,7 +178,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	}
 	
 
-
+	public void AnotherinitData(Employee em) {
+		this.em=em;
+	}
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
 	 * uses mock data.
