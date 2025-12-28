@@ -177,7 +177,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// הערה: את בדיקת isManager השארנו כרגע ב-initialize כמו שביקשת
 	}
 	
-
+	//change name
 	public void AnotherinitData(Employee em) {
 		try {
 			System.out.println(em);

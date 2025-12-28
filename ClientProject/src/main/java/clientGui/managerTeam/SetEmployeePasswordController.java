@@ -62,7 +62,6 @@ public class SetEmployeePasswordController extends MainNavigator implements Mess
 	    }
 	    this.currentEvent = event;
 	    EmployeeLogic employee = new EmployeeLogic(clientUi);
-		//employee.updatePassword(new Employee(emp.getUserName(), confirmPass,emp.getPhoneNumber(), emp.getEmail(), emp.getRole())); // CHANGED FROM
 		emp.setPassword(confirmPass);
 	    employee.updatePassword(emp); // CHANGED FROM
 	    
