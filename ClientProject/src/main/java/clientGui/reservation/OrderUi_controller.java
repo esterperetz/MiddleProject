@@ -1,6 +1,8 @@
 package clientGui.reservation;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -23,6 +25,7 @@ import entities.Response;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -31,6 +34,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -43,7 +47,11 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
 	@FXML
     private TableView<Order> orderTable;
+	@FXML
+    private DatePicker filterDatePicker;
     
+    // רשימה מסוננת שתהיה מקושרת לטבלה במקום הרשימה הרגילה
+    private FilteredList<Order> filteredData;
     // --- 1. משתנים התואמים ל-FXML החדש ---
     @FXML
     private TableColumn<Order, Integer> Order_numberColumn;
@@ -90,60 +98,101 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
     @FXML
     private void initialize() {
-        // --- 2. חיבור הנתונים לטבלה באמצעות Getters של Order החדש ---
+        // --- 2. חיבור הנתונים לטבלה (הקוד הקיים שלך נשאר זהה) ---
 
-        // מספר הזמנה
         Order_numberColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderNumber()));
 
-        // שם לקוח (String)
         clientNameColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getClientName()));
 
-        // טלפון (String)
         clientPhoneColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getClientPhone()));
 
-        // אימייל (String)
         clientEmailColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty(cellData.getValue().getClientEmail()));
 
-        // מזהה מנוי
         subscriber_idColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriberId()));
 
-        // תאריך הזמנה
         DateColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderDate()));
 
-        // שעת הגעה בפועל
         arrivalTimeColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getArrivalTime()));
 
-        // כמות אורחים
         itemColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
 
-        // מחיר כולל
         totalPriceColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getTotalPrice()));
 
-        // סטטוס (שים לב: getOrder_status ולא getStatus)
         statusColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderStatus()));
 
-        // קוד אישור
         confirmation_codeColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
 
-        // תאריך יצירת ההזמנה
         date_of_placing_orderColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getDateOfPlacingOrder()));
 
         setupEditableColumns();
-        orderTable.setItems(orderData);
-	}
 
+        // -----------------------------------------------------------
+        // --- כאן מתחיל הקוד החדש שהוספנו לסינון ---
+        // -----------------------------------------------------------
+
+        // 1. עוטפים את הנתונים המקוריים (orderData) ברשימה מסוננת
+        filteredData = new FilteredList<>(orderData, p -> true);
+
+        // 2. מגדירים לטבלה להציג את הרשימה המסוננת (במקום orderData ישירות)
+        orderTable.setItems(filteredData);
+
+        // 3. בודקים אם ה-DatePicker קיים (כדי למנוע קריסה אם לא הוספת אותו ב-FXML)
+        if (filterDatePicker != null) {
+            // הוספת מאזין: כל פעם שמשנים תאריך, הקוד הזה ירוץ
+        	filterDatePicker.valueProperty().addListener((observable, oldValue, selectedDate) -> {
+        	    filteredData.setPredicate(order -> {
+        	        // 1. אם לא נבחר תאריך -> תציג הכל (או שתחליט להסתיר, תלוי בך)
+        	        if (selectedDate == null) {
+        	            return true; 
+        	        }
+
+        	        // 2. אם להזמנה אין תאריך -> הסתר אותה
+        	        if (order.getOrderDate() == null) {
+        	            return false;
+        	        }
+
+        	        // 3. המרת תאריך ההזמנה ל-LocalDate
+        	        LocalDate orderDate;
+        	        if (order.getOrderDate() instanceof java.sql.Date) {
+        	            orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
+        	        } else {
+        	            orderDate = order.getOrderDate().toInstant()
+        	                          .atZone(ZoneId.systemDefault())
+        	                          .toLocalDate();
+        	        }
+
+        	        // 4. --- הגדרת הטווח (מה שבקשת) ---
+        	        
+        	        LocalDate today = LocalDate.now(); // התאריך של היום
+
+        	        // תנאי א': התאריך חייב להיות "גדול או שווה" לתאריך שבחרת
+        	        boolean isAfterSelection = !orderDate.isBefore(selectedDate);
+
+        	        // תנאי ב': התאריך חייב להיות "קטן או שווה" להיום
+        	        boolean isBeforeToday = !orderDate.isAfter(today);
+
+        	        // החזר אמת רק אם שני התנאים מתקיימים
+        	        return isAfterSelection && isBeforeToday;
+        	    });
+        	});
+        }
+    }
+    @FXML
+    private void handleClearFilter(ActionEvent event) {
+        filterDatePicker.setValue(null); // זה יפעיל את ה-Listener ויחזיר את כל הרשימה
+    }
 	/**
 	 * Initializes this controller with an existing ClientUi and server IP.
 	 * Registers this controller as a listener and loads all orders from the server.
