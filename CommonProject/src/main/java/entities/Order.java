@@ -16,31 +16,25 @@ public class Order implements Serializable {
 	private Date orderDate;
 	private int numberOfGuests;
 	private int confirmationCode;
-	private Integer subscriberId;
+	private Integer CustomerId;
 	private Integer tableNumber;
 	private Date dateOfPlacingOrder;
-	private String clientName;
-	private String clientEmail;
-	private String clientPhone; 
 	private Date arrivalTime;
 	private Date leavingTime;
 	private double totalPrice;
 	private OrderStatus orderStatus;
 
-	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer subscriberId,
-			Integer tableNumber, Date dateOfPlacingOrder, String clientName, String clientEmail, String clientPhone, 
+	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer CustomerId,
+			Integer tableNumber, Date dateOfPlacingOrder, 
 			Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
 		
 		this.orderNumber = orderNumber;
 		this.orderDate = orderDate;
 		this.numberOfGuests = numberOfGuests;
 		this.confirmationCode = confirmationCode;
-		this.subscriberId = subscriberId;
+		this.CustomerId = CustomerId;
 		this.tableNumber = tableNumber;
 		this.dateOfPlacingOrder = dateOfPlacingOrder;
-		this.clientName = clientName;
-		this.clientEmail = clientEmail;
-		this.clientPhone = clientPhone;
 		this.arrivalTime = arrivalTime;
 		this.leavingTime = leavingTime;
 		this.totalPrice = totalPrice;
@@ -81,12 +75,12 @@ public class Order implements Serializable {
 			this.confirmationCode = confirmationCode;
 		}
 
-		public Integer getSubscriberId() {
-			return subscriberId;
+		public Integer getCustomerId() {
+			return CustomerId;
 		}
 
-		public void setSubscriberId(Integer subscriberId) {
-			this.subscriberId = subscriberId;
+		public void setCustomerId(Integer CustomerId) {
+			this.CustomerId = CustomerId;
 		}
 
 		public Integer getTableNumber() {
@@ -113,29 +107,6 @@ public class Order implements Serializable {
 			this.totalPrice = totalPrice;
 		}
 
-		public String getClientName() {
-			return clientName;
-		}
-
-		public void setClientName(String clientName) {
-			this.clientName = clientName;
-		}
-
-		public String getClientEmail() {
-			return clientEmail;
-		}
-
-		public void setClientEmail(String clientEmail) {
-			this.clientEmail = clientEmail;
-		}
-
-		public String getClientPhone() {
-			return clientPhone;
-		}
-
-		public void setClientPhone(String clientPhone) {
-			this.clientPhone = clientPhone;
-		}
 
 		public Date getArrivalTime() {
 			return arrivalTime;

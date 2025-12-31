@@ -9,26 +9,30 @@ import java.util.ArrayList;
 
 import DBConnection.DBConnection;
 import entities.Customer;
+import entities.CustomerType;
+import entities.Employee.Role;
 
-public class SubscriberDAO {
+public class CustomerDAO {
 
 
 	// Creates a new subscriber in the DB and updates the object's ID
-	public boolean createSubscriber(Subscriber subscriber) {
-		String query = "INSERT INTO subscriber (subscriber_name, phone_number, email) VALUES (?, ?, ?)";	
+	public boolean createCustomer(Customer customer) {
+		String query = "INSERT INTO Customer (customer_name, phone_number, email , customer_type ) VALUES (?, ?, ?, ?)";	
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
 
-			ps.setString(1, subscriber.getSubscriberName());
-	        ps.setString(2, subscriber.getPhoneNumber());
-	        ps.setString(3, subscriber.getEmail());
+			ps.setString(1, customer.getName());
+	        ps.setString(2, customer.getPhoneNumber());
+	        ps.setString(3, customer.getEmail());
+	    
+	        ps.setString(3, customer.getType().getString());
 
 			int rowsAffected = ps.executeUpdate();
 
 			if (rowsAffected > 0) {
 				ResultSet generatedKeys = ps.getGeneratedKeys(); // returns id number to ps
 				if (generatedKeys.next()) {
-					subscriber.setSubscriberId(generatedKeys.getInt(1));
+					customer.setCustomerId(generatedKeys.getInt(1));
 				}
 				return true;
 			}
@@ -40,17 +44,18 @@ public class SubscriberDAO {
 	}
 
 	// Fetches a subscriber by their unique ID
-	public Subscriber getSubscriberById(int id) {
+	public Customer getCustomerBySubscriberCode(int SubscriberCode) {
 
-		String query = "SELECT * FROM subscriber WHERE subscriber_id = ?";
+		String query = "SELECT * FROM Customer WHERE subscriber_code = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
-			ps.setInt(1, id);
+			ps.setInt(1, SubscriberCode);
+		
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				Subscriber s = new Subscriber(rs.getInt("subscriber_id"), rs.getString("subscriber_name"),
-						rs.getString("phone_number"), rs.getString("email"));
-				s.setSubscriberId(rs.getInt("subscriber_id"));
+				Customer s = new Customer(null,rs.getInt("subscriber_code"), rs.getString("customer_name"),
+						rs.getString("phone_number"), rs.getString("email"), CustomerType.valueOf(rs.getString("customer_type")));
+//				s.setSubscriberId(rs.getInt("subscriber_id"));
 				return s;
 				
 //				return createSubscriberFromResultSet(rs);
@@ -63,15 +68,15 @@ public class SubscriberDAO {
 	}
 
 	// Fetches a subscriber by their username
-	public Subscriber getSubscriberBySubscriberName(String subscriberName) {
-		String query = "SELECT * FROM subscriber WHERE subscriber_name = ?";
+	public Customer getSubscriberBySubscriberName(String customerName) {
+		String query = "SELECT * FROM Customer WHERE customer_name = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
-			ps.setString(1, subscriberName);
+			ps.setString(1, customerName);
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
-				return createSubscriberFromResultSet(rs);
+				return createCustomerFromResultSet(rs);
 			}
 		} catch (SQLException e) {
 			System.out.println("Error fetching subscriber by username: " + e.getMessage());
@@ -81,15 +86,15 @@ public class SubscriberDAO {
 	}
 
 	// Updates editable details (name, phone, email)
-	public boolean updateSubscriberDetails(Subscriber subscriber) {
-		String query = "UPDATE subscriber SET  subscriber_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
+	public boolean updateCustomerDetails(Customer customer) {
+		String query = "UPDATE Customer SET  customer_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
-			ps.setInt(1, subscriber.getSubscriberId());
-			ps.setString(2, subscriber.getSubscriberName());
-			ps.setString(3, subscriber.getPhoneNumber());
-			ps.setString(4, subscriber.getEmail());
-			ps.setInt(5, subscriber.getSubscriberId());
+			ps.setInt(1, customer.getsubscriberCode());
+			ps.setString(2, customer.getName());
+			ps.setString(3, customer.getPhoneNumber());
+			ps.setString(4, customer.getEmail());
+			ps.setString(5, customer.getType().getString());
 
 			int rowsAffected = ps.executeUpdate();
 			return rowsAffected > 0;
@@ -102,15 +107,15 @@ public class SubscriberDAO {
 	}
 
 	// Returns a list of all subscribers in the system
-	public ArrayList<Subscriber> getAllSubscribers() {
-		ArrayList<Subscriber> subscribers = new ArrayList<>();
-		String query = "SELECT * FROM subscriber";
+	public ArrayList<Customer> getAllCustomers() {
+		ArrayList<Customer> subscribers = new ArrayList<>();
+		String query = "SELECT * FROM Customer WHERE customer_type = SUBSCRIBER";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				Statement stmt = con.createStatement()) {
 			ResultSet rs = stmt.executeQuery(query);
 
 			while (rs.next()) {
-				subscribers.add(createSubscriberFromResultSet(rs));
+				subscribers.add(createCustomerFromResultSet(rs));
 			}
 		} catch (SQLException e) {
 			System.out.println("Error fetching all subscribers: " + e.getMessage());
@@ -120,11 +125,11 @@ public class SubscriberDAO {
 	}
 
 	// Helper method to map ResultSet to Subscriber object
-	private Subscriber createSubscriberFromResultSet(ResultSet rs) throws SQLException {
+	private Customer createCustomerFromResultSet(ResultSet rs) throws SQLException {
 		try {
-			Subscriber s = new Subscriber(rs.getInt("subscriber_id"), rs.getString("subscriber_name"),
-					rs.getString("phone_number"), rs.getString("email"));
-			s.setSubscriberId(rs.getInt("subscriber_id"));
+			Customer s = new Customer(null, rs.getInt("subscriber_code"), rs.getString("customer_name"),
+					rs.getString("phone_number"), rs.getString("email") , CustomerType.valueOf(rs.getString("customer_type")));
+//			s.setSubscriberId(rs.getInt("subscriber_id"));
 			return s;
 		} catch (SQLException e) {
 			e.printStackTrace();

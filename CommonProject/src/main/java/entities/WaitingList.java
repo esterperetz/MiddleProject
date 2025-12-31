@@ -7,17 +7,17 @@ public class WaitingList implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int waitingId;
-	private Integer subscriberId;
+	private Integer customerId;
 	private String identificationDetails; //Phone or Email for non subscriber
 	private String fullName;
 	private int numberOfGuests;
 	private Date enterTime;
 	private int confirmationCode;
 
-	public WaitingList(int waitingId, Integer subscriberId, String identificationDetails, String fullName,
+	public WaitingList(int waitingId, Integer customerId, String identificationDetails, String fullName,
 			int numberOfGuests, Date enterTime, int confirmationCode) {
 		this.waitingId = waitingId;
-		this.subscriberId = subscriberId;
+		this.customerId = customerId;
 		this.identificationDetails = identificationDetails;
 		this.fullName = fullName;
 		this.numberOfGuests = numberOfGuests;
@@ -34,12 +34,12 @@ public class WaitingList implements Serializable {
 		this.waitingId = waitingId;
 	}
 
-	public Integer getSubscriberId() {
-		return subscriberId;
+	public Integer getCustomerId() {
+		return customerId;
 	}
 
-	public void setSubscriberId(Integer subscriberId) {
-		this.subscriberId = subscriberId;
+	public void setCustomerId(Integer customerId) {
+		this.customerId = customerId;
 	}
 
 	public String getIdentificationDetails() {
@@ -86,4 +86,5 @@ public class WaitingList implements Serializable {
 	public String toString() {
 		return "WaitingList [name=" + fullName + ", guests=" + numberOfGuests + ", code=" + confirmationCode + "]";
 	}
+
 }

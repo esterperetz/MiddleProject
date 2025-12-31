@@ -4,6 +4,7 @@ import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 
+import entities.Customer;
 import entities.Employee;
 import entities.Order;
 
@@ -26,10 +27,10 @@ public class EmailService{
         request = new Request();
 	}
 	
-	public static void sendConfirmation(String customerEmail, Order order) {
+	public static void sendConfirmation(Customer customer, Order order) {
         
         String subject = "Confirmation booking in Bistro";
-        Email to = new Email(customerEmail);
+        Email to = new Email(customer.getEmail());
     
         // תוכן המייל
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -47,13 +48,13 @@ public class EmailService{
             "Phone Number: %s\n\n" +
             "If you wish to cancel or modify your reservation, please contact us!\n\n" +
             "We look forward to seeing you!",
-            order.getClientName() ,
+            customer.getName() ,
             order.getConfirmationCode(),
             order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "To be assigned",
             order.getArrivalTime() != null ? timeFormat.format(order.getArrivalTime()) : "To be assigned",
             order.getNumberOfGuests(),
             (order.getTableNumber() != null ? order.getTableNumber() : "To be assigned"),
-            order.getClientPhone()
+            customer.getPhoneNumber()
         );
         Content content = new Content("text/plain", plainTextBody);
         setService();
@@ -76,10 +77,10 @@ public class EmailService{
         }
     }
 	
-	public static void sendCancelation(String customerEmail , Order order){
+	public static void sendCancelation(Customer customer , Order order){
 		
         String subject = "Cancelation booking in Bistro";
-        Email to = new Email(customerEmail);
+        Email to = new Email(customer.getEmail());
     
         // תוכן המייל
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
@@ -94,10 +95,10 @@ public class EmailService{
             "Phone Number: %s\n\n" +
             "If you wish to modify your reservation, please contact us!\n\n" +
             "We look forward to seeing you!",
-            order.getClientName() ,
+            customer.getName() ,
             order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "To be assigned",
             order.getNumberOfGuests(),
-            order.getClientPhone()
+            customer.getPhoneNumber()
         );
 
         Content content = new Content("text/plain", plainTextBody);

@@ -4,20 +4,20 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-import DAO.SubscriberDAO;
+import DAO.CustomerDAO;
 import entities.ActionType;
+import entities.Customer;
 import entities.Request;
 import entities.ResourceType;
 import entities.Response;
-import entities.Subscriber;
 import ocsf.server.ConnectionToClient;
 
-public class SubscriberController {
+public class CustomerController {
 
-	private final SubscriberDAO subscriberDAO = new SubscriberDAO();
+	private final CustomerDAO CustomerDAO = new CustomerDAO();
 
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
-		if (req.getResource() != ResourceType.SUBSCRIBER) {
+		if (req.getResource() != ResourceType.CUSTOMER) {
 			try {
 				client.sendToClient("Error: Incorrect resource type. Expected SUBSCRIBER.");
 			} catch (IOException e) {
@@ -60,22 +60,22 @@ public class SubscriberController {
 
 	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
 
-		Subscriber newSub = (Subscriber) req.getPayload();
-		System.out.println("client " + newSub.getEmail());
+		Customer newCub = (Customer) req.getPayload();
+		System.out.println("client " + newCub.getEmail());
 		
 		// Updated to camelCase
-		Subscriber existing = subscriberDAO.getSubscriberBySubscriberName(newSub.getSubscriberName());
+		Customer existing = CustomerDAO.getSubscriberBySubscriberName(newCub.getName());
 		if (existing != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 					Response.ResponseStatus.ERROR, "Error: Username already exists.", null));
 			return;
 		}
 
-		boolean success = subscriberDAO.createSubscriber(newSub);
+		boolean success = CustomerDAO.createCustomer(newCub);
 		if (success) {
 			// Updated to camelCase
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-					Response.ResponseStatus.SUCCESS, "Subscriber_id" + newSub.getSubscriberId(), newSub));
+					Response.ResponseStatus.SUCCESS, "Customer_id" + newCub.getCustomerId(), newCub));
 		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 					Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
@@ -84,7 +84,7 @@ public class SubscriberController {
 
 	private void getSubscriberById(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int id = req.getId();
-		Subscriber sub = subscriberDAO.getSubscriberById(id);
+		Customer sub = CustomerDAO.getCustomerBySubscriberCode(id);
 		if (sub != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS,
 					"id:" + id, sub));
@@ -95,13 +95,13 @@ public class SubscriberController {
 	}
 
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
-		List<Subscriber> list = subscriberDAO.getAllSubscribers();
+		List<Customer> list = CustomerDAO.getAllCustomers();
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
-		Subscriber subToUpdate = (Subscriber) req.getPayload();
-		boolean success = subscriberDAO.updateSubscriberDetails(subToUpdate);
+		Customer subToUpdate = (Customer) req.getPayload();
+		boolean success = CustomerDAO.updateCustomerDetails(subToUpdate);
 
 		if (success) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,

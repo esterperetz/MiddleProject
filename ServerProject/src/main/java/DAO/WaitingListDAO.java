@@ -105,10 +105,10 @@ public class WaitingListDAO {
             con = DBConnection.getInstance().getConnection();
             stmt = con.prepareStatement(sql);
 
-            if (item.getSubscriberId() == null) {
+            if (item.getCustomerId() == null) {
                 stmt.setNull(1, java.sql.Types.INTEGER);
             } else {
-                stmt.setInt(1, item.getSubscriberId());
+                stmt.setInt(1, item.getCustomerId());
             }
 
             stmt.setString(2, item.getIdentificationDetails());

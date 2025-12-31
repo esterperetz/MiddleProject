@@ -29,11 +29,11 @@ public class OrderDAO {
     /**
      * Retrieves orders belonging to a specific subscriber.
      */
-    public List<Order> getOrdersBySubscriberId(int subscriberId) throws SQLException {
+    public List<Order> getOrdersByCustomerId(int customerId) throws SQLException {
         String sql = "SELECT * FROM `order` WHERE subscriber_id = ?";
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setInt(1, subscriberId);
+            stmt.setInt(1, customerId);
             try (ResultSet rs = stmt.executeQuery()) {
                 List<Order> orderList = new ArrayList<>();
                 while (rs.next()) {
@@ -65,9 +65,9 @@ public class OrderDAO {
      * Inserts a new order into the database.
      */
     public boolean createOrder(Order o) throws SQLException {
-        String sql = "INSERT INTO `order` (order_date, number_of_guests, confirmation_code, subscriber_id, table_number, "
-                + "date_of_placing_order, client_name, client_email, client_phone, arrival_time, total_price, order_status) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO `order` (order_date, number_of_guests, confirmation_code, customer_id, table_number, "
+                + "date_of_placing_order,arrival_time, total_price, order_status) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -76,10 +76,10 @@ public class OrderDAO {
             stmt.setInt(2, o.getNumberOfGuests());
             stmt.setInt(3, o.getConfirmationCode());
 
-            if (o.getSubscriberId() == null) {
+            if (o.getCustomerId() == null) {
                 stmt.setNull(4, Types.INTEGER);
             } else {
-                stmt.setInt(4, o.getSubscriberId());
+                stmt.setInt(4, o.getCustomerId());
             }
 
             if (o.getTableNumber() == null) {
@@ -89,18 +89,16 @@ public class OrderDAO {
             }
 
             stmt.setTimestamp(6, new Timestamp(o.getDateOfPlacingOrder().getTime()));
-            stmt.setString(7, o.getClientName());
-            stmt.setString(8, o.getClientEmail());
-            stmt.setString(9, o.getClientPhone());
+         
 
             if (o.getArrivalTime() != null) {
-                stmt.setTimestamp(10, new Timestamp(o.getArrivalTime().getTime()));
+                stmt.setTimestamp(7, new Timestamp(o.getArrivalTime().getTime()));
             } else {
-                stmt.setNull(10, Types.TIMESTAMP);
+                stmt.setNull(7, Types.TIMESTAMP);
             }
 
-            stmt.setDouble(11, o.getTotalPrice());
-            stmt.setString(12, o.getOrderStatus().name());
+            stmt.setDouble(8, o.getTotalPrice());
+            stmt.setString(9, o.getOrderStatus().name());
 
             return stmt.executeUpdate() > 0;
         }
@@ -111,8 +109,8 @@ public class OrderDAO {
      */
     public boolean updateOrder(Order o) throws SQLException {
         String sql = "UPDATE `order` SET order_date = ?, number_of_guests = ?, confirmation_code = ?, " +
-                     "subscriber_id = ?, table_number = ?, date_of_placing_order = ?, client_name = ?, client_email = ?, " +
-                     "client_phone = ?, arrival_time = ?, total_price = ?, order_status = ? " +
+                     "customer_id = ?, table_number = ?, date_of_placing_order = ?, " +
+                     "arrival_time = ?, total_price = ?, order_status = ? " +
                      "WHERE order_number = ?";
 
         try (Connection con = DBConnection.getInstance().getConnection();
@@ -122,10 +120,10 @@ public class OrderDAO {
             stmt.setInt(2, o.getNumberOfGuests());
             stmt.setInt(3, o.getConfirmationCode());
 
-            if (o.getSubscriberId() == null) {
+            if (o.getCustomerId() == null) {
                 stmt.setNull(4, Types.INTEGER);
             } else {
-                stmt.setInt(4, o.getSubscriberId());
+                stmt.setInt(4, o.getCustomerId());
             }
 
             if (o.getTableNumber() == null) {
@@ -135,19 +133,17 @@ public class OrderDAO {
             }
 
             stmt.setTimestamp(6, new Timestamp(o.getDateOfPlacingOrder().getTime()));
-            stmt.setString(7, o.getClientName());
-            stmt.setString(8, o.getClientEmail());
-            stmt.setString(9, o.getClientPhone());
+           
 
             if (o.getArrivalTime() != null) {
-                stmt.setTimestamp(10, new Timestamp(o.getArrivalTime().getTime()));
+                stmt.setTimestamp(7, new Timestamp(o.getArrivalTime().getTime()));
             } else {
-                stmt.setNull(10, Types.TIMESTAMP);
+                stmt.setNull(7, Types.TIMESTAMP);
             }
 
-            stmt.setDouble(11, o.getTotalPrice());
-            stmt.setString(12, o.getOrderStatus().name());
-            stmt.setInt(13, o.getOrderNumber());
+            stmt.setDouble(8, o.getTotalPrice());
+            stmt.setString(9, o.getOrderStatus().name());
+            stmt.setInt(10, o.getOrderNumber());
 
             return stmt.executeUpdate() > 0;
         }
@@ -274,8 +270,8 @@ public class OrderDAO {
      * Helper to map ResultSet row to Order object.
      */
 	 private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
-		 int subIdTemp = rs.getInt("subscriber_id");
-		 Integer subId = rs.wasNull() ? null : subIdTemp;
+		 int cusIdTemp = rs.getInt("customer_id");
+		 Integer cusId = rs.wasNull() ? null : cusIdTemp;
 
 		 int tableNumTemp = rs.getInt("table_number");
 		 Integer tableNumber = rs.wasNull() ? null : tableNumTemp;
@@ -288,12 +284,9 @@ public class OrderDAO {
 			 rs.getTimestamp("order_date"),
 			 rs.getInt("number_of_guests"),
 			 rs.getInt("confirmation_code"),
-			 subId,
+			 cusId,
 			 tableNumber,
 			 rs.getTimestamp("date_of_placing_order"),
-			 rs.getString("client_name"),
-			 rs.getString("client_email"),
-			 rs.getString("client_phone"),
 			 rs.getTimestamp("arrival_time"),
 			 rs.getTimestamp("leaving_time"),
 			 rs.getDouble("total_price"),
