@@ -23,11 +23,11 @@ public class GetTableController extends MainNavigator implements  MessageListene
 
     @FXML
     private Label lblResult;
-    private int subscriberId;
+    private Integer subscriberId;
 
 	private boolean isSubscriber;
 
-	public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+	public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
     	this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
         this.subscriberId = subId;
