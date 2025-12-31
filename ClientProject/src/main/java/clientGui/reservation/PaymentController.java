@@ -34,7 +34,12 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		this.amountToPay = amount;
 		this.tableId = tableId;
 	}
-
+	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+		this.tableId = tableId;
+        this.subscriberId = subId;
+        //itemsList.setItems(items);
+        isSub=isSubscriber;
+	}
 	@FXML
 	void processPayment(ActionEvent event) {
 		// 1. איפוס שגיאות קודמות
@@ -69,10 +74,10 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		//Alert pay good 
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",event,clientUi);
 		
-		if(isSub)
-			controller.initData(clientUi, true, subscriberId);
-		else
-			controller.initData(clientUi, false, subscriberId);
+		//if(isSub)
+			controller.initData(clientUi, isSub, subscriberId);
+		//else
+			//controller.initData(clientUi, false, subscriberId);
 
 		//public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId)
 	}
@@ -80,10 +85,10 @@ public class PaymentController extends MainNavigator implements  MessageListener
 	@FXML
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill",event,clientUi);
-		if(isSub)
-			billController.initData(amountToPay, subscriberId ,true, tableId);
-		else
-			billController.initData(amountToPay, subscriberId ,false, tableId);
+		//if(isSub)
+			billController.initData(amountToPay, subscriberId ,isSub, tableId);
+		//else
+			//billController.initData(amountToPay, subscriberId ,false, tableId);
 
 			
 	
@@ -99,12 +104,7 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		stage.close();
 	}
 
-	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
-		this.tableId = tableId;
-        this.subscriberId = subId;
-        //itemsList.setItems(items);
-        isSub=isSubscriber;
-	}
+	
 
 	@Override
 	public void onMessageReceive(Object msg) {
