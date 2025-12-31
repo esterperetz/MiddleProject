@@ -95,14 +95,14 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		//fix
 		ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
 
-	    if (isSubscriber) {
+	    //if (isSubscriber) {
 //	        controller.setData(isSubscriber, "", "", ""); 
-	    	if(subscriberId!=null)	
-	    		controller.initData(clientUi, true, subscriberId);
+	    	if(controller!=null)	
+	    		controller.initData(clientUi, this.isSubscriber, subscriberId);
 	    	else
-	    		controller.initData(clientUi, false, subscriberId);
+	    		System.out.println("Error: moving screen ReservationController");
 	    		
-	    }	
+	    	
 	 }
 	@FXML
 	void goToSeatTableBtn(ActionEvent event)
@@ -110,7 +110,10 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		//fix
 		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
 		//if(isSubscriber)	
+		if(getTableController!=null)
 			getTableController.initData(clientUi, this.isSubscriber, subscriberId);
+		else
+			System.out.println("Error: moving to GetTableController");
     	//else
     		//getTableController.initData(clientUi, false, subscriberId);
 		//getTableController.initData(clientUi, subscriberId, subscriberId);
