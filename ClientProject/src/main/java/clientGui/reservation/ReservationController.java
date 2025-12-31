@@ -36,7 +36,7 @@ public class ReservationController extends MainNavigator implements MessageListe
     @FXML private Label errorLabel;
 
     private boolean isSubscriber;
-    private int subscriberId;
+    private Integer subscriberId;
     private OrderLogic orderLogic;
     private ActionEvent currentEvent;
 
@@ -51,7 +51,7 @@ public class ReservationController extends MainNavigator implements MessageListe
         phoneField.setOnMouseClicked(e -> errorLabel.setText(""));
     }
 
-    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+    public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
         this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
         this.subscriberId = subId;
