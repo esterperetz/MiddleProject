@@ -4,16 +4,17 @@ import java.io.Serializable;
 
 public class Customer implements Serializable {
 	private static final long serialVersionUID = 1L;
+	
 
-	private int customerId;
-	private Integer subscriberCode;
+	private int subscriberCode;
 	private String name;
 	private String phoneNumber;
 	private String email;
-	private CustomerType type; 
+	private CustomerType type;
+	private Integer customerId; 
 	
 
-	public Customer(int customerId,Integer subscriberCode, String name, String phoneNumber, String email, CustomerType type) {
+	public Customer(Integer customerId, Integer subscriberCode, String name, String phoneNumber, String email, CustomerType type) {
 		this.customerId = customerId;
 		this.subscriberCode = subscriberCode;
 		this.name = name;
@@ -22,20 +23,16 @@ public class Customer implements Serializable {
 		this.type = type;
 	}
 
-	public int getCustomerId() {
+	public int getsubscriberCode() {
 		return subscriberCode;
 	}
 
-	public void setCustomerId(int customerId) {
-		this.customerId = customerId;
+	public void setsubscriberCode(int subscriberCode) {
+		this.subscriberCode = subscriberCode;
 	}
 	
-	public Integer getSubscriberCode() {
-		return subscriberCode;
-	}
-
-	public void setSubscriberCode(Integer subscriberCode) {
-		this.subscriberCode = subscriberCode;
+	public int getCustomerId() {
+		return customerId;
 	}
 
 	public String getName() {
@@ -72,7 +69,12 @@ public class Customer implements Serializable {
 	
 	@Override
 	public String toString() {
-		return "Customer [customerId=" + customerId + ", name=" + name + ", phoneNumber="
+		return "Customer [subscriberCode=" + subscriberCode + ", name=" + name + ", phoneNumber="
 				+ phoneNumber + ", email=" + email + ", type=" + type + "]";
+	}
+
+	public void setCustomerId(int customerId) {
+		// TODO Auto-generated method stub
+		this.customerId = customerId;
 	}
 }

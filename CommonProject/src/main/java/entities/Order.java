@@ -16,7 +16,7 @@ public class Order implements Serializable {
 	private Date orderDate;
 	private int numberOfGuests;
 	private int confirmationCode;
-	private Integer customerId;
+	private Integer CustomerId;
 	private Integer tableNumber;
 	private Date dateOfPlacingOrder;
 	private Date arrivalTime;
@@ -24,14 +24,15 @@ public class Order implements Serializable {
 	private double totalPrice;
 	private OrderStatus orderStatus;
 
-	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer customerId,
-			Integer tableNumber, Date dateOfPlacingOrder, Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
+	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer CustomerId,
+			Integer tableNumber, Date dateOfPlacingOrder, 
+			Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
 		
 		this.orderNumber = orderNumber;
 		this.orderDate = orderDate;
 		this.numberOfGuests = numberOfGuests;
 		this.confirmationCode = confirmationCode;
-		this.customerId = customerId;
+		this.CustomerId = CustomerId;
 		this.tableNumber = tableNumber;
 		this.dateOfPlacingOrder = dateOfPlacingOrder;
 		this.arrivalTime = arrivalTime;
@@ -75,11 +76,11 @@ public class Order implements Serializable {
 		}
 
 		public Integer getCustomerId() {
-			return customerId;
+			return CustomerId;
 		}
 
-		public void setCustomerId(Integer customerId) {
-			this.customerId = customerId;
+		public void setCustomerId(Integer CustomerId) {
+			this.CustomerId = CustomerId;
 		}
 
 		public Integer getTableNumber() {
@@ -105,6 +106,7 @@ public class Order implements Serializable {
 		public void setTotalPrice(double totalPrice) {
 			this.totalPrice = totalPrice;
 		}
+
 
 		public Date getArrivalTime() {
 			return arrivalTime;
