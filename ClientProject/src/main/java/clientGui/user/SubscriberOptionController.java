@@ -87,17 +87,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 			super.loadScreen("navigation/SelectionScreen",event,clientUi);
 
         }
-		//int flag=1;
-		//when we succeed to log in, we dont go back to navigation screen
-		//if(flag==1)
-		//{
-			//we need to check if the user is subscriber and if the code is correct
-			//super.loadScreen("user/SubscriberLogin",event,clientUi);
-			//flag=0;
-		//}
-		//else
-	      //  super.loadScreen("navigation/SelectionScreen" ,event,clientUi);
-
+		
 	}
 	@FXML
 	void goToReservationBtn(ActionEvent event)
@@ -114,18 +104,18 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	    		
 	    }	
 	 }
-	
 	@FXML
 	void goToSeatTableBtn(ActionEvent event)
 	{
 		//fix
 		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
-		if(isSubscriber)	
-			getTableController.initData(clientUi, true, subscriberId);
-    	else
-    		getTableController.initData(clientUi, false, subscriberId);
+		//if(isSubscriber)	
+			getTableController.initData(clientUi, this.isSubscriber, subscriberId);
+    	//else
+    		//getTableController.initData(clientUi, false, subscriberId);
 		//getTableController.initData(clientUi, subscriberId, subscriberId);
 	}
+
 	/**
      * Action handler for the special subscriber-only button.
      */
@@ -136,10 +126,10 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         System.out.println("Subscriber specific action executed.");
         
         SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory",event,clientUi);
-        if(isSubscriber)	
-        	subHistoryController.initData(subscriberId,true);
-    	else
-    		subHistoryController.initData(subscriberId,false);
+        //if(isSubscriber)	
+        	subHistoryController.initData(subscriberId,this.isSubscriber);
+    	//else
+    		//subHistoryController.initData(subscriberId,false);
         //subHistoryController.initData(subscriberId);
 
     }
@@ -147,10 +137,10 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     @FXML
     void CheckOutActionBtn(ActionEvent event) {
     	CheckOutController checkOutController = super.loadScreen("reservation/CheckOutScreen",event,clientUi);
-    	 if(isSubscriber)	
-    		 checkOutController.initData(subscriberId,true, tableId);
-     	else
-     		checkOutController.initData(subscriberId,false, tableId);
+    	 //if(isSubscriber)	
+    		 checkOutController.initData(subscriberId,this.isSubscriber, tableId);
+     	//else
+     		//checkOutController.initData(subscriberId,false, tableId);
     	//checkOutController.initData(subscriberId, tableId);
     }
 	
@@ -160,8 +150,8 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		
 	}
 	
-	public void setSubscriber(boolean isSubscriber) {
-		this.isSubscriber = isSubscriber;
-	}
+	//public void setSubscriber(boolean isSubscriber) {
+		//this.isSubscriber = isSubscriber;
+	//}
 
 }
