@@ -63,10 +63,10 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
     @FXML
     void payAndReleaseTable(ActionEvent event) {
     	PaymentController payment = super.loadScreen("reservation/Payment",event,clientUi);
-   	 	if(isSub)	
-   	 		payment.initData(2.3,subscriberId,true, tableId);
-    	else
-    		payment.initData(2.3,subscriberId,false, tableId);
+   	 	//if(isSub)	
+   	 		payment.initData(2.3,subscriberId,isSub, tableId);
+    	//else
+    		//payment.initData(2.3,subscriberId,false, tableId);
 		
    	 //super.loadScreen("reservation/Payment" , event,clientUi);
         
