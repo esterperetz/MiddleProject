@@ -66,34 +66,6 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 			System.out.println("Please enter valid input!");
 		}
 
-		// 1. שימוש בפונקציה הגנרית וקבלת הקונטרולר
-//		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
-//
-//		// 2. אתחול הנתונים במסך החדש
-//		if (controller != null) {
-//			controller.initData(clientUi,ManagerOptionsController.isManager());
-//		} else {
-//			System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
-//		}
-		/*
-		 * try { //moved to MainNavigation (the name of the
-		 * function:loadOrderTableScreen) FXMLLoader loader = new
-		 * FXMLLoader(getClass().getResource("/clientGui/reservation/OrderUi.fxml"));
-		 * Parent root = loader.load();
-		 * 
-		 * clientGui.reservation.OrderUi_controller controller = loader.getController();
-		 * 
-		 * 
-		 * controller.initData(ClientUi.getInstance(), "localhost");
-		 * 
-		 * : Scene scene = new Scene(root); Stage stage = (Stage)
-		 * usernameField.getScene().getWindow(); stage.setScene(scene); stage.show();
-		 * 
-		 * } catch (Exception e) { e.printStackTrace();
-		 * System.out.println("Error loading OrderUi: " + e.getMessage()); }
-		 */
-
-		// כאן תוסיף את הלוגיקה
 	}
 
 	@FXML
