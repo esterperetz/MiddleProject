@@ -23,11 +23,11 @@ public class Customer implements Serializable {
 		this.type = type;
 	}
 
-	public int getsubscriberCode() {
+	public int getSubscriberCode() {
 		return subscriberCode;
 	}
 
-	public void setsubscriberCode(int subscriberCode) {
+	public void setSubscriberCode(int subscriberCode) {
 		this.subscriberCode = subscriberCode;
 	}
 	

@@ -77,7 +77,7 @@ public class OrderController {
 					Response.ResponseStatus.ERROR, "Error: ID missing.", null));
 			return;
 		}
-		List<Order> subOrders = orderdao.getOrdersBySubscriberId(req.getId());
+		List<Order> subOrders = orderdao.getOrdersByCustomerId(req.getId());
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
 				Response.ResponseStatus.SUCCESS, null, subOrders));
 	}
