@@ -3,7 +3,6 @@ package DAO;
 import java.sql.*;
 import DBConnection.DBConnection;
 import entities.Employee;
-import entities.Subscriber;
 import entities.Employee.Role;
 
 public class EmployeeDAO {
