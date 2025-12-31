@@ -90,7 +90,7 @@ public class CustomerDAO {
 		String query = "UPDATE Customer SET  customer_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
-			ps.setInt(1, customer.getsubscriberCode());
+			ps.setInt(1, customer.getSubscriberCode());
 			ps.setString(2, customer.getName());
 			ps.setString(3, customer.getPhoneNumber());
 			ps.setString(4, customer.getEmail());
