@@ -77,10 +77,16 @@ public class DBConnection {
 
 	public static void createTableSubscriber(Connection con1) {
 		Statement stmt;
-		String sql = "CREATE TABLE IF NOT EXISTS subscriber (" + "subscriber_id INT NOT NULL AUTO_INCREMENT, "
-				+ "subscriber_name VARCHAR(100) NOT NULL, "
-				+ "phone_number VARCHAR(255) UNIQUE NOT NULL, " + "email VARCHAR(40), " + "PRIMARY KEY (subscriber_id)"
-				+ ");";
+		String sql = "CREATE TABLE IF NOT EXISTS Customer (" 
+		           + "customer_id INT NOT NULL AUTO_INCREMENT, "
+		           + "subscriber_code INT DEFAULT NULL, "
+		           + "customer_name VARCHAR(100) NOT NULL, "
+		           + "phone_number VARCHAR(255) NOT NULL, "
+		           + "email VARCHAR(40) , "
+		           + "customer_type ENUM('REGULAR', 'SUBSCRIBER') NOT NULL, " 
+		           + "PRIMARY KEY (customer_id), "
+		           + "UNIQUE (subscriber_code)"
+		           + ");";
 		try {
 			stmt = con1.createStatement();
 			stmt.executeUpdate(sql);
@@ -96,18 +102,15 @@ public class DBConnection {
 	            "order_date DATETIME NOT NULL, " +
 	            "number_of_guests INT NOT NULL, " +
 	            "confirmation_code INT NOT NULL, " +
-	            "subscriber_id INT DEFAULT NULL, " + 
+	            "customer_id INT NOT NULL, " + 
 	            "table_number INT DEFAULT NULL, " +
 	            "date_of_placing_order DATETIME NOT NULL, " +
-	            "client_name VARCHAR(255) NOT NULL, " +  
-	            "client_email VARCHAR(255) NOT NULL, " + 
-	            "client_phone VARCHAR(20) NOT NULL, " +  
 	            "arrival_time DATETIME, " +             
 	            "leaving_time DATETIME, " + 
 	            "total_price DECIMAL(10, 2), " +
 	            "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
 	            "PRIMARY KEY (order_number), " +
-	            "CONSTRAINT fk_order_subscriber FOREIGN KEY (subscriber_id) REFERENCES subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
+	            "CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
 	            "CONSTRAINT fk_order_table FOREIGN KEY (table_number) REFERENCES tables(table_number) ON DELETE SET NULL" +
 	            ");";
 	    try {
@@ -149,15 +152,15 @@ public class DBConnection {
 	    Statement stmt;
 	    String sql = "CREATE TABLE IF NOT EXISTS waiting_list (" +
 	                 "waiting_id INT NOT NULL AUTO_INCREMENT, " +
-	                 "subscriber_id INT DEFAULT NULL, " +
+	                 "customer_id INT DEFAULT NULL, " +
 	                 "identification_details VARCHAR(255) NOT NULL, " +
 	                 "full_name VARCHAR(255) NOT NULL, " +
 	                 "number_of_guests INT NOT NULL, " +
 	                 "enter_time DATETIME NOT NULL, " +
 	                 "confirmation_code INT NOT NULL, " +
 	                 "PRIMARY KEY (waiting_id), " +
-	                 "CONSTRAINT fk_waiting_subscriber FOREIGN KEY (subscriber_id) " +
-	                 "REFERENCES subscriber(subscriber_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	                 "CONSTRAINT fk_waiting_customer FOREIGN KEY (customer_id) " +
+	                 "REFERENCES subscriber(customer_id) ON DELETE SET NULL ON UPDATE CASCADE" +
 	                 ");";
 	    try {
 	        stmt = con.createStatement();
