@@ -62,8 +62,8 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		try {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
-				if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-					boolean isSuccess = res.getStatus().getString().equals("SUCCESS");
+//					boolean isSuccess = res.getStatus().getString().equals("SUCCESS");
+					boolean isSuccess = super.isEquals(res.getStatus(), "SUCCESS");
 					Platform.runLater(() -> {
 						if (isSuccess) {
 							System.out.println(res.getStatus().getString());
@@ -80,7 +80,6 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 					});
 
-				}
 			}
 		} catch (Exception e) {
 			System.out.println("two ");

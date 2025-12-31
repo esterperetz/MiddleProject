@@ -4,6 +4,7 @@ import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.reservation.ReservationController;
 import entities.Alarm;
+import entities.Response.ResponseStatus;
 import client.MessageListener;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -93,6 +94,12 @@ public class MainNavigator implements BaseController {
 			System.out.println("Error loading screen: " + fxmlPath);
 			return null;
 		}
+		
+	}
+	
+	protected boolean isEquals(ResponseStatus status, String toCompare) {
+		
+		return status.getString().equals(toCompare);
 		
 	}
 
