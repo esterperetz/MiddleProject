@@ -27,6 +27,13 @@ public class GetTableController extends MainNavigator implements  MessageListene
 
 	private boolean isSubscriber;
 
+	public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
+    	this.clientUi = clientUi;
+        this.isSubscriber = isSubscriberStatus;
+        this.subscriberId = subId;
+        System.out.println("Loaded options for subscriber: " + subId);
+    }
+	
     /**
      * Triggered when the "Check Table" button is clicked.
      */
@@ -102,13 +109,7 @@ public class GetTableController extends MainNavigator implements  MessageListene
         }
     }
     
-    public void initData(ClientUi clientUi, boolean isSubscriberStatus, int subId) {
-    	this.clientUi = clientUi;
-        this.isSubscriber = isSubscriberStatus;
-        this.subscriberId = subId;
-        System.out.println("Loaded options for subscriber: " + subId);
-    }
-	
+    
 
 	@Override
 	public void onMessageReceive(Object msg) {
