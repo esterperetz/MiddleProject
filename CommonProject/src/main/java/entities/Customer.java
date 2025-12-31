@@ -6,14 +6,16 @@ public class Customer implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private int customerId;
+	private Integer subscriberCode;
 	private String name;
 	private String phoneNumber;
 	private String email;
 	private CustomerType type; 
 	
 
-	public Customer(int customerId, String name, String phoneNumber, String email, CustomerType type) {
+	public Customer(int customerId,Integer subscriberCode, String name, String phoneNumber, String email, CustomerType type) {
 		this.customerId = customerId;
+		this.subscriberCode = subscriberCode;
 		this.name = name;
 		this.phoneNumber = phoneNumber;
 		this.email = email;
@@ -21,11 +23,19 @@ public class Customer implements Serializable {
 	}
 
 	public int getCustomerId() {
-		return customerId;
+		return subscriberCode;
 	}
 
 	public void setCustomerId(int customerId) {
 		this.customerId = customerId;
+	}
+	
+	public Integer getSubscriberCode() {
+		return subscriberCode;
+	}
+
+	public void setSubscriberCode(Integer subscriberCode) {
+		this.subscriberCode = subscriberCode;
 	}
 
 	public String getName() {

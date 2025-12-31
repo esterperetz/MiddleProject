@@ -2,9 +2,9 @@ package clientLogic;
 
 import clientGui.ClientUi;
 import entities.ActionType;
+import entities.Customer;
 import entities.Request;
 import entities.ResourceType;
-import entities.Subscriber;
 
 public class UserLogic {
 
@@ -15,24 +15,24 @@ public class UserLogic {
 	    }
 
 	public void getAllSubscribers() {
-		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.GET_ALL, null, null);
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.GET_ALL, null, null);
 		client.sendRequest(req);
 	}
 
 	public void getSubscriberById(int id) {
-		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.GET_BY_ID, id, null);
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.GET_BY_ID, id, null);
 		client.sendRequest(req);
 	}
 	
 
-	public void registerSubscriber(Subscriber subscriber) {
-		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.REGISTER_SUBSCRIBER, null, subscriber);
+	public void createCustomer(Customer customer) {
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.REGISTER_SUBSCRIBER, null, customer);
 		client.sendRequest(req);
 	}
 
-	public void updateSubscriber(Subscriber subscriber) {
-		Request req = new Request(ResourceType.SUBSCRIBER, ActionType.UPDATE, subscriber.getSubscriberId(),
-				subscriber);
+	public void updateSubscriber(Customer customer) {
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.UPDATE, customer.getSubscriberCode(),
+				customer);
 		client.sendRequest(req);
 	}
 }

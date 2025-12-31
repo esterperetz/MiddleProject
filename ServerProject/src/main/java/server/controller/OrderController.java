@@ -95,15 +95,12 @@ public class OrderController {
 
 	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order o = (Order) req.getPayload();
-		if (o.getClientEmail() == null || o.getClientPhone() == null) {
-			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-					"Error: Identification mandatory.", null));
-			return;
-		}
+		
 		int generatedCode = 1000 + (int) (Math.random() * 9000);
 		o.setConfirmationCode(generatedCode);
 		if (orderdao.createOrder(o)) {
-			EmailService.sendConfirmation(o.getClientEmail(),o);
+			///need to get email from customer table
+//			EmailService.sendConfirmation(o.getClientEmail(),o);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 					"Order created.", o));
@@ -119,7 +116,8 @@ public class OrderController {
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
-			EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
+			///need to get email from customer table
+//			EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Order updated.", updatedOrder));
@@ -139,7 +137,9 @@ public class OrderController {
 		}
 
 		if (orderdao.deleteOrder(req.getId())) {
-			EmailService.sendCancelation(order.getClientEmail(),order);
+			///need to get email from customer table
+
+//			EmailService.sendCancelation(order.getClientEmail(),order);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
 					"Order deleted.", order));
@@ -242,7 +242,7 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
-			if (order.getSubscriberId() != null) 
+			if (order.getCustomerId() != null) 
 				amount *= 0.9; 
 
 			order.setTotalPrice(amount);
@@ -264,8 +264,8 @@ public class OrderController {
 		try {
 			if (req.getPayload() instanceof Order) {
 				Order order = (Order) req.getPayload();
-			
-				EmailService.sendConfirmation(order.getClientEmail(), order);
+				///need to get email from customer table
+//				EmailService.sendConfirmation(order.getClientEmail(), order);
 				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
 						Response.ResponseStatus.SUCCESS, "Email has been sent!", EmailService.getContent()));
 			}

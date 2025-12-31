@@ -21,6 +21,7 @@ import java.util.List;
 import client.MessageListener;
 import clientLogic.OrderLogic;
 import entities.ActionType;
+import entities.CustomerType;
 import entities.Order;
 import entities.Response;
 import entities.ResourceType;
@@ -35,8 +36,8 @@ public class ReservationController extends MainNavigator implements MessageListe
     @FXML private TextField emailField;
     @FXML private Label errorLabel;
 
-    private boolean isSubscriber;
-    private Integer subscriberId;
+    private CustomerType isSubscriber;
+    private Integer customerId;
     private OrderLogic orderLogic;
     private ActionEvent currentEvent;
 
@@ -51,10 +52,10 @@ public class ReservationController extends MainNavigator implements MessageListe
         phoneField.setOnMouseClicked(e -> errorLabel.setText(""));
     }
 
-    public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
+    public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer cusId) {
         this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
-        this.subscriberId = subId;
+        this.customerId = cusId;
         this.orderLogic = new OrderLogic(clientUi);
     }
 
@@ -103,7 +104,7 @@ public class ReservationController extends MainNavigator implements MessageListe
             return;
         }
 
-        if (!isSubscriber) {
+        if (!(isSubscriber == CustomerType.SUBSCRIBER)) {
             if (phoneField.getText().isEmpty() || emailField.getText().isEmpty() || nameField.getText().isEmpty()) {
                 errorLabel.setText("Guest must provide Name, Phone and Email.");
                 return;
@@ -121,12 +122,9 @@ public class ReservationController extends MainNavigator implements MessageListe
                 orderDate,
                 guests,
                 0, 
-                isSubscriber ? subscriberId : null,
+                customerId,
                 null, 
                 new Date(),
-                nameField.getText(), 
-                emailField.getText(), 
-                phoneField.getText(),
                 null, 
                 null, 
                 0.0, 
@@ -145,7 +143,7 @@ public class ReservationController extends MainNavigator implements MessageListe
     void goBack(ActionEvent event) {
         SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, isSubscriber, subscriberId);
+            controller.initData(clientUi, isSubscriber, customerId);
         }
     }
 

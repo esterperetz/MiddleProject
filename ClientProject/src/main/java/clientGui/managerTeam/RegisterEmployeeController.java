@@ -13,7 +13,7 @@ import entities.ActionType;
 import entities.Employee;
 import entities.Employee.Role;
 import entities.Response;
-import entities.Subscriber;
+import entities.Customer;
 import entities.Order.OrderStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;

@@ -4,6 +4,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import entities.CustomerType;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -21,7 +22,7 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
     @FXML private HBox discountBox; // הקופסה שמחזיקה את שורת ההנחה
     @FXML private Label lblDiscountAmount;
     @FXML private Label lblFinalPrice;
-    private boolean isSub;
+    private CustomerType isSubscriber;
     private int tableId;
 	private int subscriberId;
     
@@ -33,14 +34,14 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
      * @param tableId - מספר השולחן (כדי לשחרר אותו בסוף)
      */
    // public void initData(ObservableList<String> items, double originalTotal, boolean isSubscriber, int tableId, int subId) {
-	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+	public void initData(double originalTotal,int subId, CustomerType isSubscriber, int tableId) {
 		this.tableId = tableId;
         this.subscriberId = subId;
         //itemsList.setItems(items);
-        isSub=isSubscriber;
+        this.isSubscriber=isSubscriber;
         lblOriginalPrice.setText(String.format("%.2f $", originalTotal));
 
-        if (isSubscriber) {
+        if (isSubscriber == CustomerType.SUBSCRIBER) {
             // חישוב הנחה
             double discount = originalTotal * 0.10;
             double finalPrice = originalTotal - discount;
@@ -64,7 +65,7 @@ public class BillController extends MainNavigator implements  MessageListener<Ob
     void payAndReleaseTable(ActionEvent event) {
     	PaymentController payment = super.loadScreen("reservation/Payment",event,clientUi);
    	 	//if(isSub)	
-   	 		payment.initData(2.3,subscriberId,isSub, tableId);
+   	 		payment.initData(2.3,subscriberId,isSubscriber, tableId);
     	//else
     		//payment.initData(2.3,subscriberId,false, tableId);
 		

@@ -5,6 +5,7 @@ import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.UserLogic;
 import entities.Alarm;
+import entities.CustomerType;
 import entities.Response;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -70,7 +71,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
 									currentEvent, clientUi);
 							if (controller != null) {
-								controller.initData(clientUi, true, lastEnteredSubId);
+								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubId);
 
 							}
 						} else {

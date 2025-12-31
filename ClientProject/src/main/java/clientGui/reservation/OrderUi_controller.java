@@ -103,17 +103,17 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         Order_numberColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderNumber()));
 
-        clientNameColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClientName()));
+//        clientNameColumn.setCellValueFactory(cellData -> 
+//            new SimpleStringProperty(cellData.getValue().getClientName()));
 
-        clientPhoneColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClientPhone()));
+//        clientPhoneColumn.setCellValueFactory(cellData -> 
+//            new SimpleStringProperty(cellData.getValue().getClientPhone()));
 
-        clientEmailColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty(cellData.getValue().getClientEmail()));
+//        clientEmailColumn.setCellValueFactory(cellData -> 
+//            new SimpleStringProperty(cellData.getValue().getClientEmail()));
 
         subscriber_idColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getSubscriberId()));
+            new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
 
         DateColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderDate()));
@@ -266,7 +266,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 					break;
 				case CREATE, UPDATE, DELETE:
 					Order order = (Order)res.getData();
-					Alarm.showAlert("Operation is done!", "We have sent details to your email: " + order.getClientEmail() + " ,Check you spam.", Alert.AlertType.INFORMATION);
+				    //need to be fix maybe we will create method that req the customer id and get the result
+//					Alarm.showAlert("Operation is done!", "We have sent details to your email: " + order.getClientEmail() + " ,Check you spam.", Alert.AlertType.INFORMATION);
 					break;
 
 				case GET_BY_ID:

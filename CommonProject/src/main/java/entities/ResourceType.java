@@ -7,7 +7,7 @@ import java.io.Serializable;
  */
 public enum ResourceType implements Serializable {
     ORDER,
-    SUBSCRIBER,
+    CUSTOMER,
     MANAGERTEAM,
     WAITING_LIST,
     TABLE,

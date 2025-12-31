@@ -13,6 +13,7 @@ import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import entities.ActionType;
+import entities.CustomerType;
 import entities.Order;
 import entities.Response;
 import javafx.application.Platform;
@@ -46,7 +47,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private OrderLogic orderLogic;
 	private int currentSubscriberId;
-	private boolean isSubscriber;
+	private CustomerType isSubscriber;
 	
 	
     @Override
@@ -64,7 +65,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	}
 
 	// public void initData(ClientUi clientUi, int subscriberId) {
-	public void initData(int subscriberId,boolean isSubscriber) {
+	public void initData(int subscriberId,CustomerType isSubscriber) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubscriber=isSubscriber;

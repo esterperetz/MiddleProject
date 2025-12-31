@@ -10,6 +10,7 @@ import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
+import entities.CustomerType;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -32,7 +33,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	private Label lblResult;
 
 	private Integer currentSubscriberId;
-	private boolean isSubsriber;
+	private CustomerType isSubsriber;
 	private OrderLogic orderLogic;
 	private int tableId;
 	
@@ -45,7 +46,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
         //isSubscriber = true; 
 
 	}
-	public void initData(Integer subscriberId,boolean isSubsriber, int tableId) {
+	public void initData(Integer subscriberId,CustomerType isSubsriber, int tableId) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubsriber=isSubsriber;

@@ -30,7 +30,7 @@ public class OrderDAO {
      * Retrieves orders belonging to a specific subscriber.
      */
     public List<Order> getOrdersBySubscriberId(int subscriberId) throws SQLException {
-        String sql = "SELECT * FROM `order` WHERE subscriber_id = ?";
+        String sql = "SELECT * FROM `order` WHERE customer_id = ?";
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
             stmt.setInt(1, subscriberId);
@@ -76,10 +76,10 @@ public class OrderDAO {
             stmt.setInt(2, o.getNumberOfGuests());
             stmt.setInt(3, o.getConfirmationCode());
 
-            if (o.getSubscriberId() == null) {
+            if (o.getCustomerId() == null) {
                 stmt.setNull(4, Types.INTEGER);
             } else {
-                stmt.setInt(4, o.getSubscriberId());
+                stmt.setInt(4, o.getCustomerId());
             }
 
             if (o.getTableNumber() == null) {

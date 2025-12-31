@@ -5,6 +5,7 @@ import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
+import entities.CustomerType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
@@ -12,7 +13,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class PaymentController extends MainNavigator implements  MessageListener<Object>{
+public class PaymentController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
 	private TextField txtCardNumber;
@@ -29,17 +30,20 @@ public class PaymentController extends MainNavigator implements  MessageListener
 	private double amountToPay;
 	private int tableId;
 	private int subscriberId;
-	private boolean isSub;
+	private CustomerType isSubscriber;
+
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
 		this.tableId = tableId;
 	}
-	public void initData(double originalTotal,int subId, boolean isSubscriber, int tableId) {
+
+	public void initData(double originalTotal, int subId, CustomerType isSubscriber, int tableId) {
 		this.tableId = tableId;
-        this.subscriberId = subId;
-        //itemsList.setItems(items);
-        isSub=isSubscriber;
+		this.subscriberId = subId;
+		// itemsList.setItems(items);
+		this.isSubscriber = isSubscriber;
 	}
+
 	@FXML
 	void processPayment(ActionEvent event) {
 		// 1. איפוס שגיאות קודמות
@@ -69,29 +73,27 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		System.out.println("Processing Credit Card Payment...");
 		System.out.println("Card: " + cardNum + " | Amount: " + amountToPay);
 
-
 		System.out.println("Payment Approved! Table " + tableId + " released.");
-		//Alert pay good 
-		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",event,clientUi);
-		
-		//if(isSub)
-			controller.initData(clientUi, isSub, subscriberId);
-		//else
-			//controller.initData(clientUi, false, subscriberId);
+		// Alert pay good
+		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 
-		//public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId)
+		// if(isSub)
+		controller.initData(clientUi, isSubscriber, subscriberId);
+		// else
+		// controller.initData(clientUi, false, subscriberId);
+
+		// public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer
+		// subId)
 	}
 
 	@FXML
 	void cancel(ActionEvent event) {
-		BillController billController = super.loadScreen("reservation/Bill",event,clientUi);
-		//if(isSub)
-			billController.initData(amountToPay, subscriberId ,isSub, tableId);
-		//else
-			//billController.initData(amountToPay, subscriberId ,false, tableId);
+		BillController billController = super.loadScreen("reservation/Bill", event, clientUi);
+		// if(isSub)
+		billController.initData(amountToPay, subscriberId, isSubscriber, tableId);
+		// else
+		// billController.initData(amountToPay, subscriberId ,false, tableId);
 
-			
-	
 	}
 
 	private void showError(String msg) {
@@ -104,11 +106,9 @@ public class PaymentController extends MainNavigator implements  MessageListener
 		stage.close();
 	}
 
-	
-
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

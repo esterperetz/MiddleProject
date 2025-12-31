@@ -18,7 +18,8 @@ import entities.Alarm;
 import entities.Order;
 import entities.ResourceType;
 import entities.Response;
-import entities.Subscriber;
+import entities.Customer;
+import entities.CustomerType;
 import entities.Order.OrderStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -30,7 +31,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 
 public class AddOrderController extends MainNavigator implements MessageListener<Object>, Initializable {
-	
+
 	private Order newOrder;
 	@FXML
 	private TextField clientNameField; // במקום fullNameField
@@ -50,10 +51,11 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private ComboBox<OrderStatus> statusComboBox;
 	private OrderLogic orderLogic;
 	private UserLogic userLogic;
-	private Subscriber verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
+	private Customer verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
 	private boolean isSubscriberVerified = false;
 	private ActionEvent currentEvent;
 	private boolean isManager;
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		statusComboBox.getItems().setAll(OrderStatus.values());
@@ -61,34 +63,32 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		datePicker.setValue(LocalDate.now());
 		// הגדרת שעה ברירת מחדל
 		timeField.setText("12:00");
-		try{
+		try {
 			subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-	            // בדיקה 2: האם המאזין עובד?
-	          
+				// בדיקה 2: האם המאזין עובד?
+
 				if (!isNowFocused) {
-	                checkSubscriberId();
-	            }
-	        });
+					checkSubscriberId();
+				}
+			});
+		} catch (Exception e) {
+			System.out.println("DEBUG: Focus lost from Subscriber ID field");
 		}
-		catch(Exception e)
-		{
-            System.out.println("DEBUG: Focus lost from Subscriber ID field"); 
-		}
-		
+
 	}
 
 	// public void initData(ClientUi clientUi) {
 	public void initData(boolean isManager) {
 		// this.clientUi = clientUi;
-		this.isManager=isManager;
+		this.isManager = isManager;
 		this.orderLogic = new OrderLogic(this.clientUi);
 		this.userLogic = new UserLogic(this.clientUi);
 	}
 
 	private void checkSubscriberId() {
-		String subIdStr = subscriberIdField.getText().trim();
+		String cusIdStr = subscriberIdField.getText().trim();
 		// subscriber_id empty
-		if (subIdStr.isEmpty()) {
+		if (cusIdStr.isEmpty()) {
 			isSubscriberVerified = false;
 			this.verifiedSubscriber = null;
 			enableClientFields(); // open fields to edit
@@ -98,9 +98,9 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		//
 
 		try {
-			int subId = Integer.parseInt(subIdStr);
+			int cusId = Integer.parseInt(cusIdStr);
 			// שולח בקשה לשרת. התשובה תגיע ל-onMessageReceive
-			userLogic.getSubscriberById(subId);
+			userLogic.getSubscriberById(cusId);
 		} catch (NumberFormatException e) {
 			handleInvalidSubscriber("Invalid format. Subscriber ID must be numbers only.");
 		}
@@ -138,7 +138,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 				if (isSubscriberVerified && verifiedSubscriber != null) {
 					// אם זה מנוי מאומת - לוקחים ישר מהמקור (האובייקט) ולא מהשדות!
-					clientName = verifiedSubscriber.getSubscriberName();
+					clientName = verifiedSubscriber.getName();
 					clientPhone = verifiedSubscriber.getPhoneNumber();
 					clientEmail = verifiedSubscriber.getEmail();
 				} else {
@@ -149,15 +149,15 @@ public class AddOrderController extends MainNavigator implements MessageListener
 				}
 
 				// המרת מנוי (אם יש)
-				Integer subId = null;
+				Integer cusId = null;
 				if (!subscriberIdField.getText().trim().isEmpty()) {
-					subId = Integer.parseInt(subscriberIdField.getText().trim());
+					cusId = Integer.parseInt(subscriberIdField.getText().trim());
 				}
 
 				// המרת מספרים
 				int guests = Integer.parseInt(guestsField.getText().trim());
-				//double price = priceField.getText().trim().isEmpty() ? 0.0
-					//	: Double.parseDouble(priceField.getText().trim());
+				// double price = priceField.getText().trim().isEmpty() ? 0.0
+				// : Double.parseDouble(priceField.getText().trim());
 
 				// 3. טיפול בתאריך ושעה (Order Date)
 				LocalDate localDate = datePicker.getValue();
@@ -173,49 +173,33 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 				// 4. טיפול בשעת הגעה (Arrival Time) - אופציונלי
 				Date arrivalDate = null;
-				//if (!arrivalString.isEmpty()) {
-					//if (!arrivalString.matches("\\d{2}:\\d{2}")) {
-						//Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.", Alert.AlertType.ERROR);
-						//return;
-					//}
-					//LocalTime arrivalTime = LocalTime.parse(arrivalString);
-					// משתמשים באותו תאריך שנבחר ב-DatePicker עבור שעת ההגעה
-					//arrivalDate = Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
-				//}
-
+				// if (!arrivalString.isEmpty()) {
+				// if (!arrivalString.matches("\\d{2}:\\d{2}")) {
+				// Alarm.showAlert("Time Error", "Arrival time must be HH:mm format.",
+				// Alert.AlertType.ERROR);
+				// return;
+				// }
+				// LocalTime arrivalTime = LocalTime.parse(arrivalString);
+				// משתמשים באותו תאריך שנבחר ב-DatePicker עבור שעת ההגעה
+				// arrivalDate =
+				// Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
+				// }
 				OrderStatus status = statusComboBox.getValue();
-
 				// 5. יצירת האובייקט עם הבנאי החדש והמלא
 				this.newOrder = new Order(0, // order_number (אוטומטי ב-DB)
 						orderDate, // order_date (תאריך ושעה)
 						guests, // number_of_guests
 						0, // confirmation_code (נוצר בשרת)
-						subId, // subscriber_id
+						0, // subscriber_id
 						null, new Date(), // date_of_placing_order (עכשיו)
-						clientName, // client_name (השדה החדש)
-						clientEmail, // client_email (השדה החדש)
-						clientPhone, // client_Phone (השדה החדש)
 						arrivalDate, // ArrivalTime (השדה החדש)
 						null, 0, // total_price
 						status // order_status
 				);
 
-				// 6. שליחה לשרת ומעבר מסך
-				if (orderLogic != null) {
-					orderLogic.createOrder(newOrder);
-
-					
-					// מעבר למסך הבא
-					OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
-
-					if (controller != null) {
-						controller.initData(this.isManager);
-					} else {
-						System.err.println("Error: Could not load OrderUi_controller.");
-					}
-				} else {
-					System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
-				}
+				if (cusId == 0)
+					userLogic.createCustomer(
+							new Customer(0, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
 
 			} catch (NumberFormatException e) {
 				Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
@@ -237,30 +221,51 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		}
 	}
 
-	@SuppressWarnings({ "unlikely-arg-type" })
 	@Override
 	public void onMessageReceive(Object msg) {
 
 		Platform.runLater(() -> {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
-				if (res.getResource() == ResourceType.SUBSCRIBER && res.getAction() == ActionType.GET_BY_ID) {
-					// בדיקה האם המנוי נמצא
-					if (res.getStatus() == Response.ResponseStatus.SUCCESS && res.getData() instanceof Subscriber) {
-						// === מקרה 2: מנוי קיים ותקין ===
-						Subscriber sub = (Subscriber) res.getData();
-						this.verifiedSubscriber = sub;
-						fillAndLockFields(sub);
-						isSubscriberVerified = true;
-						valid();
-						
+				if (res.getResource() == ResourceType.CUSTOMER) {
+					Customer cus = (Customer) res.getData();
+					if (res.getResource() == ResourceType.CUSTOMER && res.getAction() == ActionType.GET_BY_ID) {
+						// בדיקה האם המנוי נמצא
+						if (res.getStatus() == Response.ResponseStatus.SUCCESS && res.getData() instanceof Customer) {
+							// === מקרה 2: מנוי קיים ותקין ===
+							
+							this.verifiedSubscriber = cus;
+							fillAndLockFields(cus);
+							isSubscriberVerified = true;
+							valid();
 
-					} else {
-						// === מקרה 3: מנוי לא קיים (Exception) ===
-						// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
-						handleInvalidSubscriber(
-								"Subscriber ID " + subscriberIdField.getText() + " does not exist in the system.");
+						} else {
+							// === מקרה 3: מנוי לא קיים (Exception) ===
+							// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
+							handleInvalidSubscriber(
+									"Subscriber ID " + subscriberIdField.getText() + " does not exist in the system.");
+						}
+					} else if (res.getResource() == ResourceType.CUSTOMER
+							&& res.getAction() == ActionType.REGISTER_SUBSCRIBER) {
+						// 6. שליחה לשרת ומעבר מסך
+						this.newOrder.setCustomerId(cus.getCustomerId());
+						if (orderLogic != null) {
+							orderLogic.createOrder(newOrder);
+
+							// מעבר למסך הבא
+							OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent,
+									clientUi);
+
+							if (controller != null) {
+								controller.initData(this.isManager);
+							} else {
+								System.err.println("Error: Could not load OrderUi_controller.");
+							}
+						} else {
+							System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
+						}
 					}
+
 				} else {
 					System.out.println("Check the if ");
 				}
@@ -282,10 +287,10 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		enableClientFields();
 	}
 
-	private void fillAndLockFields(Subscriber sub) {
-		clientNameField.setText(sub.getSubscriberName());
-		phoneField.setText(sub.getPhoneNumber());
-		emailField.setText(sub.getEmail());
+	private void fillAndLockFields(Customer cus) {
+		clientNameField.setText(cus.getName());
+		phoneField.setText(cus.getPhoneNumber());
+		emailField.setText(cus.getEmail());
 
 		// נעילה
 		clientNameField.setEditable(false);

@@ -79,20 +79,21 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		this.mainController = mainController; // Store main controller reference
 		orderIdField.setText(String.valueOf(o.getOrderNumber()));
 
-		if (o.getSubscriberId() != null && o.getSubscriberId() != 0) {
-			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
-			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
-			setClientFieldsEditable(false); // נעילה
-		} else {
-			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
-			subscriberIdField.setText("");
-			setClientFieldsEditable(true); // פתיחה
-		}
-
-		// 2. מילוי פרטי לקוח (Strings)
-		clientNameField.setText(o.getClientName());
-		phoneField.setText(o.getClientPhone());
-		emailField.setText(o.getClientEmail());
+		//we need a quary that make join to show this
+//		if (o.getSubscriberId() != null && o.getSubscriberId() != 0) {
+//			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
+//			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
+//			setClientFieldsEditable(false); // נעילה
+//		} else {
+//			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
+//			subscriberIdField.setText("");
+//			setClientFieldsEditable(true); // פתיחה
+//		}
+//
+//		// 2. מילוי פרטי לקוח (Strings)
+//		clientNameField.setText(o.getClientName());
+//		phoneField.setText(o.getClientPhone());
+//		emailField.setText(o.getClientEmail());
 
 		// 3. מילוי מספרים
 		guestsField.setText(String.valueOf(o.getNumberOfGuests()));
@@ -141,7 +142,6 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		emailField.setStyle(style);
 	}
 
-//asdassadasd
 	public void loadStudent(Order o1) {
 		this.o = o1;
 	}
@@ -205,12 +205,9 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 						newOrderDate, // תאריך חדש
 						guests, // אורחים חדש
 						o.getConfirmationCode(), // קוד מקורי
-						o.getSubscriberId(), // מנוי מקורי
+						o.getCustomerId(), // מנוי מקורי
 						null,
 						o.getDateOfPlacingOrder(), // תאריך יצירה מקורי
-						name, // שם חדש
-						email, // אימייל חדש
-						phone, // טלפון חדש
 						newArrivalTime, // הגעה חדש
 						null,
 						price, // מחיר חדש

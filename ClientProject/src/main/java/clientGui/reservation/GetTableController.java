@@ -6,6 +6,7 @@ import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
+import entities.CustomerType;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,9 +26,9 @@ public class GetTableController extends MainNavigator implements  MessageListene
     private Label lblResult;
     private Integer subscriberId;
 
-	private boolean isSubscriber;
+	private CustomerType isSubscriber;
 
-	public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer subId) {
+	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subId) {
     	this.clientUi = clientUi;
         this.isSubscriber = isSubscriberStatus;
         this.subscriberId = subId;

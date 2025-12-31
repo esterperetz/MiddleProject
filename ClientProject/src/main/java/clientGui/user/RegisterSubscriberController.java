@@ -11,7 +11,8 @@ import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import 
 import clientLogic.UserLogic;
 import entities.ActionType;
 import entities.Response;
-import entities.Subscriber;
+import entities.Customer;
+import entities.CustomerType;
 import javafx.application.Platform; // Added import for Platform
 
 public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>{
@@ -57,7 +58,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		try {
 //		clientUi.addListener(this);//MUST DO NOT FORGER
 		UserLogic user = new UserLogic(clientUi);//MUST DO NOT FORGER
-		user.registerSubscriber(new Subscriber(0, username, phone, email)); //CHANGED FROM 123456 TO 0 (AUTO INC)
+		user.createCustomer(new Customer(1,11, username, phone, email,CustomerType.SUBSCRIBER)); //CHANGED FROM 123456 TO 0 (AUTO INC)
 		} catch(Exception e) {
 			System.out.println("one ");
 		}
@@ -74,10 +75,10 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			// Handle successful registration and navigate to Subscriber Options
 			if (res.getAction() == ActionType.REGISTER_SUBSCRIBER && res.getStatus() == Response.ResponseStatus.SUCCESS) {
 				Platform.runLater(() -> {
-					Subscriber newSub = (Subscriber) res.getData();
+					Customer newCus = (Customer) res.getData();
 					SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
 					if (controller != null) {
-						controller.initData(clientUi, true, newSub.getSubscriberId());
+						controller.initData(clientUi,newCus.getType() , newCus.getSubscriberCode());
 					}
 				});
 			} else if (res.getStatus() == Response.ResponseStatus.ERROR) {
