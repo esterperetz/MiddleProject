@@ -31,7 +31,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	@FXML
 	private Label lblResult;
 
-	private int currentSubscriberId;
+	private Integer currentSubscriberId;
 	private boolean isSubsriber;
 	private OrderLogic orderLogic;
 	private int tableId;
@@ -45,7 +45,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
         //isSubscriber = true; 
 
 	}
-	public void initData(int subscriberId,boolean isSubsriber, int tableId) {
+	public void initData(Integer subscriberId,boolean isSubsriber, int tableId) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubsriber=isSubsriber;
@@ -106,10 +106,12 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 		//MainNavigator.loadScreen("user/SubscriberOption", clientUi);
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
-    	if (isSubsriber) {
+    	//if (isSubsriber)
+		if(controller!=null)
+		{
     		controller.initData(clientUi,isSubsriber, currentSubscriberId);
         } else {
-            System.err.println("Error: Could not load ManagerOptionsController.");
+            System.err.println("Error: Could not load SubscriberOption.");
         }
 	}
 	
