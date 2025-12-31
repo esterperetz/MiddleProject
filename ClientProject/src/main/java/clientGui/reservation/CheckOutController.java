@@ -45,7 +45,16 @@ public class CheckOutController extends MainNavigator implements  Initializable 
         //isSubscriber = true; 
 
 	}
-
+	public void initData(int subscriberId,boolean isSubsriber, int tableId) {
+		// this.clientUi = clientUi;
+//		this.clientUi.addListener(this);
+		this.isSubsriber=isSubsriber;
+		this.currentSubscriberId = subscriberId;
+		this.orderLogic = new OrderLogic(clientUi);
+		System.out.println("Fetching history for subscriber: " + subscriberId);
+//		orderLogic.getOrdersBySubscriberCode(subscriberId);
+	
+	}
 	/**
 	 * Triggered when the "Check out" button is clicked.
 	 */
@@ -61,10 +70,10 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 			return;
 		}
 		BillController bill_controller = super.loadScreen("reservation/Bill",event,clientUi);
-   	 if(isSubsriber)	
-   		bill_controller.initData(2.3,currentSubscriberId,true, tableId);
-    	else
-    		bill_controller.initData(2.3,currentSubscriberId,false, tableId);
+   	 //if(isSubsriber)	
+   		bill_controller.initData(2.3,currentSubscriberId,this.isSubsriber, tableId);
+    	//else
+    		//bill_controller.initData(2.3,currentSubscriberId,false, tableId);
 		//super.loadScreen("reservation/Bill", event,clientUi);
 
 
@@ -104,16 +113,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
         }
 	}
 	
-	public void initData(int subscriberId,boolean isSubsriber, int tableId) {
-		// this.clientUi = clientUi;
-//		this.clientUi.addListener(this);
-		this.isSubsriber=isSubsriber;
-		this.currentSubscriberId = subscriberId;
-		this.orderLogic = new OrderLogic(clientUi);
-		System.out.println("Fetching history for subscriber: " + subscriberId);
-//		orderLogic.getOrdersBySubscriberCode(subscriberId);
 	
-	}
 
 
 	
