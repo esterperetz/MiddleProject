@@ -23,6 +23,13 @@ public class Order implements Serializable {
 	private Date leavingTime;
 	private double totalPrice;
 	private OrderStatus orderStatus;
+	
+	private String clientName;
+    private String clientEmail;
+    private String clientPhone;
+    private Integer subscriberId; 
+
+   public Order() {}
 
 	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer CustomerId,
 			Integer tableNumber, Date dateOfPlacingOrder, 
@@ -131,6 +138,18 @@ public class Order implements Serializable {
 		public void setOrderStatus(OrderStatus orderStatus) {
 			this.orderStatus = orderStatus;
 		}
+		 // Getters & Setters
+	    public String getClientName() { return clientName; }
+	    public void setTempClientName(String clientName) { this.clientName = clientName; }
+
+	    public String getClientEmail() { return clientEmail; }
+	    public void setTempClientEmail(String clientEmail) { this.clientEmail = clientEmail; }
+
+	    public String getClientPhone() { return clientPhone; }
+	    public void setTempClientPhone(String clientPhone) { this.clientPhone = clientPhone; }
+	    
+	    public Integer getSubscriberId() { return subscriberId; }
+	    public void setTempSubscriberId(Integer id) { this.subscriberId = id; }
 
 		@Override
 		public boolean equals(Object obj) {
