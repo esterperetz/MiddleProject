@@ -4,9 +4,12 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+
 import DAO.OrderDAO;
 import DAO.TableDAO;
 import DAO.BusinessHourDAO;
+import DAO.CustomerDAO;
 import entities.*;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
@@ -14,6 +17,7 @@ import java.io.IOException;
 public class OrderController {
 	private final OrderDAO orderdao = new OrderDAO();
 	private final TableDAO tabledao = new TableDAO();
+	private final CustomerDAO customerDao = new CustomerDAO();
 	private final BusinessHourDAO businessHourDao = new BusinessHourDAO();
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
@@ -66,10 +70,16 @@ public class OrderController {
 	}
 
 	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
-		List<Order> orders = orderdao.getAllOrders();
+		List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();
 		client.sendToClient(
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
+//
+//	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
+//		List<Order> orders = orderdao.getAllOrders();
+//		client.sendToClient(
+//				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
+//	}
 
 	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
@@ -77,7 +87,8 @@ public class OrderController {
 					Response.ResponseStatus.ERROR, "Error: ID missing.", null));
 			return;
 		}
-		List<Order> subOrders = orderdao.getOrdersByCustomerId(req.getId());
+		Customer cusId = customerDao.getCustomerBySubscriberCode(req.getId());
+		List<Order> subOrders = orderdao.getOrdersByCustomerId(cusId.getCustomerId());
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
 				Response.ResponseStatus.SUCCESS, null, subOrders));
 	}
@@ -96,27 +107,33 @@ public class OrderController {
 	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order o = (Order) req.getPayload();
 		
+		//function finds the ID of the regular customer
+		Customer cusId = customerDao.getCustomerBySubscriberId(o.getCustomerId());
+	    if(cusId == null) {//if it still null subscriber we will get ID with sbscriberCode 
+			cusId = customerDao.getCustomerBySubscriberCode(o.getCustomerId());
+		}
+	    o.setCustomerId(cusId.getCustomerId());
+	    
+		
 		int generatedCode = 1000 + (int) (Math.random() * 9000);
 		o.setConfirmationCode(generatedCode);
 		if (orderdao.createOrder(o)) {
-			///need to get email from customer table
+			/// need to get email from customer table
 //			EmailService.sendConfirmation(o.getClientEmail(),o);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 					"Order created.", o));
 			sendOrdersToAllClients();
-		}
-		else {
+		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-                    "Error: Could not save order to Database.", null));
+					"Error: Could not save order to Database.", null));
 		}
-		}
-	
+	}
 
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
-			///need to get email from customer table
+			/// need to get email from customer table
 //			EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
@@ -126,8 +143,9 @@ public class OrderController {
 	}
 
 	private void handleDelete(Request req, ConnectionToClient client) throws SQLException, IOException {
-		if (req.getId() == null) return;
-		
+		if (req.getId() == null)
+			return;
+
 		// Safety check is a table needs to be released.
 		Order order = orderdao.getOrder(req.getId());
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
@@ -137,7 +155,7 @@ public class OrderController {
 		}
 
 		if (orderdao.deleteOrder(req.getId())) {
-			///need to get email from customer table
+			/// need to get email from customer table
 
 //			EmailService.sendCancelation(order.getClientEmail(),order);
 			System.out.println(EmailService.getContent());
@@ -206,7 +224,7 @@ public class OrderController {
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
 
-			if (diffInMinutes > 15) { 
+			if (diffInMinutes > 15) {
 				order.setOrderStatus(Order.OrderStatus.CANCELLED);
 				orderdao.updateOrder(order);
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
@@ -219,7 +237,7 @@ public class OrderController {
 					order.setTableNumber(tableNum); // Assign table to order
 					orderdao.updateOrder(order);
 
-					tabledao.updateTableStatus(tableNum, true); 
+					tabledao.updateTableStatus(tableNum, true);
 
 					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 							Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum, order.getOrderNumber()));
@@ -242,15 +260,15 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
-			if (order.getCustomerId() != null) 
-				amount *= 0.9; 
+			if (order.getCustomerId() != null)
+				amount *= 0.9;
 
 			order.setTotalPrice(amount);
 			order.setOrderStatus(Order.OrderStatus.PAID);
 			order.setLeavingTime(new Date());
 
 			if (orderdao.updateOrder(order)) {
-				//release table in DB
+				// release table in DB
 				if (order.getTableNumber() != null) {
 					tabledao.updateTableStatus(order.getTableNumber(), false);
 				}
@@ -260,21 +278,21 @@ public class OrderController {
 			}
 		}
 	}
+
 	private void handleSendEmail(Request req, ConnectionToClient client) {
 		try {
 			if (req.getPayload() instanceof Order) {
 				Order order = (Order) req.getPayload();
-				///need to get email from customer table
+				/// need to get email from customer table
 //				EmailService.sendConfirmation(order.getClientEmail(), order);
 				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
 						Response.ResponseStatus.SUCCESS, "Email has been sent!", EmailService.getContent()));
-			}
-			else {
+			} else {
 				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
 						Response.ResponseStatus.ERROR, null, null));
 			}
-			
-		}catch(Exception e) {
+
+		} catch (Exception e) {
 			System.out.println("From handle send email.");
 		}
 

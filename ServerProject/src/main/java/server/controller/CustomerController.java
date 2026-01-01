@@ -7,6 +7,7 @@ import java.util.List;
 import DAO.CustomerDAO;
 import entities.ActionType;
 import entities.Customer;
+import entities.CustomerType;
 import entities.Request;
 import entities.ResourceType;
 import entities.Response;
@@ -59,16 +60,30 @@ public class CustomerController {
 	}
 
 	private void registerSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
-
+		boolean isUnique = false;
+		int code;
 		Customer newCub = (Customer) req.getPayload();
-		System.out.println("client " + newCub.getEmail());
-		
+
 		// Updated to camelCase
-		Customer existing = CustomerDAO.getSubscriberBySubscriberName(newCub.getName());
-		if (existing != null) {
+		Customer existing = CustomerDAO.getSubscriberBySubscriberEmail(newCub.getEmail());
+		if (newCub.getType() == CustomerType.SUBSCRIBER && existing != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-					Response.ResponseStatus.ERROR, "Error: Username already exists.", null));
+					Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
 			return;
+		}
+		if (newCub.getType() == CustomerType.SUBSCRIBER) {
+
+			// לולאה שרצה עד שנמצא מספר פנוי
+			do {
+				// הגרלת מספר (למשל מספר בן 5 ספרות: 10000 עד 99999)
+				code = 10000 + (int) (Math.random() * 90000);
+
+				// בדיקה מול ה-DB אם המספר הזה כבר קיים
+				if (CustomerDAO.getCustomerBySubscriberCode(code) == null) {
+					isUnique = true;
+				}
+			} while (!isUnique);
+			newCub.setSubscriberCode(code);
 		}
 
 		boolean success = CustomerDAO.createCustomer(newCub);
@@ -96,7 +111,8 @@ public class CustomerController {
 
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
 		List<Customer> list = CustomerDAO.getAllCustomers();
-		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+		client.sendToClient(
+				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
