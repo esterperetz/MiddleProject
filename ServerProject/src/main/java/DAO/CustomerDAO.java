@@ -10,22 +10,28 @@ import java.util.ArrayList;
 import DBConnection.DBConnection;
 import entities.Customer;
 import entities.CustomerType;
-import entities.Employee.Role;
 
 public class CustomerDAO {
 
 
 	// Creates a new subscriber in the DB and updates the object's ID
 	public boolean createCustomer(Customer customer) {
-		String query = "INSERT INTO Customer (customer_name, phone_number, email , customer_type ) VALUES (?, ?, ?, ?)";	
+		String query = "INSERT INTO Customer (subscriber_code,customer_name, phone_number, email , customer_type ) VALUES (?,?, ?, ?, ?)";	
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-
-			ps.setString(1, customer.getName());
-	        ps.setString(2, customer.getPhoneNumber());
-	        ps.setString(3, customer.getEmail());
-	    
-	        ps.setString(3, customer.getType().getString());
+			
+			Integer subCode = customer.getSubscriberCode();
+			if (subCode == null || subCode == 0) {
+	            // אם זה null (לקוח רגיל), אומרים למסד הנתונים לשים NULL
+	            ps.setNull(1, java.sql.Types.INTEGER);
+	        } else {
+	            // אם יש מספר, מכניסים אותו
+	            ps.setInt(1, subCode);
+	        }
+			ps.setString(2, customer.getName());
+	        ps.setString(3, customer.getPhoneNumber());
+	        ps.setString(4, customer.getEmail());
+	        ps.setString(5, customer.getType().getString());
 
 			int rowsAffected = ps.executeUpdate();
 
@@ -50,10 +56,9 @@ public class CustomerDAO {
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
 			ps.setInt(1, SubscriberCode);
-		
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
-				Customer s = new Customer(null,rs.getInt("subscriber_code"), rs.getString("customer_name"),
+				Customer s = new Customer(rs.getInt("customer_id"),rs.getInt("subscriber_code"), rs.getString("customer_name"),
 						rs.getString("phone_number"), rs.getString("email"), CustomerType.valueOf(rs.getString("customer_type")));
 //				s.setSubscriberId(rs.getInt("subscriber_id"));
 				return s;
@@ -66,20 +71,41 @@ public class CustomerDAO {
 		}
 		return null;
 	}
+	public Customer getCustomerBySubscriberId(int SubscriberId) {
 
-	// Fetches a subscriber by their username
-	public Customer getSubscriberBySubscriberName(String customerName) {
-		String query = "SELECT * FROM Customer WHERE customer_name = ?";
+		String query = "SELECT * FROM Customer WHERE customer_id = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {
-			ps.setString(1, customerName);
+			ps.setInt(1, SubscriberId);
+			ResultSet rs = ps.executeQuery();
+			if (rs.next()) {
+				Customer s = new Customer(rs.getInt("customer_id"),rs.getInt("subscriber_code"), rs.getString("customer_name"),
+						rs.getString("phone_number"), rs.getString("email"), CustomerType.valueOf(rs.getString("customer_type")));
+//				s.setSubscriberId(rs.getInt("subscriber_id"));
+				return s;
+				
+//				return createSubscriberFromResultSet(rs);
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching subscriber by ID: " + e.getMessage());
+//			e.printStackTrace();
+		}
+		return null;
+	}
+
+	// Fetches a subscriber by their username
+	public Customer getSubscriberBySubscriberEmail(String customerMail) {
+		String query = "SELECT * FROM Customer WHERE email = ?";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(query)) {
+			ps.setString(1, customerMail);
 			ResultSet rs = ps.executeQuery();
 
 			if (rs.next()) {
 				return createCustomerFromResultSet(rs);
 			}
 		} catch (SQLException e) {
-			System.out.println("Error fetching subscriber by username: " + e.getMessage());
+			System.out.println("Error fetching subscriber by email: " + e.getMessage());
 			e.printStackTrace();
 		}
 		return null;
