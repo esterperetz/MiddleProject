@@ -102,7 +102,7 @@ public class DBConnection {
 	            "order_date DATETIME NOT NULL, " +
 	            "number_of_guests INT NOT NULL, " +
 	            "confirmation_code INT NOT NULL, " +
-	            "customer_id INT NOT NULL, " + 
+	            "customer_id INT, " + 
 	            "table_number INT DEFAULT NULL, " +
 	            "date_of_placing_order DATETIME NOT NULL, " +
 	            "arrival_time DATETIME, " +             
@@ -110,7 +110,7 @@ public class DBConnection {
 	            "total_price DECIMAL(10, 2), " +
 	            "order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
 	            "PRIMARY KEY (order_number), " +
-	            "CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES customer(customer_id) ON DELETE SET NULL ON UPDATE CASCADE, " +
+	            "CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE, " +
 	            "CONSTRAINT fk_order_table FOREIGN KEY (table_number) REFERENCES tables(table_number) ON DELETE SET NULL" +
 	            ");";
 	    try {
@@ -160,7 +160,7 @@ public class DBConnection {
 	                 "confirmation_code INT NOT NULL, " +
 	                 "PRIMARY KEY (waiting_id), " +
 	                 "CONSTRAINT fk_waiting_customer FOREIGN KEY (customer_id) " +
-	                 "REFERENCES subscriber(customer_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	                 "REFERENCES Customer(customer_id) ON DELETE SET NULL ON UPDATE CASCADE" +
 	                 ");";
 	    try {
 	        stmt = con.createStatement();
