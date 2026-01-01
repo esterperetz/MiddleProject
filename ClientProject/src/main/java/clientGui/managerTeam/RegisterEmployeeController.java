@@ -41,14 +41,14 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 
 	private ActionEvent currentEvent; // Added to save the event for async navigation
 
-	private boolean isManager;
+	private Employee.Role isManager;
 	private Employee em;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		selectRole.getItems().setAll(Role.values());
 	}
 
-	public void initData(ClientUi clientUi, boolean isManager,Employee em) {
+	public void initData(ClientUi clientUi, Employee.Role isManager,Employee em) {
 		this.clientUi = clientUi;
 		this.isManager = isManager;
 		this.em=em;

@@ -7,8 +7,10 @@ import java.time.ZoneId;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
@@ -19,6 +21,8 @@ import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import entities.ActionType;
 import entities.Alarm;
+import entities.Customer;
+import entities.Employee;
 import entities.Order;
 import entities.Request;
 import entities.Response;
@@ -92,7 +96,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private ObservableList<Order> orderData = FXCollections.observableArrayList();
     private OrderLogic orderLogic;
     private String ip;
-    private boolean isManager;
+    private Employee.Role isManager;
     public OrderUi_controller() {
     }
 
@@ -101,40 +105,40 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         // --- 2. חיבור הנתונים לטבלה (הקוד הקיים שלך נשאר זהה) ---
 
         Order_numberColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderNumber()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderNumber()));
 
-//        clientNameColumn.setCellValueFactory(cellData -> 
-//            new SimpleStringProperty(cellData.getValue().getClientName()));
+        clientNameColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty((cellData.getValue()).getClientName()));
 
-//        clientPhoneColumn.setCellValueFactory(cellData -> 
-//            new SimpleStringProperty(cellData.getValue().getClientPhone()));
+        clientPhoneColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty((cellData.getValue()).getClientPhone()));
 
-//        clientEmailColumn.setCellValueFactory(cellData -> 
-//            new SimpleStringProperty(cellData.getValue().getClientEmail()));
+        clientEmailColumn.setCellValueFactory(cellData -> 
+            new SimpleStringProperty((cellData.getValue()).getClientEmail()));
 
         subscriber_idColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomerId()));
 
         DateColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderDate()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderDate()));
 
         arrivalTimeColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getArrivalTime()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getArrivalTime()));
 
         itemColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getNumberOfGuests()));
 
         totalPriceColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getTotalPrice()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getTotalPrice()));
 
         statusColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getOrderStatus()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderStatus()));
 
         confirmation_codeColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getConfirmationCode()));
 
         date_of_placing_orderColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>(cellData.getValue().getDateOfPlacingOrder()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getDateOfPlacingOrder()));
 
         setupEditableColumns();
 
@@ -159,16 +163,16 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         	        }
 
         	        // 2. אם להזמנה אין תאריך -> הסתר אותה
-        	        if (order.getOrderDate() == null) {
+        	        if (((Order)order).getOrderDate() == null) {
         	            return false;
         	        }
 
         	        // 3. המרת תאריך ההזמנה ל-LocalDate
         	        LocalDate orderDate;
-        	        if (order.getOrderDate() instanceof java.sql.Date) {
-        	            orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
+        	        if (((Order)order).getOrderDate() instanceof java.sql.Date) {
+        	            orderDate = ((java.sql.Date) ((Order)order).getOrderDate()).toLocalDate();
         	        } else {
-        	            orderDate = order.getOrderDate().toInstant()
+        	            orderDate = ((Order)order).getOrderDate().toInstant()
         	                          .atZone(ZoneId.systemDefault())
         	                          .toLocalDate();
         	        }
@@ -201,7 +205,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param ip       The server IP address.
 	 */
 	//public void initData(ClientUi clientUi, String ip) {
-	public void initData(boolean isManager) {
+	public void initData(Employee.Role isManager) {
 		//this.clientUi = clientUi;
 		this.isManager=isManager;
 		this.ip = clientUi.getIp();
@@ -247,19 +251,57 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 				switch (res.getAction()) {
 
 				case GET_ALL:
-					// Upload table with the list of orders
 					if (data instanceof List) {
-						List<?> list = (List<?>) data;
-						if (list.isEmpty() || list.get(0) instanceof Order) {
-							// List<Order> incomingOrders = (List<Order>) request.getPayload();
-							orderData.clear();
-							orderData.addAll((List<Order>) list);
-							orderTable.refresh();
-							System.out.println("Updated table with " + list.size() + " orders.");
-						} else {
-							System.out.println("Received a list, but it's not orders.");
-						}
-					}
+				        List<?> list = (List<?>) data;
+				        
+				        // ניקוי הטבלה
+				        orderData.clear();
+
+				        // בדיקה שהרשימה לא ריקה
+				        if (list.isEmpty()) {
+				            orderTable.refresh();
+				            return;
+				        }
+
+				        // לולאה שעוברת על ה-Map וממירה ל-Order
+				        for (Object obj : list) {
+				            if (obj instanceof Map) {
+				                Map<String, Object> row = (Map<String, Object>) obj;
+				                Order o = new Order();
+
+				                // 1. שליפת נתוני ההזמנה והכנסה ל-Order
+				                o.setOrderNumber((Integer) row.get("order_number"));
+				                o.setCustomerId((Integer) row.get("customer_id"));
+				                o.setNumberOfGuests((Integer) row.get("number_of_guests"));
+				                o.setTotalPrice(((Number) row.get("total_price")).doubleValue()); // המרה בטוחה
+				                o.setConfirmationCode((Integer) row.get("confirmation_code"));
+				                
+				                // טיפול ב-Enum סטטוס
+				                String statusStr = (String) row.get("order_status");
+				                if (statusStr != null) o.setOrderStatus(Order.OrderStatus.valueOf(statusStr));
+
+				                // טיפול בתאריכים (SQL Timestamp -> Java Date)
+				                if (row.get("order_date") != null)
+				                    o.setOrderDate(new java.util.Date(((java.sql.Timestamp) row.get("order_date")).getTime()));
+				                
+				                if (row.get("arrival_time") != null)
+				                    o.setArrivalTime(new java.util.Date(((java.sql.Timestamp) row.get("arrival_time")).getTime()));
+
+				                if (row.get("date_of_placing_order") != null)
+				                    o.setDateOfPlacingOrder(new java.util.Date(((java.sql.Timestamp) row.get("date_of_placing_order")).getTime()));
+
+				                // 2. שליפת נתוני הלקוח והכנסה לשדות החדשים שיצרנו ב-Order
+				                o.setTempClientName((String) row.get("customer_name"));
+				                o.setTempClientEmail((String) row.get("email"));
+				                o.setTempClientPhone((String) row.get("phone_number"));
+				                o.setTempSubscriberId((Integer) row.get("subscriber_code"));
+
+				                // הוספה לרשימה
+				                orderData.add(o);
+				            }
+				        }
+				        orderTable.refresh();
+				    }
 					break;
 				case SEND_EMAIL:
 					System.out.println((String)res.getData());
@@ -437,7 +479,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
 
 		itemColumn.setOnEditCommit(event -> {
-			Order o = event.getRowValue();
+			Order o =  event.getRowValue();
 			o.setNumberOfGuests(event.getNewValue());
 			orderLogic.updateOrder(o);
 		});
@@ -449,6 +491,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		if (controller != null) {
 			//controller.initData(clientUi, ManagerOptionsController.isManager());
+			System.out.println(this.isManager.getRoleValue());
 			controller.initData(clientUi, this.isManager);
 		} else {
 			System.err.println("Error: Could not load ManagerOptionsController.");

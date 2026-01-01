@@ -20,6 +20,7 @@ import entities.ResourceType;
 import entities.Response;
 import entities.Customer;
 import entities.CustomerType;
+import entities.Employee;
 import entities.Order.OrderStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -54,7 +55,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private Customer verifiedSubscriber = null; // משתנה חדש לשמירת האובייקט
 	private boolean isSubscriberVerified = false;
 	private ActionEvent currentEvent;
-	private boolean isManager;
+	private Employee.Role isManager;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -78,7 +79,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	// public void initData(ClientUi clientUi) {
-	public void initData(boolean isManager) {
+	public void initData(Employee.Role isManager) {
 		// this.clientUi = clientUi;
 		this.isManager = isManager;
 		this.orderLogic = new OrderLogic(this.clientUi);
@@ -196,16 +197,20 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						null, 0, // total_price
 						status // order_status
 				);
-
-				if (cusId == 0)
+				System.out.println("------------ "+cusId);
+				if (cusId == null) {
+					System.out.println("heloooo ");
 					userLogic.createCustomer(
-							new Customer(0, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
-
+							new Customer(null, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
+				}else {
+					newOrder.setCustomerId(cusId);
+					orderLogic.createOrder(newOrder);
+				}
 			} catch (NumberFormatException e) {
 				Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
 			} catch (Exception e) {
 				Alarm.showAlert("Error", "An error occurred while saving.", Alert.AlertType.ERROR);
-				// e.printStackTrace();
+//				 e.printStackTrace();
 			}
 		});
 
@@ -227,48 +232,74 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		Platform.runLater(() -> {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
-				if (res.getResource() == ResourceType.CUSTOMER) {
-					Customer cus = (Customer) res.getData();
-					if (res.getResource() == ResourceType.CUSTOMER && res.getAction() == ActionType.GET_BY_ID) {
-						// בדיקה האם המנוי נמצא
-						if (res.getStatus() == Response.ResponseStatus.SUCCESS && res.getData() instanceof Customer) {
-							// === מקרה 2: מנוי קיים ותקין ===
-							
-							this.verifiedSubscriber = cus;
-							fillAndLockFields(cus);
-							isSubscriberVerified = true;
-							valid();
+				if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+					switch (res.getResource()) {
+					case CUSTOMER:
+						Customer cus = (Customer) res.getData();
+						if (res.getAction() == ActionType.GET_BY_ID) {
+							// בדיקה האם המנוי נמצא
+							if (res.getStatus() == Response.ResponseStatus.SUCCESS
+									&& res.getData() instanceof Customer) {
+								// === מקרה 2: מנוי קיים ותקין ===
 
-						} else {
-							// === מקרה 3: מנוי לא קיים (Exception) ===
-							// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
-							handleInvalidSubscriber(
-									"Subscriber ID " + subscriberIdField.getText() + " does not exist in the system.");
-						}
-					} else if (res.getResource() == ResourceType.CUSTOMER
-							&& res.getAction() == ActionType.REGISTER_SUBSCRIBER) {
-						// 6. שליחה לשרת ומעבר מסך
-						this.newOrder.setCustomerId(cus.getCustomerId());
-						if (orderLogic != null) {
-							orderLogic.createOrder(newOrder);
+								this.verifiedSubscriber = cus;
+								fillAndLockFields(cus);
+								isSubscriberVerified = true;
+								valid();
 
-							// מעבר למסך הבא
-							OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent,
-									clientUi);
-
-							if (controller != null) {
-								controller.initData(this.isManager);
 							} else {
-								System.err.println("Error: Could not load OrderUi_controller.");
+								// === מקרה 3: מנוי לא קיים (Exception) ===
+								// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
+								handleInvalidSubscriber("Subscriber ID " + subscriberIdField.getText()
+										+ " does not exist in the system.");
 							}
-						} else {
-							System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
+						} else if (res.getAction() == ActionType.REGISTER_SUBSCRIBER) {
+							if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+								// 6. שליחה לשרת ומעבר מסך
+								this.newOrder.setCustomerId(cus.getCustomerId());
+								if (orderLogic != null) {
+									orderLogic.createOrder(newOrder);
+
+									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
+											currentEvent, clientUi);
+									if (controller != null) {
+										controller.initData(this.isManager);
+									} else {
+										System.err.println("Error: Could not load OrderUi_controller.");
+									}
+								} else
+									System.out.println(res.getMessage_from_server());
+							} else {
+								System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
+							}
+
 						}
+						break;
+					case ORDER:
+						if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+							Alarm.showAlert("place order successfully", "success", Alert.AlertType.INFORMATION);
+							try {
+								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
+									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
+											currentEvent, clientUi);
+									if (controller != null)
+										controller.initData(this.isManager);
+								}
+							} catch (Exception e) {
+								System.out.println("error in loading screen");
+							}
+						} else
+							Alarm.showAlert("error in placing  order", "error", Alert.AlertType.ERROR);
+
+						break;
+					default:
+						System.out.println("Check the if ");
+						break;
+
 					}
 
-				} else {
-					System.out.println("Check the if ");
 				}
+
 			}
 		});
 	}

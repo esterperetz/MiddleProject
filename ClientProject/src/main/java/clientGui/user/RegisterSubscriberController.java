@@ -13,6 +13,7 @@ import entities.ActionType;
 import entities.Response;
 import entities.Customer;
 import entities.CustomerType;
+import entities.Employee;
 import javafx.application.Platform; // Added import for Platform
 
 public class RegisterSubscriberController extends MainNavigator implements MessageListener<Object>{
@@ -27,7 +28,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 
 	@FXML
 	private Label lblMessage;
-	private boolean isManager;
+	private Employee.Role isManager;
 	private UserLogic UserLogic;
 	private ActionEvent currentEvent; // Added to save the event for async navigation
 
@@ -91,7 +92,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		}
 
 	}
-	public void initData(ClientUi clientUi,boolean isManager)
+	public void initData(ClientUi clientUi,Employee.Role isManager)
 	{
 		this.clientUi=clientUi;
 		this.isManager=isManager;

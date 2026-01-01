@@ -26,6 +26,7 @@ public class UserLogic {
 	
 
 	public void createCustomer(Customer customer) {
+		System.out.println("in create client");
 		Request req = new Request(ResourceType.CUSTOMER, ActionType.REGISTER_SUBSCRIBER, null, customer);
 		client.sendRequest(req);
 	}

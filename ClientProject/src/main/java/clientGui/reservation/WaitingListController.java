@@ -11,6 +11,7 @@ import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
+import entities.Employee;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -37,7 +38,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
     private TableColumn<?, ?> colTime;
     @FXML
     private TableColumn<?, ?> colStatus;
-    private boolean isManager;
+    private Employee.Role isManager;
     private int table_id;
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -94,7 +95,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
     }
 
 	
-    public void initData(ClientUi c,boolean isManager)
+    public void initData(ClientUi c,Employee.Role isManager)
     {
     	this.clientUi=c;
     	//this.table_id=table_id;

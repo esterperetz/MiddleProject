@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import entities.Alarm;
+import entities.Employee;
 import entities.Order;
 import entities.Order.OrderStatus;
 import javafx.event.ActionEvent;
@@ -51,7 +52,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	@FXML
 	private TextField priceField;
 	@FXML
-	private boolean isManager;
+	private Employee.Role isManager;
 	@FXML
 	private ComboBox<OrderStatus> statusComboBox;
 	private Order o;
@@ -72,28 +73,33 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	 * @param mainController The reference to the main UI controller for data
 	 *                       refresh.
 	 */
-	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController,boolean isManager) { // FIXED SIGNATURE
-		this.isManager=isManager;
+	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController,
+			Employee.Role isManager) { // FIXED SIGNATURE
+		this.isManager = isManager;
 		this.o = order;
 		this.ol = orderLogic;
 		this.mainController = mainController; // Store main controller reference
 		orderIdField.setText(String.valueOf(o.getOrderNumber()));
 
-		//we need a quary that make join to show this
-//		if (o.getSubscriberId() != null && o.getSubscriberId() != 0) {
-//			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
-//			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
-//			setClientFieldsEditable(false); // נעילה
-//		} else {
-//			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
-//			subscriberIdField.setText("");
-//			setClientFieldsEditable(true); // פתיחה
-//		}
-//
-//		// 2. מילוי פרטי לקוח (Strings)
-//		clientNameField.setText(o.getClientName());
-//		phoneField.setText(o.getClientPhone());
-//		emailField.setText(o.getClientEmail());
+		if (o.getCustomerId() != null && o.getSubscriberId() != null && o.getSubscriberId() != 0) {
+			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
+			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
+			setClientFieldsEditable(false); // נעילה
+		}
+//			else if (o.getCustomerId() != null && o.getCustomerId() != 0) {
+//			subscriberIdField.setText(String.valueOf(o.getCustomerId()));
+//			setClientFieldsEditable(false); //
+//		} 
+		else {
+			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
+			subscriberIdField.setText("");
+			setClientFieldsEditable(true); // פתיחה
+		}
+
+		// 2. מילוי פרטי לקוח (Strings)
+		clientNameField.setText(o.getClientName());
+		phoneField.setText(o.getClientPhone());
+		emailField.setText(o.getClientEmail());
 
 		// 3. מילוי מספרים
 		guestsField.setText(String.valueOf(o.getNumberOfGuests()));
@@ -206,11 +212,9 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 						guests, // אורחים חדש
 						o.getConfirmationCode(), // קוד מקורי
 						o.getCustomerId(), // מנוי מקורי
-						null,
-						o.getDateOfPlacingOrder(), // תאריך יצירה מקורי
+						null, o.getDateOfPlacingOrder(), // תאריך יצירה מקורי
 						newArrivalTime, // הגעה חדש
-						null,
-						price, // מחיר חדש
+						null, price, // מחיר חדש
 						status // סטטוס חדש
 				);
 

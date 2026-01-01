@@ -5,6 +5,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import entities.Employee;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -20,7 +21,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
     @FXML private LineChart<String, Number> lineChartOrders;
     @FXML private CategoryAxis xAxisTimes;
     @FXML private CategoryAxis xAxisDays;
-    private boolean isManager;
+    private Employee.Role isManager;
     @FXML
     public void initialize() {
         loadTimeChartData();
@@ -107,7 +108,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
     void closeScreen(ActionEvent event) {
         ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
     }
-    public void initData(ClientUi c, boolean isManager)
+    public void initData(ClientUi c, Employee.Role isManager)
     {
     	this.clientUi=c;
     	this.isManager=isManager;
