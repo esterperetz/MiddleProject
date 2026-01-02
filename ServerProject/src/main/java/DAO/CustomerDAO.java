@@ -153,7 +153,7 @@ public class CustomerDAO {
 	// Helper method to map ResultSet to Subscriber object
 	private Customer createCustomerFromResultSet(ResultSet rs) throws SQLException {
 		try {
-			Customer s = new Customer(null, rs.getInt("subscriber_code"), rs.getString("customer_name"),
+			Customer s = new Customer(rs.getInt("customer_id"), rs.getInt("subscriber_code"), rs.getString("customer_name"),
 					rs.getString("phone_number"), rs.getString("email") , CustomerType.valueOf(rs.getString("customer_type")));
 //			s.setSubscriberId(rs.getInt("subscriber_id"));
 			return s;
