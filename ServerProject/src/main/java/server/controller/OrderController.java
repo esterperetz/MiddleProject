@@ -105,36 +105,90 @@ public class OrderController {
 				new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS, null, order));
 	}
 
+	@SuppressWarnings("unchecked")
 	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
-	    Order o = (Order) req.getPayload();
-	    
-	    // חיפוש הלקוח - חשוב להשתמש ב-Integer כדי למנוע Unboxing ל-null
-	    Customer customer = customerDao.getCustomerBySubscriberId(o.getCustomerId()); 
-	    
-	    if (customer == null) {
-	        customer = customerDao.getCustomerBySubscriberCode(o.getCustomerId());
-	    }
+		Object payload = req.getPayload();
+		Order order = null;
+		Customer guest = null;
 
-	    // --- בדיקת הגנה קריטית ---
-	    if (customer == null) {
-	        System.out.println("Customer not found for Order! ID received: " + o.getCustomerId());
-	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, 
-	                Response.ResponseStatus.ERROR, "שגיאה: לקוח לא נמצא במערכת", null));
-	        return; // מפסיק את הביצוע כאן - מונע את ה-NullPointerException
-	    }
-	    // -----------------------
+		// --- שלב 1: זיהוי סוג המידע (תמיכה לאחור) ---
+		
+		// בדיקה: האם זה ה-Flow החדש (Map שמכיל הזמנה + אולי אורח)?
+		if (payload instanceof Map) {
+			Map<String, Object> data = (Map<String, Object>) payload;
+			order = (Order) data.get("order");
+			guest = (Customer) data.get("guest");
+		} 
+		// בדיקה: האם זה ה-Flow הישן (רק אובייקט Order)?
+		else if (payload instanceof Order) {
+			order = (Order) payload;
+			// במקרה הזה guest נשאר null, והלוגיקה תמשיך לטיפול הרגיל ב-ID
+		} else {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.ERROR, "Error: Invalid payload type.", null));
+			return;
+		}
 
-	    // עכשיו בטוח להשתמש ב-customer כי בדקנו שהוא לא null
-	    o.setCustomerId(customer.getCustomerId());
-	    
-	    int generatedCode = 1000 + (int) (Math.random() * 9000);
-	    o.setConfirmationCode(generatedCode);
-	    
-	    if (orderdao.createOrder(o)) {
-	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, 
-	                Response.ResponseStatus.SUCCESS, "Order created.", o));
-	        sendOrdersToAllClients();
-	    }
+		// --- שלב 2: טיפול בלקוח (Customer Resolution) ---
+
+		// תרחיש א': הגיעו פרטי אורח (Guest) בתוך ה-Map
+		if (guest != null) {
+			// בדיקה אם המייל כבר קיים למניעת כפילויות
+			Customer existing = customerDao.getSubscriberBySubscriberEmail(guest.getEmail());
+
+			if (existing != null) {
+				// הלקוח קיים -> משתמשים ב-ID שלו
+				order.setCustomerId(existing.getCustomerId());
+			} else {
+				// לקוח חדש -> יוצרים אותו ב-DB
+				boolean created = customerDao.createCustomer(guest);
+				if (created) {
+					// ה-DAO מעדכן את ה-ID באובייקט guest
+					order.setCustomerId(guest.getCustomerId());
+				} else {
+					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+							Response.ResponseStatus.ERROR, "Error: Failed to create guest profile.", null));
+					return;
+				}
+			}
+		}
+		// תרחיש ב': לא הגיע אורח (או שנשלח רק Order במקור, או שהמפ לא הכיל אורח)
+		// זו הלוגיקה המקורית שלך בדיוק!
+		else {
+			Customer customer = null;
+			
+			// הגנה מפני Null ב-ID
+			if (order.getCustomerId() != null) {
+				customer = customerDao.getCustomerBySubscriberId(order.getCustomerId());
+				if (customer == null) {
+					customer = customerDao.getCustomerBySubscriberCode(order.getCustomerId());
+				}
+			}
+
+			if (customer == null) {
+				System.out.println("Customer not found for Order! ID received: " + order.getCustomerId());
+				client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+						Response.ResponseStatus.ERROR, "Error: Customer not found in system.", null));
+				return;
+			}
+			
+			// עדכון ה-ID הסופי (לביטחון)
+			order.setCustomerId(customer.getCustomerId());
+		}
+
+		// --- שלב 3: יצירת ההזמנה (משותף לכולם) ---
+		
+		int generatedCode = 1000 + (int) (Math.random() * 9000);
+		order.setConfirmationCode(generatedCode);
+
+		if (orderdao.createOrder(order)) {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.SUCCESS, "Order created.", order));
+			sendOrdersToAllClients();
+		} else {
+			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
+					Response.ResponseStatus.ERROR, "Database Error: Failed to create order.", null));
+		}
 	}
 
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
