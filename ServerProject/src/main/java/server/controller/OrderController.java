@@ -269,8 +269,15 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
-			if (order.getCustomerId() != null)
-				amount *= 0.9;
+			
+			// Check if customer is SUBSCRIBER for 10% discount
+			if (order.getCustomerId() != null) {
+				// Use correct DAO method to fetch customer by ID
+				Customer c = customerDao.getCustomerBySubscriberId(order.getCustomerId());
+				if (c != null && c.getType() == CustomerType.SUBSCRIBER) {
+					amount *= 0.9;
+				}
+			}
 
 			order.setTotalPrice(amount);
 			order.setOrderStatus(Order.OrderStatus.PAID);
