@@ -152,7 +152,7 @@ public class DBConnection {
 	    Statement stmt;
 	    String sql = "CREATE TABLE IF NOT EXISTS waiting_list (" +
 	                 "waiting_id INT NOT NULL AUTO_INCREMENT, " +
-	                 "customer_id INT DEFAULT NULL, " +
+	                 "customer_id INT , " +
 	                 "identification_details VARCHAR(255) NOT NULL, " +
 	                 "full_name VARCHAR(255) NOT NULL, " +
 	                 "number_of_guests INT NOT NULL, " +
@@ -160,7 +160,7 @@ public class DBConnection {
 	                 "confirmation_code INT NOT NULL, " +
 	                 "PRIMARY KEY (waiting_id), " +
 	                 "CONSTRAINT fk_waiting_customer FOREIGN KEY (customer_id) " +
-	                 "REFERENCES Customer(customer_id) ON DELETE SET NULL ON UPDATE CASCADE" +
+	                 "REFERENCES Customer(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE" +
 	                 ");";
 	    try {
 	        stmt = con.createStatement();
