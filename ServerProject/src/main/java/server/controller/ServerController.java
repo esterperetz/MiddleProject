@@ -79,10 +79,10 @@ public class ServerController extends AbstractServer {
 	 */
 	@Override
 	public void serverClosed() {
-//		if (cleanupThread != null)
-//			cleanupThread.stopThread();
-//		if (waitingListThread != null)
-//			waitingListThread.stopThread();
+		if (cleanupThread != null)
+			cleanupThread.stopThread();
+	if (waitingListThread != null)
+			waitingListThread.stopThread();
 		/// need to send all clients from here
 		Router.sendToAllClients("quit");
 		DBConnection.getInstance().closeConnection();

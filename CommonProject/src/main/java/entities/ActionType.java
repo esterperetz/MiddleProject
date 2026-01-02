@@ -19,6 +19,8 @@ public enum ActionType implements Serializable {
     //employee
     REGISTER_EMPLOYEE,
     REGISTER_SUBSCRIBER,
+    GET_MONTHLY_REPORT,
+
     
     // Subscriber specific
     GET_USER_ORDERS,
@@ -37,5 +39,6 @@ public enum ActionType implements Serializable {
     UPDATE_ORDER_STATUS,   // Change status to SEATED, etc.
     PAY_BILL,             // Complete payment and close order
     SEND_EMAIL
+ 
 
 }
