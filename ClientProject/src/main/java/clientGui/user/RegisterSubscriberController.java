@@ -8,6 +8,7 @@ import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
+import clientLogic.EmployeeLogic;
 import clientLogic.UserLogic;
 import entities.ActionType;
 import entities.Response;
@@ -58,8 +59,8 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		}
 		try {
 //		clientUi.addListener(this);//MUST DO NOT FORGER
-		UserLogic user = new UserLogic(clientUi);//MUST DO NOT FORGER
-		user.createCustomer(new Customer(1,11, username, phone, email,CustomerType.SUBSCRIBER)); //CHANGED FROM 123456 TO 0 (AUTO INC)
+		EmployeeLogic emp = new EmployeeLogic(clientUi);//MUST DO NOT FORGER
+		emp.createSubscriber(new Customer(0,0, username, phone, email,CustomerType.SUBSCRIBER)); //CHANGED FROM 123456 TO 0 (AUTO INC)
 		} catch(Exception e) {
 			System.out.println("one ");
 		}
@@ -74,12 +75,12 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			System.out.println(res.getStatus().getString());
 			
 			// Handle successful registration and navigate to Subscriber Options
-			if (res.getAction() == ActionType.REGISTER_SUBSCRIBER && res.getStatus() == Response.ResponseStatus.SUCCESS) {
+			if (super.isEquals(res.getStatus(), "SUCCESS")) {
 				Platform.runLater(() -> {
-					Customer newCus = (Customer) res.getData();
-					SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
+//					Employee newEmp = (Employee) res.getData();
+					ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", currentEvent, clientUi);
 					if (controller != null) {
-						controller.initData(clientUi,newCus.getType() , newCus.getSubscriberCode());
+						controller.initData(this.clientUi,this.isManager);
 					}
 				});
 			} else if (res.getStatus() == Response.ResponseStatus.ERROR) {

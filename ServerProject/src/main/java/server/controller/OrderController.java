@@ -105,29 +105,35 @@ public class OrderController {
 	}
 
 	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
-		Order o = (Order) req.getPayload();
-		
-		//function finds the ID of the regular customer
-		Customer cusId = customerDao.getCustomerBySubscriberId(o.getCustomerId());
-	    if(cusId == null) {//if it still null subscriber we will get ID with sbscriberCode 
-			cusId = customerDao.getCustomerBySubscriberCode(o.getCustomerId());
-		}
-	    o.setCustomerId(cusId.getCustomerId());
+	    Order o = (Order) req.getPayload();
 	    
-		
-		int generatedCode = 1000 + (int) (Math.random() * 9000);
-		o.setConfirmationCode(generatedCode);
-		if (orderdao.createOrder(o)) {
-			/// need to get email from customer table
-//			EmailService.sendConfirmation(o.getClientEmail(),o);
-			System.out.println(EmailService.getContent());
-			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-					"Order created.", o));
-			sendOrdersToAllClients();
-		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-					"Error: Could not save order to Database.", null));
-		}
+	    // חיפוש הלקוח - חשוב להשתמש ב-Integer כדי למנוע Unboxing ל-null
+	    Customer customer = customerDao.getCustomerBySubscriberId(o.getCustomerId()); 
+	    
+	    if (customer == null) {
+	        customer = customerDao.getCustomerBySubscriberCode(o.getCustomerId());
+	    }
+
+	    // --- בדיקת הגנה קריטית ---
+	    if (customer == null) {
+	        System.out.println("Customer not found for Order! ID received: " + o.getCustomerId());
+	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, 
+	                Response.ResponseStatus.ERROR, "שגיאה: לקוח לא נמצא במערכת", null));
+	        return; // מפסיק את הביצוע כאן - מונע את ה-NullPointerException
+	    }
+	    // -----------------------
+
+	    // עכשיו בטוח להשתמש ב-customer כי בדקנו שהוא לא null
+	    o.setCustomerId(customer.getCustomerId());
+	    
+	    int generatedCode = 1000 + (int) (Math.random() * 9000);
+	    o.setConfirmationCode(generatedCode);
+	    
+	    if (orderdao.createOrder(o)) {
+	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, 
+	                Response.ResponseStatus.SUCCESS, "Order created.", o));
+	        sendOrdersToAllClients();
+	    }
 	}
 
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {

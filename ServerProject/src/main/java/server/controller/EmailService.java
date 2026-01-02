@@ -150,7 +150,7 @@ public class EmailService{
     
 
         try {
-            request.setMethod(Method.POST);
+            request.setMethod(Method.POST); 
             request.setEndpoint("mail/send");
             request.setBody(mail.build());
             Response response = sg.api(request);

@@ -24,12 +24,14 @@ public class UserLogic {
 		client.sendRequest(req);
 	}
 	
-
 	public void createCustomer(Customer customer) {
 		System.out.println("in create client");
-		Request req = new Request(ResourceType.CUSTOMER, ActionType.REGISTER_SUBSCRIBER, null, customer);
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.REGISTER_CUSTOMER, null, customer);
 		client.sendRequest(req);
 	}
+	
+
+	
 
 	public void updateSubscriber(Customer customer) {
 		Request req = new Request(ResourceType.CUSTOMER, ActionType.UPDATE, customer.getSubscriberCode(),

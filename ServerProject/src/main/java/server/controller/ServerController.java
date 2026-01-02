@@ -112,7 +112,7 @@ public class ServerController extends AbstractServer {
 			Request request = (Request) msg;
 			router.route(request, client);
 
-		} catch (Exception e) {
+		} catch (Exception e) { 
 			e.printStackTrace();
 			view.log("Error processing message from client: " + e.getMessage());
 			try {

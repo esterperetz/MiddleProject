@@ -51,7 +51,7 @@ public class SelectionController extends MainNavigator implements  MessageListen
         System.out.println("Navigating to Casual Customer screen...");
         SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, CustomerType.REGULAR, null);
+            controller.initData(clientUi, CustomerType.REGULAR, 0);
         }
         //super.loadScreen("user/SubscriberOption", event,clientUi);
     }
