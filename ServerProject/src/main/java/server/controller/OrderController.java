@@ -19,6 +19,7 @@ public class OrderController {
 	private final TableDAO tabledao = new TableDAO();
 	private final CustomerDAO customerDao = new CustomerDAO();
 	private final BusinessHourDAO businessHourDao = new BusinessHourDAO();
+	private final Object tableLock = new Object();
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
@@ -224,27 +225,29 @@ public class OrderController {
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
 
-			if (diffInMinutes > 15) {
+			if (diffInMinutes > 15) { //if 15 minute violate
 				order.setOrderStatus(Order.OrderStatus.CANCELLED);
 				orderdao.updateOrder(order);
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 						Response.ResponseStatus.ERROR, "Expired", null));
-			} else {
-				Integer tableNum = tabledao.findAvailableTable(order.getNumberOfGuests());
-				if (tableNum != null) {
-					order.setOrderStatus(Order.OrderStatus.SEATED);
-					order.setArrivalTime(new Date());
-					order.setTableNumber(tableNum); // Assign table to order
-					orderdao.updateOrder(order);
-
-					tabledao.updateTableStatus(tableNum, true);
-
-					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-							Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum, order.getOrderNumber()));
-				} else {
-					client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-							Response.ResponseStatus.ERROR, "No table ready yet", null));
-				}
+			} else { //less than 15 minutes
+				synchronized(tableLock) {
+					Integer tableNum = tabledao.findAvailableTable(order.getNumberOfGuests());
+					if (tableNum != null) {
+						order.setOrderStatus(Order.OrderStatus.SEATED);
+						order.setArrivalTime(new Date());
+						order.setTableNumber(tableNum); // Assign table to order
+						orderdao.updateOrder(order);
+	
+						tabledao.updateTableStatus(tableNum, true);
+	
+						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
+								Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum, order.getOrderNumber()));
+					} else {
+						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
+								Response.ResponseStatus.ERROR, "No table ready yet", null));
+					}
+			}
 			}
 			sendOrdersToAllClients();
 		}
