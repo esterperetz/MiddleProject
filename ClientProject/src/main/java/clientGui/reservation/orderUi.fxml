@@ -68,8 +68,8 @@
 							prefWidth="100.0" />
 						<TableColumn fx:id="clientEmailColumn" text="Email"
 							prefWidth="130.0" />
-						<TableColumn fx:id="subscriber_idColumn"
-							text="Sub. ID" prefWidth="60.0" />
+						<TableColumn fx:id="customer_idColumn"
+							text="Cus. ID" prefWidth="60.0" />
 
 						<TableColumn fx:id="DateColumn" text="Date"
 							prefWidth="90.0" />
