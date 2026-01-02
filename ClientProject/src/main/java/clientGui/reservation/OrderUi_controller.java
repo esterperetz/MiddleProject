@@ -70,7 +70,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private TableColumn<Order, String> clientEmailColumn; // שדה חדש!
     
     @FXML
-    private TableColumn<Order, Integer> subscriber_idColumn;
+    private TableColumn<Order, Integer> customer_idColumn;
 
     @FXML
     private TableColumn<Order, Date> DateColumn; // Order Date
@@ -117,7 +117,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         clientEmailColumn.setCellValueFactory(cellData -> 
             new SimpleStringProperty((cellData.getValue()).getClientEmail()));
 
-        subscriber_idColumn.setCellValueFactory(cellData -> 
+        customer_idColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomerId()));
 
         DateColumn.setCellValueFactory(cellData -> 
