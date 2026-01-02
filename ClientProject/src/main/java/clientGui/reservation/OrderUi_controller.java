@@ -97,6 +97,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private OrderLogic orderLogic;
     private String ip;
     private Employee.Role isManager;
+    private String employeeName;
     public OrderUi_controller() {
     }
 
@@ -205,9 +206,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param ip       The server IP address.
 	 */
 	//public void initData(ClientUi clientUi, String ip) {
-	public void initData(Employee.Role isManager) {
+	public void initData(Employee.Role isManager,String employeeName) {
 		//this.clientUi = clientUi;
 		this.isManager=isManager;
+		this.employeeName = employeeName;
 		this.ip = clientUi.getIp();
 
 //		clientUi.addListener(this);
@@ -397,7 +399,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			AddOrderController controller = 
 	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
 			if (controller != null) {
-	            controller.initData(this.isManager);
+	            controller.initData(this.isManager,employeeName);
 	        } else {
 	            System.err.println("Error: Could not load AddOrderController.");
 	        }
@@ -429,22 +431,11 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			UpdateOrder controller = 
 	        		super.loadScreen("reservation/updateOrder", event,this.clientUi);
 	    	if (controller != null) {
-	            controller.initData(selectedOrder,orderLogic,this,this.isManager);
+	            controller.initData(selectedOrder,orderLogic,this,this.isManager,employeeName);
 	        } else {
 	            System.err.println("Error: Could not load ManagerOptionsController.");
 	        }
-	    	//FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/updateOrder.fxml"));
-			//Parent root = loader.load();
-			//super.loadScreen(, event, this.clientUi);
-			//UpdateOrder controller = loader.getController();
-			// Passing the selected order, OrderLogic, AND THIS controller reference for
-			// refresh
-			//controller.initData(selectedOrder, orderLogic, this);
-
-			//Stage stage = new Stage();
-			//stage.setTitle("Update Order #" + selectedOrder.getOrder_number());
-			//stage.setScene(new Scene(root));
-			//stage.show();
+	 
 		} catch (Exception e) {
 			e.printStackTrace();
 			String header = "Navigation Error";
@@ -491,8 +482,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		if (controller != null) {
 			//controller.initData(clientUi, ManagerOptionsController.isManager());
-			System.out.println(this.isManager.getRoleValue());
+			controller.AnotherinitData(employeeName);
 			controller.initData(clientUi, this.isManager);
+			
 		} else {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}

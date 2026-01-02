@@ -56,6 +56,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private boolean isSubscriberVerified = false;
 	private ActionEvent currentEvent;
 	private Employee.Role isManager;
+	private String employeeName;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -79,8 +80,8 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	// public void initData(ClientUi clientUi) {
-	public void initData(Employee.Role isManager) {
-		// this.clientUi = clientUi;
+	public void initData(Employee.Role isManager, String employeeName) {
+		this.employeeName = employeeName;
 		this.isManager = isManager;
 		this.orderLogic = new OrderLogic(this.clientUi);
 		this.userLogic = new UserLogic(this.clientUi);
@@ -197,12 +198,12 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						null, 0, // total_price
 						status // order_status
 				);
-				System.out.println("------------ "+cusId);
+				System.out.println("------------ " + cusId);
 				if (cusId == null) {
 					System.out.println("heloooo ");
 					userLogic.createCustomer(
 							new Customer(null, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
-				}else {
+				} else {
 					newOrder.setCustomerId(cusId);
 					orderLogic.createOrder(newOrder);
 				}
@@ -220,7 +221,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
-			controller.initData(this.isManager);
+			controller.initData(this.isManager,employeeName);
 		} else {
 			System.err.println("Error: Could not load OrderUi_controllerr.");
 		}
@@ -263,7 +264,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
 											currentEvent, clientUi);
 									if (controller != null) {
-										controller.initData(this.isManager);
+										controller.initData(this.isManager,employeeName);
 									} else {
 										System.err.println("Error: Could not load OrderUi_controller.");
 									}
@@ -278,16 +279,16 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					case ORDER:
 						if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
 							Alarm.showAlert("place order successfully", "success", Alert.AlertType.INFORMATION);
-							try {
-								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
-									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
-											currentEvent, clientUi);
-									if (controller != null)
-										controller.initData(this.isManager);
-								}
-							} catch (Exception e) {
-								System.out.println("error in loading screen");
-							}
+//							try {
+//								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
+//									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
+//											currentEvent, clientUi);
+//									if (controller != null)
+//										controller.initData(this.isManager);
+//								}
+//							} catch (Exception e) {
+//								System.out.println("error in loading screen");
+//							}
 						} else
 							Alarm.showAlert("error in placing  order", "error", Alert.AlertType.ERROR);
 

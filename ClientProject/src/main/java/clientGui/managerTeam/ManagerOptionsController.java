@@ -85,7 +85,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
-	private Employee em;
+	private String em;
 	// add button to register a new Employee by Manager.
 
 	/**
@@ -133,26 +133,27 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	public void initData(ClientUi clientUi, Employee.Role isManager) {
 		this.clientUi = clientUi;
-
+		
 		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
 		// isManager = true; // בהמשך זה יגיע מ-User
 		if (isManager == Employee.Role.MANAGER) {
+			this.isManager = Employee.Role.MANAGER;
 			this.isManagerFlag = true;
 
 			btnViewReports.setVisible(true);
 			btnViewReports.setManaged(true);
 			btnSignUp.setVisible(true);
 			btnSignUp.setManaged(true);
-			lblDashboardTitle.setText("Hello Manager, " + em.getUserName());
+			lblDashboardTitle.setText("Hello Manager, " + em);
 			lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
 		} else {
 			this.isManagerFlag = false;
-
+			this.isManager = Employee.Role.REPRESENTATIVE;
 			btnViewReports.setVisible(false);
 			btnViewReports.setManaged(false);
 			btnSignUp.setVisible(false);
 			btnSignUp.setManaged(false);
-			lblDashboardTitle.setText("Hello, " + em.getUserName());
+			lblDashboardTitle.setText("Hello, " + em);
 			lblDashboardSubtitle.setText("Employee Dashboard");
 		}
 //		// הצגת הכפתור אם צריך
@@ -177,7 +178,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	}
 
 	// change name
-	public void AnotherinitData(Employee em) {
+	public void AnotherinitData(String em) {
 		try {
 			this.em = em;
 
@@ -328,7 +329,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			////////////////////////////////////////////////////////////// check if button
 			////////////////////////////////////////////////////////////// disapear
 			// controller.initData(clientUi, clientUi.getIp());
-			controller.initData(this.isManager);
+			controller.initData(this.isManager,em);
 
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
@@ -341,7 +342,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		try {
 			RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event,
 					clientUi);
-			registerEmployee.initData(this.clientUi, this.isManager, this.em);
+			registerEmployee.initData(this.clientUi, this.isManager,em);
 		} catch (NullPointerException e) {
 			System.out.println("Error: the object RegisterEmployeeController is null");
 

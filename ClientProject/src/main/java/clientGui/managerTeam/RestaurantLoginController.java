@@ -109,7 +109,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 								// 2. אתחול הנתונים במסך החדש
 								if (controller != null) {
-									controller.AnotherinitData(emp);
+									controller.AnotherinitData(emp.getUserName());
 									controller.initData(clientUi, emp.getRole());
 								} else {
 									System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
