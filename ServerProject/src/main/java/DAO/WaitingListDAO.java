@@ -97,8 +97,7 @@ public class WaitingListDAO {
     }
 
     public boolean enterWaitingList(WaitingList item) throws SQLException {
-        String sql = "INSERT INTO waiting_list (subscriber_id, identification_details, full_name, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?, ?, ?)";
-        Connection con = null;
+    	String sql = "INSERT INTO waiting_list (customer_id, identification_details, full_name, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?, ?, ?)";        Connection con = null;
         PreparedStatement stmt = null;
 
         try {
@@ -140,8 +139,8 @@ public class WaitingListDAO {
 
     //creates waiting list from rs
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
-        int subIdTemp = rs.getInt("subscriber_id");
-        Integer subId = rs.wasNull() ? null : subIdTemp;
+    	int subIdTemp = rs.getInt("customer_id");
+    	Integer subId = rs.wasNull() ? null : subIdTemp;
 
         return new WaitingList(
                 rs.getInt("waiting_id"),
