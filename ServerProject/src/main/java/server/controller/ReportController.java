@@ -18,7 +18,7 @@ public class ReportController {
 
     /**
      * Handles incoming report requests.
-     * Aggregates data from multiple DAO methods into a single response object.
+     * Aggregates hashmaps (data) from multiple DAO methods into a single response hashmap.
      */
     public void handle(Request req, ConnectionToClient client) {
         // Validate action type
@@ -33,7 +33,7 @@ public class ReportController {
             Map<Integer, Integer> cancellations = reportDAO.getCancellationsByHour();
             Map<String, Integer> dailyOrders = reportDAO.getDailyOrderCount();
 
-            // Pack all data into a single map to send to client
+            // Pack all hashmaps into a single hashmap to send to client
             Map<String, Object> fullReportData = new HashMap<>();
             fullReportData.put("arrivals", arrivals);
             fullReportData.put("departures", departures);
