@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.time.LocalDate;
@@ -43,6 +44,16 @@ public class ReservationController extends MainNavigator implements MessageListe
 
     @FXML
     public void initialize() {
+    	
+    	Platform.runLater(() -> {
+			if (datePicker.getScene() != null && datePicker.getScene().getWindow() != null) {
+				Stage stage = (Stage) datePicker.getScene().getWindow();
+				stage.setOnCloseRequest(event -> {
+					clientUi.disconnectClient();
+
+				});
+			}
+		});
         setupDateConstraints();
         datePicker.valueProperty().addListener((observable, oldDate, newDate) -> {
             if (newDate != null) {
@@ -116,6 +127,7 @@ public class ReservationController extends MainNavigator implements MessageListe
             LocalTime localTime = LocalTime.parse(timeComboBox.getValue());
             Date orderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
             int guests = Integer.parseInt(dinersField.getText().trim());
+            System.out.println("IM HERE ID :" + customerId);
 
             Order newOrder = new Order(
                 0,

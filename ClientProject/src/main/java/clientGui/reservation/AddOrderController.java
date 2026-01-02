@@ -204,6 +204,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					userLogic.createCustomer(
 							new Customer(null, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
 				} else {
+					System.out.println("ME HERE");
 					newOrder.setCustomerId(cusId);
 					orderLogic.createOrder(newOrder);
 				}
@@ -254,7 +255,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 								handleInvalidSubscriber("Subscriber ID " + subscriberIdField.getText()
 										+ " does not exist in the system.");
 							}
-						} else if (res.getAction() == ActionType.REGISTER_SUBSCRIBER) {
+						} else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
 							if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
 								// 6. שליחה לשרת ומעבר מסך
 								this.newOrder.setCustomerId(cus.getCustomerId());

@@ -30,7 +30,7 @@ public class CustomerDAO {
 	        }
 			ps.setString(2, customer.getName());
 	        ps.setString(3, customer.getPhoneNumber());
-	        ps.setString(4, customer.getEmail());
+	        ps.setString(4, customer.getEmail()); 
 	        ps.setString(5, customer.getType().getString());
 
 			int rowsAffected = ps.executeUpdate();

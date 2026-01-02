@@ -86,7 +86,7 @@ public class Order implements Serializable {
 			return CustomerId;
 		}
 
-		public void setCustomerId(Integer CustomerId) {
+		public void setCustomerId(Integer CustomerId) { 
 			this.CustomerId = CustomerId;
 		}
 

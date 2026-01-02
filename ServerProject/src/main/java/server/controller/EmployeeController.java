@@ -3,12 +3,15 @@ package server.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
+
+import DAO.CustomerDAO;
 import DAO.EmployeeDAO;
 import entities.*;
 import ocsf.server.ConnectionToClient;
 
 public class EmployeeController {
     private final EmployeeDAO employeeDAO = new EmployeeDAO();
+    private final CustomerDAO customerDAO = new CustomerDAO();
 
     /** Processes manager authentication requests. */
     public void handle(Request req, ConnectionToClient client) throws IOException {
@@ -18,7 +21,10 @@ public class EmployeeController {
                     processLogin(req, client);
                     break;
                 case REGISTER_EMPLOYEE:
-                	processRegister(req,client);
+                	processRegister(req,client);  
+                	break;
+                case REGISTER_SUBSCRIBER:
+                	processRegisterSubscriber(req,client);
                 	break;
                 case UPDATE:
                 	processupdateEmploye(req,client);
@@ -34,7 +40,57 @@ public class EmployeeController {
         }
     }
 
-    private void processLogin(Request req, ConnectionToClient client) throws SQLException, IOException {
+    private void processRegisterSubscriber(Request req, ConnectionToClient client) {
+    	int code;
+		boolean isUnique = false;
+		Customer customer = (Customer) req.getPayload();
+		
+		Customer existing = customerDAO.getSubscriberBySubscriberEmail(customer.getEmail());
+		if (customer.getType() == CustomerType.SUBSCRIBER && existing != null) {
+			try {
+				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+						Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return;
+		}
+		
+		// לולאה שרצה עד שנמצא מספר פנוי
+		do {
+			// הגרלת מספר (למשל מספר בן 5 ספרות: 10000 עד 99999)
+			code = 10000 + (int) (Math.random() * 90000);
+			// בדיקה מול ה-DB אם המספר הזה כבר קיים
+			if ( customerDAO.getCustomerBySubscriberCode(code) == null) {
+					isUnique = true;
+				}
+		} while (!isUnique);
+				customer.setSubscriberCode(code);
+				boolean success = employeeDAO.createSubscriber(customer);
+				if(success) {
+					try {
+						client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+							Response.ResponseStatus.SUCCESS, "Created Subscriber with id: " + customer.getCustomerId(), customer));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+
+				else {
+					try {
+						client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+								Response.ResponseStatus.ERROR, "Error: Couldnt create subscriber.", null));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					return;
+		}
+	}
+
+	private void processLogin(Request req, ConnectionToClient client) throws SQLException, IOException {
         Employee credentials = (Employee) req.getPayload();
        try { Employee authorized = employeeDAO.login(credentials.getUserName(), credentials.getPassword());
         

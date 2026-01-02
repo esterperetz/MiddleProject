@@ -2,6 +2,7 @@ package clientLogic;
 
 import clientGui.ClientUi;
 import entities.ActionType;
+import entities.Customer;
 import entities.Employee;
 import entities.Request;
 import entities.ResourceType;
@@ -25,6 +26,12 @@ public class EmployeeLogic {
 	
 	public void updatePassword(Employee employee) {
 		Request req = new Request(ResourceType.EMPLOYEE, ActionType.UPDATE, null, employee);
+		client.sendRequest(req);
+	}
+	
+	public void createSubscriber(Customer customer) {
+		System.out.println("in create client");
+		Request req = new Request(ResourceType.EMPLOYEE, ActionType.REGISTER_SUBSCRIBER, null, customer);
 		client.sendRequest(req);
 	}
 }

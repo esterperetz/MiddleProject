@@ -2,6 +2,7 @@ package DAO;
 
 import java.sql.*;
 import DBConnection.DBConnection;
+import entities.Customer;
 import entities.Employee;
 import entities.Employee.Role;
 
@@ -22,7 +23,7 @@ public class EmployeeDAO {
 			ResultSet rs = stmt.executeQuery();
 
 			if (rs.next()) {
-
+ 
 
 				// Update login status
 				int empId = rs.getInt("employee_id");
@@ -61,6 +62,38 @@ public class EmployeeDAO {
 		}
 		return null;
 	}
+	
+	// Creates a new subscriber in the DB and updates the object's ID
+		public boolean createSubscriber(Customer customer) {
+			String query = "INSERT INTO Customer (subscriber_code,customer_name, phone_number, email , customer_type ) VALUES (?,?, ?, ?, ?)";	
+			try (Connection con = DBConnection.getInstance().getConnection();
+					PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+				
+				Integer subCode = customer.getSubscriberCode();
+		        // אם יש מספר, מכניסים אותו
+		        ps.setInt(1, subCode);
+				ps.setString(2, customer.getName());
+		        ps.setString(3, customer.getPhoneNumber());
+		        ps.setString(4, customer.getEmail()); 
+		        ps.setString(5, customer.getType().getString());
+
+				int rowsAffected = ps.executeUpdate();
+
+				if (rowsAffected > 0) {
+					ResultSet generatedKeys = ps.getGeneratedKeys(); // returns id number to ps
+					if (generatedKeys.next()) {
+						customer.setCustomerId(generatedKeys.getInt(1));
+					}
+					
+					
+					return true;
+				}
+			} catch (SQLException e) {
+				System.out.println("Error creating subscriber: " + e.getMessage());
+				e.printStackTrace();
+			}
+			return false;
+		}
 
 	/** Inserts a new employee into the DB. */
 	public boolean createEmployee(Employee emp) throws SQLException {

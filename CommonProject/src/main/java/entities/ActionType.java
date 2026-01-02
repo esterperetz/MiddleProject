@@ -18,11 +18,12 @@ public enum ActionType implements Serializable {
     
     //employee
     REGISTER_EMPLOYEE,
-    
+    REGISTER_SUBSCRIBER,
     
     // Subscriber specific
     GET_USER_ORDERS,
-    REGISTER_SUBSCRIBER,
+    
+    REGISTER_CUSTOMER,
 
     // Reservation Logic
     CHECK_AVAILABILITY,    // Verify table availability before booking
