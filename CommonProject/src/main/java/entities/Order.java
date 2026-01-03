@@ -6,7 +6,6 @@ import java.util.Date;
 public class Order implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-
 	// Enum for Order Status
 	public enum OrderStatus {
 		APPROVED, SEATED, PAID, CANCELLED
@@ -23,18 +22,22 @@ public class Order implements Serializable {
 	private Date leavingTime;
 	private double totalPrice;
 	private OrderStatus orderStatus;
-	
-	private String clientName;
-    private String clientEmail;
-    private String clientPhone;
-    private Integer subscriberId; 
 
-   public Order() {}
+	private String clientName;
+	private String clientEmail;
+	private String clientPhone;
+	private Integer subscriberId;
+
+	// Indicates if a reminder (Email/SMS) has been sent 2 hours prior
+	private boolean reminderSent = false;
+
+	public Order() {
+	}
 
 	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer CustomerId,
-			Integer tableNumber, Date dateOfPlacingOrder, 
+			Integer tableNumber, Date dateOfPlacingOrder,
 			Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
-		
+
 		this.orderNumber = orderNumber;
 		this.orderDate = orderDate;
 		this.numberOfGuests = numberOfGuests;
@@ -46,118 +49,146 @@ public class Order implements Serializable {
 		this.leavingTime = leavingTime;
 		this.totalPrice = totalPrice;
 		this.orderStatus = orderStatus;
-		
+
 	}
 
 	// Getters and Setters
-		public int getOrderNumber() {
-			return orderNumber;
-		}
-
-		public void setOrderNumber(int orderNumber) {
-			this.orderNumber = orderNumber;
-		}
-
-		public Date getOrderDate() {
-			return orderDate;
-		}
-
-		public void setOrderDate(Date orderDate) {
-			this.orderDate = orderDate;
-		}
-
-		public int getNumberOfGuests() {
-			return numberOfGuests;
-		}
-
-		public void setNumberOfGuests(int numberOfGuests) {
-			this.numberOfGuests = numberOfGuests;
-		}
-
-		public int getConfirmationCode() {
-			return confirmationCode;
-		}
-
-		public void setConfirmationCode(int confirmationCode) {
-			this.confirmationCode = confirmationCode;
-		}
-
-		public Integer getCustomerId() {
-			return CustomerId;
-		}
-
-		public void setCustomerId(Integer CustomerId) { 
-			this.CustomerId = CustomerId;
-		}
-
-		public Integer getTableNumber() {
-			return tableNumber;
-		}
-
-		public void setTableNumber(Integer tableNumber) {
-			this.tableNumber = tableNumber;
-		}
-
-		public Date getDateOfPlacingOrder() {
-			return dateOfPlacingOrder;
-		}
-
-		public void setDateOfPlacingOrder(Date dateOfPlacingOrder) {
-			this.dateOfPlacingOrder = dateOfPlacingOrder;
-		}
-
-		public double getTotalPrice() {
-			return totalPrice;
-		}
-
-		public void setTotalPrice(double totalPrice) {
-			this.totalPrice = totalPrice;
-		}
-
-
-		public Date getArrivalTime() {
-			return arrivalTime;
-		}
-
-		public void setArrivalTime(Date arrivalTime) {
-			this.arrivalTime = arrivalTime;
-		}
-	    
-	    public Date getLeavingTime() {
-			return leavingTime;
-		}
-
-		public void setLeavingTime(Date leavingTime) {
-			this.leavingTime = leavingTime;
-		}
-
-		public OrderStatus getOrderStatus() {
-			return orderStatus;
-		}
-
-		public void setOrderStatus(OrderStatus orderStatus) {
-			this.orderStatus = orderStatus;
-		}
-		 // Getters & Setters
-	    public String getClientName() { return clientName; }
-	    public void setTempClientName(String clientName) { this.clientName = clientName; }
-
-	    public String getClientEmail() { return clientEmail; }
-	    public void setTempClientEmail(String clientEmail) { this.clientEmail = clientEmail; }
-
-	    public String getClientPhone() { return clientPhone; }
-	    public void setTempClientPhone(String clientPhone) { this.clientPhone = clientPhone; }
-	    
-	    public Integer getSubscriberId() { return subscriberId; }
-	    public void setTempSubscriberId(Integer id) { this.subscriberId = id; }
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null || getClass() != obj.getClass())
-				return false;
-			Order other = (Order) obj;
-			return orderNumber == other.orderNumber;
-		}
+	public int getOrderNumber() {
+		return orderNumber;
 	}
+
+	public void setOrderNumber(int orderNumber) {
+		this.orderNumber = orderNumber;
+	}
+
+	public Date getOrderDate() {
+		return orderDate;
+	}
+
+	public void setOrderDate(Date orderDate) {
+		this.orderDate = orderDate;
+	}
+
+	public int getNumberOfGuests() {
+		return numberOfGuests;
+	}
+
+	public void setNumberOfGuests(int numberOfGuests) {
+		this.numberOfGuests = numberOfGuests;
+	}
+
+	public int getConfirmationCode() {
+		return confirmationCode;
+	}
+
+	public void setConfirmationCode(int confirmationCode) {
+		this.confirmationCode = confirmationCode;
+	}
+
+	public Integer getCustomerId() {
+		return CustomerId;
+	}
+
+	public void setCustomerId(Integer CustomerId) {
+		this.CustomerId = CustomerId;
+	}
+
+	public Integer getTableNumber() {
+		return tableNumber;
+	}
+
+	public void setTableNumber(Integer tableNumber) {
+		this.tableNumber = tableNumber;
+	}
+
+	public Date getDateOfPlacingOrder() {
+		return dateOfPlacingOrder;
+	}
+
+	public void setDateOfPlacingOrder(Date dateOfPlacingOrder) {
+		this.dateOfPlacingOrder = dateOfPlacingOrder;
+	}
+
+	public double getTotalPrice() {
+		return totalPrice;
+	}
+
+	public void setTotalPrice(double totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+
+	public Date getArrivalTime() {
+		return arrivalTime;
+	}
+
+	public void setArrivalTime(Date arrivalTime) {
+		this.arrivalTime = arrivalTime;
+	}
+
+	public Date getLeavingTime() {
+		return leavingTime;
+	}
+
+	public void setLeavingTime(Date leavingTime) {
+		this.leavingTime = leavingTime;
+	}
+
+	public OrderStatus getOrderStatus() {
+		return orderStatus;
+	}
+
+	public void setOrderStatus(OrderStatus orderStatus) {
+		this.orderStatus = orderStatus;
+	}
+
+	// Getters & Setters
+	public String getClientName() {
+		return clientName;
+	}
+
+	public void setTempClientName(String clientName) {
+		this.clientName = clientName;
+	}
+
+	public String getClientEmail() {
+		return clientEmail;
+	}
+
+	public void setTempClientEmail(String clientEmail) {
+		this.clientEmail = clientEmail;
+	}
+
+	public String getClientPhone() {
+		return clientPhone;
+	}
+
+	public void setTempClientPhone(String clientPhone) {
+		this.clientPhone = clientPhone;
+	}
+
+	public Integer getSubscriberId() {
+		return subscriberId;
+	}
+
+	public void setTempSubscriberId(Integer id) {
+		this.subscriberId = id;
+	}
+
+	public boolean isReminderSent() {
+		return reminderSent;
+	}
+
+	public void setReminderSent(boolean reminderSent) {
+		this.reminderSent = reminderSent;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		Order other = (Order) obj;
+		return orderNumber == other.orderNumber;
+	}
+}

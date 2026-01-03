@@ -1,6 +1,5 @@
 package server.controller;
 
-
 import DBConnection.DBConnection;
 import entities.Request;
 import ocsf.server.AbstractServer;
@@ -13,6 +12,7 @@ public class ServerController extends AbstractServer {
 	private final Router router;
 	private final OrderCleanupThread cleanupThread;
 	private final WaitingListCheckThread waitingListThread;
+	private final ReminderThread reminderThread;
 
 	public ServerController(int port, ServerViewController view) {
 		super(port);
@@ -21,9 +21,11 @@ public class ServerController extends AbstractServer {
 		view.setServerController(this);
 		this.cleanupThread = new OrderCleanupThread();
 		this.waitingListThread = new WaitingListCheckThread();
+		this.reminderThread = new ReminderThread();
 		this.cleanupThread.start();
 		this.waitingListThread.start();
-		view.log("Background threads (Cleanup & WaitingList) initialized and started.");
+		this.reminderThread.start();
+		view.log("Background threads (Cleanup, WaitingList, Reminder) initialized and started.");
 	}
 
 	/**
@@ -81,8 +83,10 @@ public class ServerController extends AbstractServer {
 	public void serverClosed() {
 		if (cleanupThread != null)
 			cleanupThread.stopThread();
-	if (waitingListThread != null)
+		if (waitingListThread != null)
 			waitingListThread.stopThread();
+		if (reminderThread != null)
+			reminderThread.stopThread();
 		/// need to send all clients from here
 		Router.sendToAllClients("quit");
 		DBConnection.getInstance().closeConnection();
@@ -112,7 +116,7 @@ public class ServerController extends AbstractServer {
 			Request request = (Request) msg;
 			router.route(request, client);
 
-		} catch (Exception e) { 
+		} catch (Exception e) {
 			e.printStackTrace();
 			view.log("Error processing message from client: " + e.getMessage());
 			try {

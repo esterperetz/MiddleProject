@@ -44,11 +44,12 @@ public class ReportDAO {
 
     // Fetches total order counts per day for the last month (formatted dd/MM).
     public Map<String, Integer> getDailyOrderCount() throws SQLException {
+        // Fix for MySQL Strict Mode: GROUP BY format matched SELECT, ORDER BY aggregated column
         String sql = "SELECT DATE_FORMAT(order_date, '%d/%m') as day, COUNT(*) as count " +
                      "FROM `order` " +
                      "WHERE order_date >= DATE_SUB(NOW(), INTERVAL 1 MONTH) " +
-                     "GROUP BY DATE(order_date) " +
-                     "ORDER BY DATE(order_date) ASC";
+                     "GROUP BY DATE_FORMAT(order_date, '%d/%m') " + 
+                     "ORDER BY MAX(order_date) ASC";
         
         Map<String, Integer> result = new TreeMap<>(); // TreeMap ensures dates remain sorted
         Connection con = DBConnection.getInstance().getConnection();

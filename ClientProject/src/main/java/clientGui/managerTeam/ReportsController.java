@@ -1,11 +1,17 @@
 package clientGui.managerTeam;
 
+import java.util.Map;
+import java.util.TreeMap;
 
 import client.MessageListener;
-import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
+import entities.ActionType;
 import entities.Employee;
+import entities.Request;
+import entities.ResourceType;
+import entities.Response;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -15,110 +21,134 @@ import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.stage.Stage;
 
-public class ReportsController extends MainNavigator implements MessageListener<Object>{
+public class ReportsController extends MainNavigator implements MessageListener<Object> {
 
     @FXML private BarChart<String, Number> barChartTimes;
     @FXML private LineChart<String, Number> lineChartOrders;
     @FXML private CategoryAxis xAxisTimes;
     @FXML private CategoryAxis xAxisDays;
+    
     private Employee.Role isManager;
+
     @FXML
     public void initialize() {
-        loadTimeChartData();
-        loadOrderTrendsData();
+        // Disable animation for smoother updates when data arrives
+        barChartTimes.setAnimated(false);
+        lineChartOrders.setAnimated(false);
     }
 
     /**
-     * גרף 1: טעינת נתוני הגעה, עזיבה ואיחורים
+     * Initializes controller, registers listener, and requests report data.
      */
-    private void loadTimeChartData() {
-        // סדרה 1: הגעות (Arrivals)
+    public void initData(ClientUi c, Employee.Role isManager) {
+        this.clientUi = c;
+        this.isManager = isManager;
+        
+        // Register this controller to receive server messages
+        this.clientUi.addListener(this);
+
+        // Send request to server
+        Request req = new Request(ResourceType.REPORT, ActionType.GET_MONTHLY_REPORT, null, null);
+        this.clientUi.sendRequest(req);
+    }
+
+    /**
+     * Handles the server response containing the nested Map structure.
+     */
+    @Override
+    public void onMessageReceive(Object msg) {
+        if (msg instanceof Response) {
+            Response response = (Response) msg;
+
+            // Check if this response is for the report request
+            if (response.getAction() == ActionType.GET_MONTHLY_REPORT && 
+                response.getStatus() == Response.ResponseStatus.SUCCESS) {
+
+                // Unpack the main map (Map<String, Object>) from response.getData()
+                @SuppressWarnings("unchecked")
+                Map<String, Object> fullData = (Map<String, Object>) response.getData();
+                
+                if (fullData != null) {
+                    // Extract inner maps using keys defined in Server ReportController
+                    @SuppressWarnings("unchecked")
+                    Map<Integer, Integer> arrivals = (Map<Integer, Integer>) fullData.get("arrivals");
+                    @SuppressWarnings("unchecked")
+                    Map<Integer, Integer> departures = (Map<Integer, Integer>) fullData.get("departures");
+                    @SuppressWarnings("unchecked")
+                    Map<Integer, Integer> cancellations = (Map<Integer, Integer>) fullData.get("cancellations");
+                    @SuppressWarnings("unchecked")
+                    Map<String, Integer> dailyOrders = (Map<String, Integer>) fullData.get("dailyOrders");
+
+                    // Update UI on JavaFX Application Thread
+                    Platform.runLater(() -> {
+                        updateTimeChart(arrivals, departures, cancellations);
+                        updateTrendsChart(dailyOrders);
+                    });
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the BarChart with hourly activity data.
+     */
+    private void updateTimeChart(Map<Integer, Integer> arrivals, Map<Integer, Integer> departures, Map<Integer, Integer> cancellations) {
+        barChartTimes.getData().clear();
+
         XYChart.Series<String, Number> seriesArrivals = new XYChart.Series<>();
         seriesArrivals.setName("Arrivals");
-        seriesArrivals.getData().add(new XYChart.Data<>("18:00", 12));
-        seriesArrivals.getData().add(new XYChart.Data<>("19:00", 45));
-        seriesArrivals.getData().add(new XYChart.Data<>("20:00", 30));
-        seriesArrivals.getData().add(new XYChart.Data<>("21:00", 10));
-
-        // סדרה 2: עזיבות (Departures)
+        
         XYChart.Series<String, Number> seriesDepartures = new XYChart.Series<>();
         seriesDepartures.setName("Departures");
-        seriesDepartures.getData().add(new XYChart.Data<>("18:00", 2));
-        seriesDepartures.getData().add(new XYChart.Data<>("19:00", 10));
-        seriesDepartures.getData().add(new XYChart.Data<>("20:00", 40));
-        seriesDepartures.getData().add(new XYChart.Data<>("21:00", 35));
+        
+        XYChart.Series<String, Number> seriesCancellations = new XYChart.Series<>();
+        seriesCancellations.setName("Late/No-Show");
 
-        // סדרה 3: איחורים (Late)
-        XYChart.Series<String, Number> seriesLates = new XYChart.Series<>();
-        seriesLates.setName("Late/No-Show");
-        seriesLates.getData().add(new XYChart.Data<>("18:00", 1));
-        seriesLates.getData().add(new XYChart.Data<>("19:00", 5));
-        seriesLates.getData().add(new XYChart.Data<>("20:00", 2));
-        seriesLates.getData().add(new XYChart.Data<>("21:00", 0));
+        // Iterate hours 0-23
+        for (int i = 0; i < 24; i++) {
+            String hourLabel = String.format("%02d:00", i);
+            seriesArrivals.getData().add(new XYChart.Data<>(hourLabel, arrivals.getOrDefault(i, 0)));
+            seriesDepartures.getData().add(new XYChart.Data<>(hourLabel, departures.getOrDefault(i, 0)));
+            seriesCancellations.getData().add(new XYChart.Data<>(hourLabel, cancellations.getOrDefault(i, 0)));
+        }
 
-        barChartTimes.getData().addAll(seriesArrivals, seriesDepartures, seriesLates);
+        barChartTimes.getData().addAll(seriesArrivals, seriesDepartures, seriesCancellations);
     }
 
     /**
-     * גרף 2: כמות הזמנות מול רשימת המתנה
+     * Updates the LineChart with daily order trends.
      */
-    private void loadOrderTrendsData() {
-        // סדרה 1: הזמנות בפועל
+    private void updateTrendsChart(Map<String, Integer> dailyOrders) {
+        lineChartOrders.getData().clear();
+
         XYChart.Series<String, Number> seriesOrders = new XYChart.Series<>();
         seriesOrders.setName("Total Orders");
-        
-        // נתונים לדוגמה לאורך החודש (ימים 1, 5, 10...)
-        seriesOrders.getData().add(new XYChart.Data<>("1", 50));
-        seriesOrders.getData().add(new XYChart.Data<>("5", 80));
-        seriesOrders.getData().add(new XYChart.Data<>("10", 65));
-        seriesOrders.getData().add(new XYChart.Data<>("15", 120));
-        seriesOrders.getData().add(new XYChart.Data<>("20", 90));
-        seriesOrders.getData().add(new XYChart.Data<>("25", 110));
 
-        // סדרה 2: אנשים ברשימת המתנה
-        XYChart.Series<String, Number> seriesWaiting = new XYChart.Series<>();
-        seriesWaiting.setName("Waiting List Count");
-        
-        seriesWaiting.getData().add(new XYChart.Data<>("1", 5));
-        seriesWaiting.getData().add(new XYChart.Data<>("5", 12));
-        seriesWaiting.getData().add(new XYChart.Data<>("10", 2));
-        seriesWaiting.getData().add(new XYChart.Data<>("15", 30)); // יום עמוס
-        seriesWaiting.getData().add(new XYChart.Data<>("20", 8));
-        seriesWaiting.getData().add(new XYChart.Data<>("25", 25));
+        // Use TreeMap to sort dates chronologically (assuming format allows or TreeMap default sort)
+        Map<String, Integer> sortedOrders = new TreeMap<>(dailyOrders);
 
-        lineChartOrders.getData().addAll(seriesOrders, seriesWaiting);
+        for (Map.Entry<String, Integer> entry : sortedOrders.entrySet()) {
+            seriesOrders.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        }
+
+        lineChartOrders.getData().add(seriesOrders);
     }
+
     @FXML
     void goBackBtn(ActionEvent event) {
-        // Logic for signing out or returning to the main selection screen
-      
-        System.out.println("Going back / Signing out...");
-        //MainNavigator.loadScreen("managerTeam/EmployeeOption" ,clientUi);
+        System.out.println("Going back...");
+        // Navigate back to Manager Options
         ManagerOptionsController controller = 
-        		super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
-    	if (controller != null) {
-            controller.initData(clientUi,this.isManager);
+                super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
+        if (controller != null) {
+            controller.initData(clientUi, this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
-	
 
     @FXML
     void closeScreen(ActionEvent event) {
         ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
     }
-    public void initData(ClientUi c, Employee.Role isManager)
-    {
-    	this.clientUi=c;
-    	this.isManager=isManager;
-    }
-
-	@Override
-	public void onMessageReceive(Object msg) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	
 }

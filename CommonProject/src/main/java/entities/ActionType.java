@@ -15,30 +15,27 @@ public enum ActionType implements Serializable {
     LOGIN,
     LOGOUT,
 
-    
-    //employee
+    // employee
     REGISTER_EMPLOYEE,
     REGISTER_SUBSCRIBER,
     GET_MONTHLY_REPORT,
 
-    
     // Subscriber specific
     GET_USER_ORDERS,
-    
+
     REGISTER_CUSTOMER,
 
     // Reservation Logic
-    CHECK_AVAILABILITY,    // Verify table availability before booking
-    
+    CHECK_AVAILABILITY, // Verify table availability before booking
+
     // Waiting List specific
     ENTER_WAITING_LIST,
     EXIT_WAITING_LIST,
     PROMOTE_TO_ORDER,
     IDENTIFY_AT_TERMINAL,
     // Table & Billing management
-    UPDATE_ORDER_STATUS,   // Change status to SEATED, etc.
-    PAY_BILL,             // Complete payment and close order
-    SEND_EMAIL
- 
-
+    UPDATE_ORDER_STATUS, // Change status to SEATED, etc.
+    PAY_BILL, // Complete payment and close order
+    SEND_EMAIL,
+    RESEND_CONFIRMATION
 }
