@@ -89,10 +89,10 @@ public class CustomerController {
 		boolean success = CustomerDAO.createCustomer(newCub);
 		if (success) {
 			// Updated to camelCase
-			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
 					Response.ResponseStatus.SUCCESS, "Customer_id" + newCub.getCustomerId(), newCub));
 		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
 					Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
 		}
 	}

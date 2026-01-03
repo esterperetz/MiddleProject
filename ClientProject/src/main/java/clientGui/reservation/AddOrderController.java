@@ -192,7 +192,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						orderDate, // order_date (תאריך ושעה)
 						guests, // number_of_guests
 						0, // confirmation_code (נוצר בשרת)
-						0, // subscriber_id
+						null, // subscriber_id
 						null, new Date(), // date_of_placing_order (עכשיו)
 						arrivalDate, // ArrivalTime (השדה החדש)
 						null, 0, // total_price
@@ -231,9 +231,10 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	@Override
 	public void onMessageReceive(Object msg) {
 
-		Platform.runLater(() -> {
+		
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
+				Platform.runLater(() -> {
 				if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
 					switch (res.getResource()) {
 					case CUSTOMER:
@@ -249,7 +250,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 								isSubscriberVerified = true;
 								valid();
 
-							} else {
+							} else { 
 								// === מקרה 3: מנוי לא קיים (Exception) ===
 								// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
 								handleInvalidSubscriber("Subscriber ID " + subscriberIdField.getText()
@@ -261,7 +262,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 								this.newOrder.setCustomerId(cus.getCustomerId());
 								if (orderLogic != null) {
 									orderLogic.createOrder(newOrder);
-
+									System.out.println("WHAT?>");
 									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
 											currentEvent, clientUi);
 									if (controller != null) {
@@ -280,16 +281,16 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					case ORDER:
 						if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
 							Alarm.showAlert("place order successfully", "success", Alert.AlertType.INFORMATION);
-//							try {
-//								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
-//									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
-//											currentEvent, clientUi);
-//									if (controller != null)
-//										controller.initData(this.isManager);
-//								}
-//							} catch (Exception e) {
-//								System.out.println("error in loading screen");
-//							}
+							try {
+								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
+									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
+											currentEvent, clientUi);
+									if (controller != null)
+										controller.initData(this.isManager, employeeName);
+								}
+							} catch (Exception e) {
+								System.out.println("error in loading screen");
+							}
 						} else
 							Alarm.showAlert("error in placing  order", "error", Alert.AlertType.ERROR);
 
@@ -299,11 +300,12 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						break;
 
 					}
+				
+			 }
+				});
 
-				}
-
-			}
-		});
+		}
+		
 	}
 
 	private void handleInvalidSubscriber(String errorMessage) {
