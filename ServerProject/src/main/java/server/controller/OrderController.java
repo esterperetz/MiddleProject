@@ -30,39 +30,42 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-			case GET_ALL:
-				handleGetAll(req, client);
-				break;
-			case GET_ALL_BY_SUBSCRIBER_ID:
-				handleGetAllBySubscriberId(req, client);
-				break;
-			case GET_BY_ID:
-				handleGetById(req, client);
-				break;
-			case CREATE:
-				handleCreate(req, client);
-				break;
-			case UPDATE:
-				handleUpdate(req, client);
-				break;
-			case DELETE:
-				handleDelete(req, client);
-				break;
-			case CHECK_AVAILABILITY:
-				handleCheckAvailability(req, client);
-				break;
-			case IDENTIFY_AT_TERMINAL:
-				handleIdentifyAtTerminal(req, client);
-				break;
-			case PAY_BILL:
-				handlePayBill(req, client);
-				break;
-			case SEND_EMAIL:
-				handleSendEmail(req, client);
-				break;
-			default:
-				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
-						"Unsupported action: " + req.getAction(), null));
+				case GET_ALL:
+					handleGetAll(req, client);
+					break;
+				case GET_ALL_BY_SUBSCRIBER_ID:
+					handleGetAllBySubscriberId(req, client);
+					break;
+				case GET_BY_ID:
+					handleGetById(req, client);
+					break;
+				case CREATE:
+					handleCreate(req, client);
+					break;
+				case UPDATE:
+					handleUpdate(req, client);
+					break;
+				case DELETE:
+					handleDelete(req, client);
+					break;
+				case CHECK_AVAILABILITY:
+					handleCheckAvailability(req, client);
+					break;
+				case IDENTIFY_AT_TERMINAL:
+					handleIdentifyAtTerminal(req, client);
+					break;
+				case PAY_BILL:
+					handlePayBill(req, client);
+					break;
+				case SEND_EMAIL:
+					handleSendEmail(req, client);
+					break;
+				case RESEND_CONFIRMATION:
+					handleResendConfirmation(req, client);
+					break;
+				default:
+					client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+							"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -75,12 +78,14 @@ public class OrderController {
 		client.sendToClient(
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
-//
-//	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
-//		List<Order> orders = orderdao.getAllOrders();
-//		client.sendToClient(
-//				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
-//	}
+	//
+	// private void handleGetAll(Request req, ConnectionToClient client) throws
+	// SQLException, IOException {
+	// List<Order> orders = orderdao.getAllOrders();
+	// client.sendToClient(
+	// new Response(req.getResource(), ActionType.GET_ALL,
+	// Response.ResponseStatus.SUCCESS, null, orders));
+	// }
 
 	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
@@ -112,13 +117,13 @@ public class OrderController {
 		Customer guest = null;
 
 		// --- שלב 1: זיהוי סוג המידע (תמיכה לאחור) ---
-		
+
 		// בדיקה: האם זה ה-Flow החדש (Map שמכיל הזמנה + אולי אורח)?
 		if (payload instanceof Map) {
 			Map<String, Object> data = (Map<String, Object>) payload;
 			order = (Order) data.get("order");
 			guest = (Customer) data.get("guest");
-		} 
+		}
 		// בדיקה: האם זה ה-Flow הישן (רק אובייקט Order)?
 		else if (payload instanceof Order) {
 			order = (Order) payload;
@@ -156,7 +161,7 @@ public class OrderController {
 		// זו הלוגיקה המקורית שלך בדיוק!
 		else {
 			Customer customer = null;
-			
+
 			// הגנה מפני Null ב-ID
 			if (order.getCustomerId() != null) {
 				customer = customerDao.getCustomerBySubscriberId(order.getCustomerId());
@@ -171,15 +176,15 @@ public class OrderController {
 						Response.ResponseStatus.ERROR, "Error: Customer not found in system.", null));
 				return;
 			}
-			
+
 			// עדכון ה-ID הסופי (לביטחון)
 			order.setCustomerId(customer.getCustomerId());
 		}
 
 		// --- שלב 3: יצירת ההזמנה (משותף לכולם) ---
-		
-		int generatedCode = 1000 + (int) (Math.random() * 9000);
-		order.setConfirmationCode(generatedCode);
+
+		// Generate unique confirmation code
+		order.setConfirmationCode(generateUniqueConfirmationCode());
 
 		if (orderdao.createOrder(order)) {
 			client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
@@ -195,7 +200,7 @@ public class OrderController {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
 			/// need to get email from customer table
-//			EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
+			// EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Order updated.", updatedOrder));
@@ -218,7 +223,7 @@ public class OrderController {
 		if (orderdao.deleteOrder(req.getId())) {
 			/// need to get email from customer table
 
-//			EmailService.sendCancelation(order.getClientEmail(),order);
+			// EmailService.sendCancelation(order.getClientEmail(),order);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
 					"Order deleted.", order));
@@ -285,29 +290,30 @@ public class OrderController {
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
 
-			if (diffInMinutes > 15) { //if 15 minute violate
+			if (diffInMinutes > 15) { // if 15 minute violate
 				order.setOrderStatus(Order.OrderStatus.CANCELLED);
 				orderdao.updateOrder(order);
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 						Response.ResponseStatus.ERROR, "Expired", null));
-			} else { //less than 15 minutes
-				synchronized(tableLock) {
+			} else { // less than 15 minutes
+				synchronized (tableLock) {
 					Integer tableNum = tabledao.findAvailableTable(order.getNumberOfGuests());
 					if (tableNum != null) {
 						order.setOrderStatus(Order.OrderStatus.SEATED);
 						order.setArrivalTime(new Date());
 						order.setTableNumber(tableNum); // Assign table to order
 						orderdao.updateOrder(order);
-	
+
 						tabledao.updateTableStatus(tableNum, true);
-	
+
 						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
-								Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum, order.getOrderNumber()));
+								Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum,
+								order.getOrderNumber()));
 					} else {
 						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 								Response.ResponseStatus.ERROR, "No table ready yet", null));
 					}
-			}
+				}
 			}
 			sendOrdersToAllClients();
 		}
@@ -323,7 +329,7 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
-			
+
 			// Check if customer is SUBSCRIBER for 10% discount
 			if (order.getCustomerId() != null) {
 				// Use correct DAO method to fetch customer by ID
@@ -354,7 +360,7 @@ public class OrderController {
 			if (req.getPayload() instanceof Order) {
 				Order order = (Order) req.getPayload();
 				/// need to get email from customer table
-//				EmailService.sendConfirmation(order.getClientEmail(), order);
+				// EmailService.sendConfirmation(order.getClientEmail(), order);
 				Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.SEND_EMAIL,
 						Response.ResponseStatus.SUCCESS, "Email has been sent!", EmailService.getContent()));
 			} else {
@@ -368,6 +374,41 @@ public class OrderController {
 
 	}
 
+	private void handleResendConfirmation(Request req, ConnectionToClient client) throws SQLException, IOException {
+		String contact = (String) req.getPayload(); // Expect email or phone string
+		if (contact == null || contact.isEmpty()) {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.RESEND_CONFIRMATION,
+					Response.ResponseStatus.ERROR, "Missing contact details.", null));
+			return;
+		}
+
+		Order order = orderdao.getOrderByContact(contact);
+		if (order != null) {
+			// Generate NEW UNIQUE confirmation code
+			order.setConfirmationCode(generateUniqueConfirmationCode());
+
+			// Update in Database
+			orderdao.updateOrder(order);
+
+			// Construct a temporary Customer object for EmailService
+			// We can use the data fetched by the join in OrderDAO
+			Customer tempCustomer = new Customer(
+					order.getCustomerId(),
+					order.getClientName(),
+					order.getClientPhone(),
+					order.getClientEmail());
+
+			// Send Email with NEW code
+			EmailService.sendConfirmation(tempCustomer, order);
+
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.RESEND_CONFIRMATION,
+					Response.ResponseStatus.SUCCESS, "New confirmation code generated and sent to email.", order));
+		} else {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.RESEND_CONFIRMATION,
+					Response.ResponseStatus.ERROR, "No upcoming approved order found for this contact.", null));
+		}
+	}
+
 	private void sendOrdersToAllClients() {
 		try {
 			List<Order> orders = orderdao.getAllOrders();
@@ -376,5 +417,19 @@ public class OrderController {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Generates a unique 4-digit confirmation code by ensuring it doesn't collide
+	 * with any currently APPROVED order.
+	 */
+	private int generateUniqueConfirmationCode() throws SQLException {
+		int newCode;
+		Order existingOrder;
+		do {
+			newCode = 1000 + (int) (Math.random() * 9000);
+			existingOrder = orderdao.getByConfirmationCode(newCode);
+		} while (existingOrder != null);
+		return newCode;
 	}
 }
