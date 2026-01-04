@@ -289,20 +289,29 @@ public class OrderDAO {
 	 * Counts overlapping active orders for availability check.
 	 */
 	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int numberOfGuests) throws SQLException {
-		String sql = "SELECT COUNT(*) FROM `order` "
-				+ "WHERE order_date BETWEEN (? - INTERVAL 2 HOUR) AND (? + INTERVAL 2 HOUR) "
-				+ "AND order_status IN ('APPROVED', 'SEATED') AND number_of_guests >= ?";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
-			Timestamp ts = new Timestamp(requestedDate.getTime());
-			stmt.setTimestamp(1, ts);
-			stmt.setTimestamp(2, ts);
-			stmt.setInt(3, numberOfGuests);
-			try (ResultSet rs = stmt.executeQuery()) {
-				return rs.next() ? rs.getInt(1) : 0;
-			}
-		}
+	    String sql = "SELECT COUNT(*) FROM `order` "
+	            + "WHERE order_status IN ('APPROVED', 'SEATED') " 
+	            + "AND number_of_guests >= ? "
+	            + "AND order_date <= (? + INTERVAL 2 HOUR) "      
+	            + "AND (order_date + INTERVAL 2 HOUR) >= ?";      
+
+	    try (Connection con = DBConnection.getInstance().getConnection();
+	         PreparedStatement stmt = con.prepareStatement(sql)) {
+	        
+	        Timestamp newOrderStart = new Timestamp(requestedDate.getTime());
+
+	        stmt.setInt(1, numberOfGuests);
+	        stmt.setTimestamp(2, newOrderStart);
+	        stmt.setTimestamp(3, newOrderStart);
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            return rs.next() ? rs.getInt(1) : 0;
+	        }
+	    }catch(Exception e) {
+	    	System.err.println("Error count Active Orders In Time Range");
+	    }
+	    return 0;
 	}
 
 	/* --- NEW FUNCTIONS FOR WAITING LIST THREAD --- */
