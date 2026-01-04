@@ -6,6 +6,7 @@ import clientGui.navigation.MainNavigator;
 import clientLogic.EmployeeLogic;
 import entities.Alarm;
 import entities.Employee;
+import entities.Employee.Role;
 import entities.Response;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -27,13 +28,20 @@ public class SetEmployeePasswordController extends MainNavigator implements Mess
 	private ActionEvent currentEvent;
 	
 	private Employee emp;
+
+	private Role isManager;
 	
 	
 	
-	public void initData(ClientUi clientUi, Employee emp) {
-		this.clientUi = clientUi;
-		this.emp = emp;
-	}
+
+	public void initData(Employee emp ,ClientUi c, Employee.Role isManager) {
+	    	this.emp = emp;
+	        this.clientUi = c;
+	        this.isManager = isManager;
+	        
+	        // Initial load of data from server
+	     
+	    }
 
 	@FXML
 	void handleSaveBtn(ActionEvent event) {
@@ -79,7 +87,7 @@ public class SetEmployeePasswordController extends MainNavigator implements Mess
 				Response response = (Response) msg;
 				Platform.runLater(() -> {
 
-					if (response.getStatus() == Response.ResponseStatus.SUCCESS) {
+					if (response.getStatus().name().equals("SUCCESS")) {
 						Alarm.showAlert("Login Succsesfully!", "Navigating to Employee Login...",
 								AlertType.INFORMATION);
 						// check if manager or regular worker
@@ -87,13 +95,14 @@ public class SetEmployeePasswordController extends MainNavigator implements Mess
 							// Response r=(Response)msg;
 							Employee e = (Employee) response.getData();
 							//Add   alert
-							
+							RestaurantLoginController controller = super.loadScreen("managerTeam/RestaurantLogin",
+									currentEvent, clientUi);
+							controller.initData(e, clientUi, isManager);
 							
 						} catch (Exception e) {
 							System.out.println(response.getMessage_from_server());
 						}
-						RestaurantLoginController controller = super.loadScreen("managerTeam/RestaurantLogin",
-								currentEvent, clientUi);
+						
 
 						// 2. אתחול הנתונים במסך החדש
 						

@@ -24,6 +24,7 @@ import java.util.Map;
 import client.MessageListener;
 import clientLogic.OrderLogic;
 import entities.ActionType;
+import entities.Alarm;
 import entities.Customer;
 import entities.CustomerType;
 import entities.Order;
@@ -188,7 +189,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 				if (res.getResource() == ResourceType.ORDER && res.getAction() == ActionType.CREATE) {
 					System.out.println("hereee!");
 					if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-						MainNavigator.showAlert("Success", "Table Booked successfully!", Alert.AlertType.INFORMATION);
+						Alarm.showAlert("Success", "Table Booked successfully!", Alert.AlertType.INFORMATION);
 						super.loadScreen("navigation/SelectionScreen", currentEvent, clientUi);
 					} else {
 						errorLabel.setText("Error: " + res.getMessage_from_server());

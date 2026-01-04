@@ -51,6 +51,8 @@ public class WaitingListController extends MainNavigator implements Initializabl
     
     private Employee.Role isManager;
 
+	private Employee emp;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         // Mapping columns to WaitingList entity properties
@@ -120,13 +122,14 @@ public class WaitingListController extends MainNavigator implements Initializabl
         ManagerOptionsController controller = 
                 super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, this.isManager);
+            controller.initData(emp,clientUi, this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }
     }
 
-    public void initData(ClientUi c, Employee.Role isManager) {
+    public void initData(Employee emp ,ClientUi c, Employee.Role isManager) {
+    	this.emp = emp;
         this.clientUi = c;
         this.isManager = isManager;
         

@@ -40,7 +40,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		String subscriber_Code = SubscriberCode.getText().trim();
 
 		if (subscriber_Code.isEmpty()) {
-			super.showAlert("Input Error", "Please enter a code", Alert.AlertType.WARNING);
+			Alarm.showAlert("Input Error", "Please enter a code", Alert.AlertType.WARNING);
 			return;
 		}
 
@@ -51,7 +51,8 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 			user.getSubscriberById(Integer.parseInt(subscriber_Code));
 
 		} catch (NumberFormatException e) {
-			super.showAlert("Format Error", "Code must be a number", Alert.AlertType.ERROR);
+			Alarm.showAlert("Format Error", "Code must be a number", Alert.AlertType.ERROR);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -64,10 +65,10 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
 //					boolean isSuccess = res.getStatus().getString().equals("SUCCESS");
-					boolean isSuccess = super.isEquals(res.getStatus(), "SUCCESS");
+					boolean isSuccess = res.getStatus().name().equals("SUCCESS");
 					Platform.runLater(() -> {
 						if (isSuccess) {
-							System.out.println(res.getStatus().getString());
+							System.out.println(res.getStatus().name());
 							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
 									currentEvent, clientUi);
 							if (controller != null) {

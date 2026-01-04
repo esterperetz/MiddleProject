@@ -29,6 +29,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
     @FXML private CategoryAxis xAxisDays;
     
     private Employee.Role isManager;
+	private Employee emp;
 
     @FXML
     public void initialize() {
@@ -40,7 +41,8 @@ public class ReportsController extends MainNavigator implements MessageListener<
     /**
      * Initializes controller, registers listener, and requests report data.
      */
-    public void initData(ClientUi c, Employee.Role isManager) {
+    public void initData(Employee emp,ClientUi c, Employee.Role isManager) {
+    	this.emp = emp;
         this.clientUi = c;
         this.isManager = isManager;
         
@@ -61,8 +63,8 @@ public class ReportsController extends MainNavigator implements MessageListener<
             Response response = (Response) msg;
 
             // Check if this response is for the report request
-            if (response.getAction() == ActionType.GET_MONTHLY_REPORT && 
-                response.getStatus() == Response.ResponseStatus.SUCCESS) {
+            if (response.getAction().name().equals("GET_MONTHLY_REPORT") && 
+                response.getStatus().name().equals("SUCCESS")) {
 
                 // Unpack the main map (Map<String, Object>) from response.getData()
                 @SuppressWarnings("unchecked")
@@ -141,7 +143,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
         ManagerOptionsController controller = 
                 super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, this.isManager);
+            controller.initData(emp,clientUi, this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }

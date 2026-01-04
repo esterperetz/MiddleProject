@@ -23,6 +23,7 @@ import entities.ActionType;
 import entities.Alarm;
 import entities.Customer;
 import entities.Employee;
+import entities.Employee.Role;
 import entities.Order;
 import entities.Request;
 import entities.Response;
@@ -97,7 +98,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private OrderLogic orderLogic;
     private String ip;
     private Employee.Role isManager;
-    private String employeeName;
+	private Employee emp;
+//    private String employeeName;
     public OrderUi_controller() {
     }
  
@@ -205,14 +207,19 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param clientUi The client UI used for server communication.
 	 * @param ip       The server IP address.
 	 */
-	//public void initData(ClientUi clientUi, String ip) {
-	public void initData(Employee.Role isManager,String employeeName) {
-		//this.clientUi = clientUi;
+	
+    public void initData() {
+		// TODO Auto-generated method stub
+		
+	}
+	public void initData(Employee emp, ClientUi clientUi, Role isManager) {
+		this.emp = emp;
+		this.clientUi = clientUi;
 		this.isManager=isManager;
-		this.employeeName = employeeName;
+//		this.employeeName = employeeName;
 		this.ip = clientUi.getIp();
 
-//		clientUi.addListener(this);
+
 		orderLogic = new OrderLogic(clientUi);
 
 		System.out.println("Initialization: Requesting all orders...");
@@ -327,11 +334,11 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 					if (data instanceof Boolean) {
 						boolean success = (Boolean) data;
 						if (success) {
-							showAlert("Success", "Operation completed successfully!", Alert.AlertType.INFORMATION);
+							Alarm.showAlert("Success", "Operation completed successfully!", Alert.AlertType.INFORMATION);
 		                    // Refresh table after success
 		                    orderLogic.getAllOrders(); 
 		                } else {
-		                    showAlert("Failure", "Operation failed.", Alert.AlertType.ERROR);
+		                    Alarm.showAlert("Failure", "Operation failed.", Alert.AlertType.ERROR);
 		                }
 					}
 					// Handle specific text error from server
@@ -399,7 +406,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			AddOrderController controller = 
 	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
 			if (controller != null) {
-	            controller.initData(this.isManager,employeeName);
+	            controller.initData(emp,emp.getRole());
 	        } else {
 	            System.err.println("Error: Could not load AddOrderController.");
 	        }
@@ -431,7 +438,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			UpdateOrder controller = 
 	        		super.loadScreen("reservation/updateOrder", event,this.clientUi);
 	    	if (controller != null) {
-	            controller.initData(selectedOrder,orderLogic,this,this.isManager,employeeName);
+	            controller.initData(selectedOrder,orderLogic,this,this.isManager,emp);
 	        } else {
 	            System.err.println("Error: Could not load ManagerOptionsController.");
 	        }
@@ -482,13 +489,15 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		if (controller != null) {
 			//controller.initData(clientUi, ManagerOptionsController.isManager());
-			controller.AnotherinitData(employeeName);
-			controller.initData(clientUi, this.isManager);
+//			controller.AnotherinitData(employeeName);
+			controller.initData(emp,clientUi, this.isManager);
 			
 		} else {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}
 	}
+
+	
 
 	/*
 	 * /**

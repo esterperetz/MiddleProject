@@ -96,17 +96,18 @@ public class MainNavigator implements BaseController {
 		}
 		
 	}
-	
-	protected boolean isEquals(ResponseStatus status, String toCompare) {
-		
-		return status.getString().equals(toCompare);
-		
-	}
+//	
+//	public static <E extends Enum<E>> boolean isEquals(E enumValue, String toCompare) {
+//	    if (enumValue == null || toCompare == null) return false;
+//	    
+//	 
+//	    return enumValue.name().equals(toCompare); 
+//	}
 
 	
-	// ask liel about this function(ido)
-	public static void showAlert(String header_text, String context_text, Alert.AlertType type) {
-		
-		Alarm.showAlert(header_text, context_text, type);
-	}
+//	// ask liel about this function(ido)
+//	public static void showAlert(String header_text, String context_text, Alert.AlertType type) {
+//		
+//		Alarm.showAlert(header_text, context_text, type);
+//	}
 }
