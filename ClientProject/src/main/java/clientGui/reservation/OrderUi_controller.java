@@ -100,7 +100,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private String employeeName;
     public OrderUi_controller() {
     }
-
+ 
     @FXML
     private void initialize() {
         // --- 2. חיבור הנתונים לטבלה (הקוד הקיים שלך נשאר זהה) ---

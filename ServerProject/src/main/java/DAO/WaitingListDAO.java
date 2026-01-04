@@ -97,7 +97,8 @@ public class WaitingListDAO {
     }
 
     public boolean enterWaitingList(WaitingList item) throws SQLException {
-    	String sql = "INSERT INTO waiting_list (customer_id, identification_details, full_name, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?, ?, ?)";        Connection con = null;
+    	String sql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?)";
+    	Connection con = null;
         PreparedStatement stmt = null;
 
         try {
@@ -110,11 +111,10 @@ public class WaitingListDAO {
                 stmt.setInt(1, item.getCustomerId());
             }
 
-            stmt.setString(2, item.getIdentificationDetails());
-            stmt.setString(3, item.getFullName());
-            stmt.setInt(4, item.getNumberOfGuests());
-            stmt.setTimestamp(5, new java.sql.Timestamp(item.getEnterTime().getTime()));
-            stmt.setInt(6, item.getConfirmationCode());
+      
+            stmt.setInt(2, item.getNumberOfGuests());
+            stmt.setTimestamp(3, new java.sql.Timestamp(item.getEnterTime().getTime()));
+            stmt.setInt(4, item.getConfirmationCode());
 
             return stmt.executeUpdate() > 0;
         } finally {
@@ -145,8 +145,6 @@ public class WaitingListDAO {
         return new WaitingList(
                 rs.getInt("waiting_id"),
                 subId,
-                rs.getString("identification_details"),
-                rs.getString("full_name"),
                 rs.getInt("number_of_guests"),
                 rs.getTimestamp("enter_time"),
                 rs.getInt("confirmation_code")

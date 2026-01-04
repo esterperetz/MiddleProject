@@ -8,18 +8,18 @@ public class WaitingList implements Serializable {
 
 	private int waitingId;
 	private Integer customerId;
-	private String identificationDetails; //Phone or Email for non subscriber
-	private String fullName;
+//	private String identificationDetails; //Phone or Email for non subscriber
+//	private String fullName;
 	private int numberOfGuests;
 	private Date enterTime;
 	private int confirmationCode;
 
-	public WaitingList(int waitingId, Integer customerId, String identificationDetails, String fullName,
+	public WaitingList(int waitingId, Integer customerId,
 			int numberOfGuests, Date enterTime, int confirmationCode) {
 		this.waitingId = waitingId;
 		this.customerId = customerId;
-		this.identificationDetails = identificationDetails;
-		this.fullName = fullName;
+//		this.identificationDetails = identificationDetails;
+//		this.fullName = fullName;
 		this.numberOfGuests = numberOfGuests;
 		this.enterTime = enterTime;
 		this.confirmationCode = confirmationCode;
@@ -41,22 +41,22 @@ public class WaitingList implements Serializable {
 	public void setCustomerId(Integer customerId) {
 		this.customerId = customerId;
 	}
+//
+//	public String getIdentificationDetails() {
+//		return identificationDetails;
+//	}
+//
+//	public void setIdentificationDetails(String identificationDetails) {
+//		this.identificationDetails = identificationDetails;
+//	}
 
-	public String getIdentificationDetails() {
-		return identificationDetails;
-	}
-
-	public void setIdentificationDetails(String identificationDetails) {
-		this.identificationDetails = identificationDetails;
-	}
-
-	public String getFullName() {
-		return fullName;
-	}
-
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
-	}
+//	public String getFullName() {
+//		return fullName;
+//	}
+//
+//	public void setFullName(String fullName) {
+//		this.fullName = fullName;
+//	}
 
 	public int getNumberOfGuests() {
 		return numberOfGuests;
@@ -84,7 +84,7 @@ public class WaitingList implements Serializable {
 
 	@Override
 	public String toString() {
-		return "WaitingList [name=" + fullName + ", guests=" + numberOfGuests + ", code=" + confirmationCode + "]";
+		return "WaitingList [guests=" + numberOfGuests + ", code=" + confirmationCode + "]";
 	}
 
 }

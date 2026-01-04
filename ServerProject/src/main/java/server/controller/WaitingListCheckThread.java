@@ -77,7 +77,7 @@ public class WaitingListCheckThread extends Thread {
 			// Notify client and convert entry to APPROVED order 
 			boolean success = waitingListController.handlePromoteToOrder(entry.getWaitingId(), null);
 			if (success) {
-				System.out.println("Waiting List: Entry for " + entry.getFullName() + " promoted.");
+				System.out.println("Waiting List: Entry for " + entry.getCustomerId() + " promoted.");
 			}
 		} catch (Exception e) {
 			System.err.println("Promotion failed: " + e.getMessage());
