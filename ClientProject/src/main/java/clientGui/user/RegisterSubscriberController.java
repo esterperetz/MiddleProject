@@ -33,6 +33,8 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	private UserLogic UserLogic;
 	private ActionEvent currentEvent; // Added to save the event for async navigation
 
+	private Employee emp;
+
 	/**
 	 * Handles the registration process when "Register Now" is clicked.
 	 */
@@ -75,15 +77,15 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			System.out.println(res.getStatus().getString());
 			
 			// Handle successful registration and navigate to Subscriber Options
-			if (super.isEquals(res.getStatus(), "SUCCESS")) {
+			if (res.getStatus().name().equals("SUCCESS")) {
 				Platform.runLater(() -> {
 //					Employee newEmp = (Employee) res.getData();
 					ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", currentEvent, clientUi);
 					if (controller != null) {
-						controller.initData(this.clientUi,this.isManager);
+						controller.initData(emp,this.clientUi,this.isManager);
 					}
 				});
-			} else if (res.getStatus() == Response.ResponseStatus.ERROR) {
+			} else if (res.getStatus().name().equals("ERROR")) {
 				Platform.runLater(() -> lblMessage.setText(res.getMessage_from_server()));
 			}
 		} else
@@ -93,8 +95,9 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		}
 
 	}
-	public void initData(ClientUi clientUi,Employee.Role isManager)
+	public void initData(Employee emp, ClientUi clientUi,Employee.Role isManager)
 	{
+		this.emp = emp;
 		this.clientUi=clientUi;
 		this.isManager=isManager;
 	}
@@ -110,7 +113,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		ManagerOptionsController controller = 
     	        super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
     	if (controller != null) {
-    			controller.initData(clientUi,this.isManager);
+    			controller.initData(emp,clientUi,this.isManager);
         } else {
             System.err.println("Error: Could not load ManagerOptionsController.");
         }

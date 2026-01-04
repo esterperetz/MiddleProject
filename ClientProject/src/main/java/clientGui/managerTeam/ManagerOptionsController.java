@@ -85,7 +85,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	/** Label to display success or error messages to the user. */
 	@FXML
 	private Label lblHoursStatus;
-	private String em;
+//	private String em;
+	private Employee emp;
 	// add button to register a new Employee by Manager.
 
 	/**
@@ -131,9 +132,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 * 
 	 * @param clientUi The connection instance.
 	 */
-	public void initData(ClientUi clientUi, Employee.Role isManager) {
+	public void initData(Employee emp , ClientUi clientUi, Employee.Role isManager) {
 		this.clientUi = clientUi;
-		
+		this.emp = emp;
 		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
 		// isManager = true; // בהמשך זה יגיע מ-User
 		if (isManager == Employee.Role.MANAGER) {
@@ -144,7 +145,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			btnViewReports.setManaged(true);
 			btnSignUp.setVisible(true);
 			btnSignUp.setManaged(true);
-			lblDashboardTitle.setText("Hello Manager, " + em);
+			lblDashboardTitle.setText("Hello Manager, " + emp.getUserName());
 			lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
 		} else {
 			this.isManagerFlag = false;
@@ -153,7 +154,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			btnViewReports.setManaged(false);
 			btnSignUp.setVisible(false);
 			btnSignUp.setManaged(false);
-			lblDashboardTitle.setText("Hello, " + em);
+			lblDashboardTitle.setText("Hello, " + emp.getUserName());
 			lblDashboardSubtitle.setText("Employee Dashboard");
 		}
 //		// הצגת הכפתור אם צריך
@@ -178,14 +179,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	}
 
 	// change name
-	public void AnotherinitData(String em) {
-		try {
-			this.em = em;
-
-		} catch (Exception e) {
-
-		}
-	}
+//	public void AnotherinitData(String em) {
+//		try {
+//			this.em = em;
+//
+//		} catch (Exception e) {
+//
+//		}
+//	}
 
 	/**
 	 * Loads the current standard opening hours from the server/database. Currently
@@ -309,7 +310,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	void goToWaitingListBtn(ActionEvent event) {
 
 		WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
-		waiting_list.initData(this.clientUi, this.isManager);
+		waiting_list.initData(emp,this.clientUi, this.isManager);
 	}
 
 	/**
@@ -329,7 +330,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			////////////////////////////////////////////////////////////// check if button
 			////////////////////////////////////////////////////////////// disapear
 			// controller.initData(clientUi, clientUi.getIp());
-			controller.initData(this.isManager,em);
+			controller.initData(emp,this.clientUi, this.isManager);
 
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
@@ -342,7 +343,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		try {
 			RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event,
 					clientUi);
-			registerEmployee.initData(this.clientUi, this.isManager,em);
+			registerEmployee.initData(emp,this.clientUi, this.isManager);
 		} catch (NullPointerException e) {
 			System.out.println("Error: the object RegisterEmployeeController is null");
 
@@ -357,7 +358,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	void goToRegisterSubscriberBtn(ActionEvent event) {
 		RegisterSubscriberController r = super.loadScreen("user/RegisterSubscriber", event, clientUi);
 		try {
-			r.initData(this.clientUi, this.isManager);
+			r.initData(emp,this.clientUi, this.isManager);
 		} catch (NullPointerException e) {
 			System.out.println("Error: the object RegisterSubscriberController is null");
 		}
@@ -374,7 +375,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		System.out.println("Navigate to Reports Screen...");
 		ReportsController r = super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
 		if (r != null) {
-			r.initData(this.clientUi, this.isManager);
+			r.initData(emp,this.clientUi, this.isManager);
 		} else {
 			System.out.println("Error: ReportsController is null!!");
 		}

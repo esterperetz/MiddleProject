@@ -43,15 +43,18 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 
 	private Employee.Role isManager;
 	private String employeeName;
+
+	private Employee emp;
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		selectRole.getItems().setAll(Role.values());
 	}
 
-	public void initData(ClientUi clientUi, Employee.Role isManager,String employeeName) {
+	public void initData(Employee emp,ClientUi clientUi, Employee.Role isManager) {
+		this.emp = emp;
 		this.clientUi = clientUi;
 		this.isManager = isManager;
-		this.employeeName=employeeName;
+//		this.employeeName=employeeName;
 	}
 
 	/**
@@ -96,19 +99,19 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
 				// Handle successful registration and navigate to Employee Options
-				if (res.getAction() == ActionType.REGISTER_EMPLOYEE
-						&& res.getStatus() == Response.ResponseStatus.SUCCESS) {
+				if (res.getAction().name().equals("REGISTER_EMPLOYEE")
+						&& res.getStatus().name().equals("SUCCESS")) {
 					Platform.runLater(() -> {
 						// will send a mail to the employee to make his own password
 						System.out.println(res.getMessage_from_server());
 						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 								currentEvent, clientUi);
 						if (controller != null) {
-							controller.AnotherinitData(employeeName);
-							controller.initData(clientUi, isManager);
+//							controller.AnotherinitData(employeeName);
+							controller.initData(emp,clientUi, isManager);
 						}
 					});
-				} else if (res.getStatus() == Response.ResponseStatus.ERROR) {
+				} else if (res.getStatus().name().equals("ERROR")) {
 					Platform.runLater(() -> lblMessage.setText(res.getMessage_from_server()));
 				}
 			} else
@@ -127,7 +130,7 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		try {
-			controller.initData(clientUi, this.isManager);
+			controller.initData(emp,clientUi, this.isManager);
 			
 		} catch (NullPointerException e) {
 			System.err.println("Error: Could not load ManagerOptionsController.");

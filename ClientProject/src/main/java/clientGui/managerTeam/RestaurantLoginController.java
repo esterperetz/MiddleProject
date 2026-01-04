@@ -1,10 +1,12 @@
 package clientGui.managerTeam;
 
 import client.MessageListener;
+import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.EmployeeLogic;
 import entities.Alarm;
 import entities.Employee;
+import entities.Employee.Role;
 import entities.Response;
 import javafx.application.Platform;
 
@@ -27,7 +29,8 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 	private ActionEvent currentEvent;
 	@FXML
 	private Employee employee;
-	private boolean isManager;
+	private Role isManager;
+	private Employee emp;
 
 	// if clicking in X add that server will knows and disccount this client.
 	@FXML
@@ -43,9 +46,15 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 		});
 	}
 
-	public void initData() {
-
-	}
+	public void initData(Employee emp ,ClientUi c, Employee.Role isManager) {
+	    	this.emp = emp;
+	        this.clientUi = c;
+	        this.isManager = isManager;
+	        
+	        // Initial load of data from server
+	     
+	    }
+	    
 
 	@FXML
 	void performLogin(ActionEvent event) {
@@ -83,7 +92,7 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 				Response response = (Response) msg;
 				Platform.runLater(() -> {
 
-					if (response.getStatus() == Response.ResponseStatus.SUCCESS) {
+					if (response.getStatus().name().equals("SUCCESS")) {
 						Alarm.showAlert("Login Succsesfully!", "Navigating to Manager Options...",
 								AlertType.INFORMATION);
 						// check if manager or regular worker
@@ -95,13 +104,13 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 								SetEmployeePasswordController controller = super.loadScreen(
 										"managerTeam/SetEmployeePassword", currentEvent, clientUi);
-								controller.initData(clientUi, emp);
+								controller.initData(emp,clientUi, emp.getRole());
 
 							} else {
-								if (emp.getRole() == (Employee.Role.MANAGER)) {
-									isManager = true;
-								} else if (emp.getRole() == (Employee.Role.REPRESENTATIVE)) {
-									isManager = false;
+								if (emp.getRole().name().equals("MANAGER")) {
+									isManager = Employee.Role.MANAGER;
+								} else if (emp.getRole().name().equals("REPRESENTATIVE")) {
+									isManager = Employee.Role.REPRESENTATIVE;
 
 								}
 								ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
@@ -109,8 +118,8 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 
 								// 2. אתחול הנתונים במסך החדש
 								if (controller != null) {
-									controller.AnotherinitData(emp.getUserName());
-									controller.initData(clientUi, emp.getRole());
+//									controller.AnotherinitData(emp.getUserName());
+									controller.initData(emp, clientUi, isManager);
 								} else {
 									System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
 								}

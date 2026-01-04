@@ -197,6 +197,8 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 				default:
 					System.out.println("Unhandled resource: " + res.getResource());
+
+			
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -243,7 +245,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 	private void handleOrderResponse(Response res) {
 		if (res.getAction() == ActionType.CREATE) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
-				MainNavigator.showAlert("Success", "Table Booked successfully!", Alert.AlertType.INFORMATION);
+				Alarm.showAlert("Success", "Table Booked successfully!", Alert.AlertType.INFORMATION);
 				super.loadScreen("navigation/SelectionScreen", currentEvent, clientUi);
 			} else {
 				errorLabel.setText("Error: " + res.getMessage_from_server());

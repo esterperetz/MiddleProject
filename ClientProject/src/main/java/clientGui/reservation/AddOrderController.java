@@ -58,6 +58,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private ActionEvent currentEvent;
 	private Employee.Role isManager;
 	private String employeeName;
+	private Employee emp;
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -81,8 +82,9 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	// public void initData(ClientUi clientUi) {
-	public void initData(Employee.Role isManager, String employeeName) {
-		this.employeeName = employeeName;
+	public void initData(Employee emp , Employee.Role isManager) {
+		this.emp = emp;
+//		this.employeeName = employeeName;
 		this.isManager = isManager;
 		this.orderLogic = new OrderLogic(this.clientUi);
 		this.userLogic = new UserLogic(this.clientUi);
@@ -223,7 +225,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
-			controller.initData(this.isManager,employeeName);
+			controller.initData(emp,clientUi,this.isManager);
 		} else {
 			System.err.println("Error: Could not load OrderUi_controllerr.");
 		}
@@ -304,7 +306,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	    OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
 	    
 	    if (controller != null) {
-	        controller.initData(this.isManager, employeeName);
+	        controller.initData(emp,clientUi,this.isManager);
 	    }
 	}
 

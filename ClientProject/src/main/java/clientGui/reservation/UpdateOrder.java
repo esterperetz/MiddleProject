@@ -60,6 +60,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	private OrderUi_controller mainController; // Field to hold the main controller reference
 	private OrderLogic ol;
 	private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	private Employee emp;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
@@ -75,9 +76,10 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	 *                       refresh.
 	 */
 	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController,
-			Employee.Role isManager,String employeeName) { // FIXED SIGNATURE
+			Employee.Role isManager,Employee emp) { // FIXED SIGNATURE
+		this.emp = emp;
 		this.isManager = isManager;
-		this.employeeName = employeeName;
+//		this.employeeName = employeeName;
 		this.o = order;
 		this.ol = orderLogic;
 		this.mainController = mainController; // Store main controller reference
@@ -159,7 +161,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 		if (controller != null) {
-			controller.initData(this.isManager,employeeName);
+			controller.initData(emp,clientUi,this.isManager);
 		} else {
 			Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
 			// System.err.println("Error: Could not load OrderUi_controllerr.");
@@ -226,7 +228,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 				if (controller != null) {
-					controller.initData(this.isManager,employeeName);
+					controller.initData(emp,clientUi,this.isManager);
 				} else {
 					Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
 				}
