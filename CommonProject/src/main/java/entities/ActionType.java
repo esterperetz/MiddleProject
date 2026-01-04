@@ -26,7 +26,8 @@ public enum ActionType implements Serializable {
     REGISTER_CUSTOMER,
 
     // Reservation Logic
-    CHECK_AVAILABILITY, // Verify table availability before booking
+    CHECK_AVAILABILITY, 
+    GET_AVAILABLE_TIME,// Verify table availability before booking
 
     // Waiting List specific
     ENTER_WAITING_LIST,
