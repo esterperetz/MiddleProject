@@ -94,7 +94,7 @@ public class CustomerDAO {
 	}
 
 	// Fetches a subscriber by their username
-	public Customer getSubscriberBySubscriberEmail(String customerMail) {
+	public Customer getCustomerByEmail(String customerMail) {
 		String query = "SELECT * FROM Customer WHERE email = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement ps = con.prepareStatement(query)) {

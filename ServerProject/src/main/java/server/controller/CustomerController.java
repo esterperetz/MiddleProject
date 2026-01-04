@@ -65,7 +65,7 @@ public class CustomerController {
 		Customer newCub = (Customer) req.getPayload();
 
 		// Updated to camelCase
-		Customer existing = CustomerDAO.getSubscriberBySubscriberEmail(newCub.getEmail());
+		Customer existing = CustomerDAO.getCustomerByEmail(newCub.getEmail());
 		if (newCub.getType() == CustomerType.SUBSCRIBER && existing != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 					Response.ResponseStatus.ERROR, "Error: Email already exists.", null));

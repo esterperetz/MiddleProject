@@ -45,7 +45,7 @@ public class EmployeeController {
 		boolean isUnique = false;
 		Customer customer = (Customer) req.getPayload();
 		
-		Customer existing = customerDAO.getSubscriberBySubscriberEmail(customer.getEmail());
+		Customer existing = customerDAO.getCustomerByEmail(customer.getEmail());
 		if (customer.getType() == CustomerType.SUBSCRIBER && existing != null) {
 			try {
 				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
