@@ -32,61 +32,53 @@ public class TableDAO {
     }
 
     public boolean addTable(Table t) throws SQLException {
-        String sql = "INSERT INTO tables (table_number, number_of_seats) VALUES (?, ?)";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "INSERT INTO tables (table_number, number_of_seats) VALUES (?, ?)";
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+        try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, t.getTableNumber());
             stmt.setInt(2, t.getNumberOfSeats());
             return stmt.executeUpdate() > 0;
-        } finally {
-            if (stmt != null) stmt.close();
+        } catch(Exception e) {
+        	System.err.println("Error in add Table");
         }
+        return false;
     }
 
     public boolean updateTable(Table t) throws SQLException {
-        String sql = "UPDATE tables SET number_of_seats = ? WHERE table_number = ?";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "UPDATE tables SET number_of_seats = ? WHERE table_number = ?";
+        
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+      try (Connection con = DBConnection.getInstance().getConnection();
+    				PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, t.getNumberOfSeats());
             stmt.setInt(2, t.getTableNumber());
             return stmt.executeUpdate() > 0;
-        } finally {
-            if (stmt != null) stmt.close();
+        }catch(Exception e) {
+        	System.err.println("Error in update Table");
         }
+      return false;
     }
 
     public boolean deleteTable(int tableNumber) throws SQLException {
-        String sql = "DELETE FROM tables WHERE table_number = ?";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "DELETE FROM tables WHERE table_number = ?";
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+        try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, tableNumber);
             return stmt.executeUpdate() > 0;
-        } finally {
-            if (stmt != null) stmt.close();
+        }catch(Exception e) {
+        	System.err.println("Error in delete Table");
         }
+        return false;
     }
     
     public Table getTable(int tableNumber) throws SQLException {
-        String sql = "SELECT * FROM tables WHERE table_number = ?";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "SELECT * FROM tables WHERE table_number = ?";
         ResultSet rs = null;
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+        try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, tableNumber);
             rs = stmt.executeQuery();
 
@@ -94,21 +86,19 @@ public class TableDAO {
                 return new Table(rs.getInt("table_number"), rs.getInt("number_of_seats"),rs.getBoolean("is_occupied"));
             }
             return null;
-        } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+        }catch(Exception e) {
+        	System.err.println("Error in update Table");
         }
+        return null;
     }
     public int countSuitableTables(int numberOfGuests) throws SQLException {
         // SQL query to find tables large enough for the request
-        String sql = "SELECT COUNT(*) FROM tables WHERE number_of_seats >= ?";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "SELECT COUNT(*) FROM tables WHERE number_of_seats >= ?";
+        
         ResultSet rs = null;
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, numberOfGuests);
             rs = stmt.executeQuery();
 
@@ -116,27 +106,37 @@ public class TableDAO {
                 return rs.getInt(1);
             }
             return 0; // Return 0 if no results found
-        } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+        } catch(Exception e) {
+        	System.err.println("Error in count Suitable Tables");
         }
+//            finally {
+//            if (rs != null) rs.close();
+//            if (stmt != null) stmt.close();
+//        }
+		return 0;
     }
     public Integer findAvailableTable(int guests) throws SQLException {
         // Greedy logic: Find the smallest table (ASC) that fits the guests and is free
-        String sql = "SELECT table_number FROM tables " +
+        String query = "SELECT table_number FROM tables " +
                      "WHERE is_occupied = 0 AND number_of_seats >= ? " +
                      "ORDER BY number_of_seats ASC LIMIT 1";
 
         try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+             PreparedStatement stmt = con.prepareStatement(query)) {
             stmt.setInt(1, guests);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt("table_number");
                 }
                 return null; // No suitable table found right now
+            }catch(Exception e) {
+            	System.err.println("No suitable table found right now");
             }
+        }catch(Exception e) {
+        	System.err.println("Error in get Table");
         }
+        return null;
+       
     }
 
     /**
@@ -149,6 +149,9 @@ public class TableDAO {
             stmt.setBoolean(1, isOccupied);
             stmt.setInt(2, tableNumber);
             return stmt.executeUpdate() > 0;
+        }catch(Exception e) {
+        	System.err.println("Error in update Table status");
         }
+        return false;
     }
 }
