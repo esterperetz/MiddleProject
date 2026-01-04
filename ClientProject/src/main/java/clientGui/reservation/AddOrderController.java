@@ -22,6 +22,7 @@ import entities.Customer;
 import entities.CustomerType;
 import entities.Employee;
 import entities.Order.OrderStatus;
+import entities.Response.ResponseStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -230,82 +231,81 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 	@Override
 	public void onMessageReceive(Object msg) {
+	    if (!(msg instanceof Response)) return;
+	    Response res = (Response) msg;
 
-		
-			if (msg instanceof Response) {
-				Response res = (Response) msg;
-				Platform.runLater(() -> {
-				if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-					switch (res.getResource()) {
-					case CUSTOMER:
-						Customer cus = (Customer) res.getData();
-						if (res.getAction() == ActionType.GET_BY_ID) {
-							// בדיקה האם המנוי נמצא
-							if (res.getStatus() == Response.ResponseStatus.SUCCESS
-									&& res.getData() instanceof Customer) {
-								// === מקרה 2: מנוי קיים ותקין ===
+	    Platform.runLater(() -> {
+	        try {
+	            switch (res.getResource()) {
+	                case CUSTOMER:
+	                    handleCustomerResponse(res);
+	                    break;
+	                case ORDER:
+	                    handleOrderResponse(res);
+	                    break;
+	                default:
+	                    System.out.println("Unhandled resource: " + res.getResource());
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            Alarm.showAlert("System Error", "An error occurred while processing server response.", Alert.AlertType.ERROR);
+	        }
+	    });
+	}
 
-								this.verifiedSubscriber = cus;
-								fillAndLockFields(cus);
-								isSubscriberVerified = true;
-								valid();
+	private void handleCustomerResponse(Response res) {
+	    Customer cus = (Customer) res.getData();
+	    
+	    if (res.getAction() == ActionType.GET_BY_ID) {
+	        if (res.getStatus() == ResponseStatus.SUCCESS && cus != null) {
+	            this.verifiedSubscriber = cus;
+	            isSubscriberVerified = true;
+	            fillAndLockFields(cus);
+	            // כאן לא עוברים מסך - רק נותנים למשתמש לראות שהמנוי זוהה
+	        } else {
+	            handleInvalidSubscriber("Subscriber ID not found.");
+	        }
+	    } 
+	    else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
+	        if (res.getStatus() == ResponseStatus.SUCCESS) {
+	            // הלקוח נוצר בהצלחה, עכשיו אפשר ליצור את ההזמנה עבורו
+	            this.newOrder.setCustomerId(cus.getCustomerId());
+	            orderLogic.createOrder(newOrder); 
+	            // שים לב: אין כאן loadScreen! מחכים לתשובה של ה-ORDER
+	        } else {
+	            Alarm.showAlert("Error", "Could not register new customer: " + res.getMessage_from_server(), Alert.AlertType.ERROR);
+	        }
+	    }
+	}
 
-							} else { 
-								// === מקרה 3: מנוי לא קיים (Exception) ===
-								// השרת החזיר שאין מנוי כזה (או החזיר null/Error)
-								handleInvalidSubscriber("Subscriber ID " + subscriberIdField.getText()
-										+ " does not exist in the system.");
-							}
-						} else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
-							if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-								// 6. שליחה לשרת ומעבר מסך
-								this.newOrder.setCustomerId(cus.getCustomerId());
-								if (orderLogic != null) {
-									orderLogic.createOrder(newOrder);
-									System.out.println("WHAT?>");
-									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
-											currentEvent, clientUi);
-									if (controller != null) {
-										controller.initData(this.isManager,employeeName);
-									} else {
-										System.err.println("Error: Could not load OrderUi_controller.");
-									}
-								} else
-									System.out.println(res.getMessage_from_server());
-							} else {
-								System.err.println("Error: OrderLogic is not initialized. Did you call initData?");
-							}
+	private void handleOrderResponse(Response res) {
+	    if (res.getAction() == ActionType.CREATE) {
+	        if (res.getStatus() == ResponseStatus.SUCCESS) {
+	            Alarm.showAlert("Success", "Order placed successfully!", Alert.AlertType.INFORMATION);
+	            
+	            // רק כאן - אחרי שהכל הסתיים - עוברים מסך
+	            navigateToOrdersList();
+	        } else {
+	            Alarm.showAlert("Error", "Failed to place order: " + res.getMessage_from_server(), Alert.AlertType.ERROR);
+	        }
+	    }
+	}
+	
+	private void navigateToOrdersList() {
+	    // שימוש באחד השדות כדי לקבל את ה-Scene, זה יותר בטוח מ-ActionEvent
+	    if (clientNameField.getScene() == null) {
+	        System.err.println("Error: Scene is null, cannot navigate.");
+	        return;
+	    }
 
-						}
-						break;
-					case ORDER:
-						if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-							Alarm.showAlert("place order successfully", "success", Alert.AlertType.INFORMATION);
-							try {
-								if (isManager == Employee.Role.MANAGER || isManager == Employee.Role.REPRESENTATIVE) {
-									OrderUi_controller controller = super.loadScreen("reservation/orderUi",
-											currentEvent, clientUi);
-									if (controller != null)
-										controller.initData(this.isManager, employeeName);
-								}
-							} catch (Exception e) {
-								System.out.println("error in loading screen");
-							}
-						} else
-							Alarm.showAlert("error in placing  order", "error", Alert.AlertType.ERROR);
-
-						break;
-					default:
-						System.out.println("Check the if ");
-						break;
-
-					}
-				
-			 }
-				});
-
-		}
-		
+	    // טעינת המסך הבא
+	    // אם ה-loadScreen שלך דורש ActionEvent, ננסה להעביר את ה-currentEvent המקורי
+	    // אבל עדיף לעדכן את המעבר שישתמש ב-Node כלשהו:
+	    OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
+	    
+	    if (controller != null) {
+	        controller.initData(this.isManager, employeeName);
+	    }
 	}
 
 	private void handleInvalidSubscriber(String errorMessage) {
