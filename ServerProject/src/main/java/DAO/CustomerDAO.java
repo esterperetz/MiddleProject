@@ -71,7 +71,7 @@ public class CustomerDAO {
 		}
 		return null;
 	}
-	public Customer getCustomerBySubscriberId(int SubscriberId) {
+	public Customer getCustomerByCustomerId(int SubscriberId) {
 
 		String query = "SELECT * FROM Customer WHERE customer_id = ?";
 		try (Connection con = DBConnection.getInstance().getConnection();

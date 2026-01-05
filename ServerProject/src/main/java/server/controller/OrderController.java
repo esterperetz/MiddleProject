@@ -173,7 +173,7 @@ public class OrderController {
 		} else {
 			Customer customer = null;
 			if (order.getCustomerId() != null) {
-				customer = customerDao.getCustomerBySubscriberId(order.getCustomerId());
+				customer = customerDao.getCustomerByCustomerId(order.getCustomerId());
 				if (customer == null) {
 					customer = customerDao.getCustomerBySubscriberCode(order.getCustomerId());
 				}
@@ -210,7 +210,9 @@ public class OrderController {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
 			/// need to get email from customer table
-			// EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
+			Customer customer = customerDao.getCustomerByCustomerId(updatedOrder.getCustomerId());
+			if (customer!= null)
+				EmailService.sendConfirmation(customer,updatedOrder);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Order updated.", updatedOrder));
@@ -233,7 +235,9 @@ public class OrderController {
 		if (orderdao.deleteOrder(req.getId())) {
 			/// need to get email from customer table
 
-			// EmailService.sendCancelation(order.getClientEmail(),order);
+			Customer customer = customerDao.getCustomerByCustomerId(order.getCustomerId());
+			if (customer!= null)
+				EmailService.sendCancelation(customer, order);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
 					"Order deleted.", order));
@@ -421,7 +425,7 @@ public class OrderController {
 			// Check if customer is SUBSCRIBER for 10% discount
 			if (order.getCustomerId() != null) {
 				// Use correct DAO method to fetch customer by ID
-				Customer c = customerDao.getCustomerBySubscriberId(order.getCustomerId());
+				Customer c = customerDao.getCustomerByCustomerId(order.getCustomerId());
 				if (c != null && c.getType() == CustomerType.SUBSCRIBER) {
 					amount *= 0.9;
 				}
