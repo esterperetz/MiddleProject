@@ -1,19 +1,30 @@
 package clientGui.reservation;
 
+import java.net.URL;
+import java.util.ResourceBundle;
+
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
+import clientLogic.OrderLogic;
+import entities.Alarm;
 import entities.CustomerType;
+import entities.Order;
+import entities.Order.OrderStatus;
+import entities.Response;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class PaymentController extends MainNavigator implements MessageListener<Object> {
+public class PaymentController extends MainNavigator implements MessageListener<Object>,Initializable {
 
 	@FXML
 	private TextField txtCardNumber;
@@ -31,17 +42,36 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	private int tableId;
 	private int subscriberId;
 	private CustomerType isSubscriber;
+	private Order order;
+	private double totalPrice;
+	private OrderLogic orderLogic;
+	
+	
+	@Override
+	public void initialize(URL location, ResourceBundle resources) {
+		Platform.runLater(() -> {
+			if (txtCVV.getScene() != null && txtCVV.getScene().getWindow() != null) {
+				Stage stage = (Stage) txtCVV.getScene().getWindow();
+				stage.setOnCloseRequest(event -> {
+					clientUi.disconnectClient();
 
+				});
+			}
+		});
+	}
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
 		this.tableId = tableId;
 	}
 
-	public void initData(double originalTotal, int subId, CustomerType isSubscriber, int tableId) {
+	public void initData(Order order,double originalTotal, int subId, CustomerType isSubscriber, int tableId) {
 		this.tableId = tableId;
 		this.subscriberId = subId;
 		// itemsList.setItems(items);
 		this.isSubscriber = isSubscriber;
+		this.order = order;
+		this.totalPrice = originalTotal;
+		this.orderLogic = new OrderLogic(clientUi);
 	}
 
 	@FXML
@@ -71,9 +101,16 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		}
 
 		System.out.println("Processing Credit Card Payment...");
-		System.out.println("Card: " + cardNum + " | Amount: " + amountToPay);
+		System.out.println("Card: " + cardNum + " | Amount: " + totalPrice);
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
+		
+		order.setOrderStatus(OrderStatus.PAID);
+		orderLogic.updateOrder(order);
+		
+		Alarm.showAlert("Payment Sucssesfully!","You paid "+totalPrice + " to Bistro, Thank you!", AlertType.INFORMATION);
+		System.out.println("Order closed at: " + order.getLeavingTime());
+		
 		// Alert pay good
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 
@@ -85,12 +122,13 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		// public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer
 		// subId)
 	}
-
+	
+	
 	@FXML
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill", event, clientUi);
-		// if(isSub)
-		billController.initData(amountToPay, subscriberId, isSubscriber, tableId);
+		// if(isSub) String orderId, Integer subscriberId, CustomerType customerType, int tableId
+		billController.initData(order, subscriberId, isSubscriber, tableId);
 		// else
 		// billController.initData(amountToPay, subscriberId ,false, tableId);
 
@@ -109,6 +147,10 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
-
+		Response res = (Response)msg;
+		Order o = (Order)res.getData();
+		o.setTableNumber(null);
+		this.order = o;
 	}
+	
 }

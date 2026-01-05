@@ -24,7 +24,7 @@
          </VBox.margin>
       </Label>
 
-      <TextField fx:id="txtOrderId" promptText="Put code of reservation" 
+      <TextField fx:id="txtConfirmationCode" promptText="Put code of reservation" 
                  styleClass="input-field" prefHeight="40.0" />
      
 

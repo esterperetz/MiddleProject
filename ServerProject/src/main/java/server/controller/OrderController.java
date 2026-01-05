@@ -46,6 +46,9 @@ public class OrderController {
 			case GET_AVAILABLE_TIME:
 				getAvailabilityOptions(req,client);
 				break;
+			case GET_BY_CODE:
+				handleGetByCode(req,client);
+				break;
 			case CREATE:
 				handleCreate(req, client);
 				break;
@@ -78,6 +81,24 @@ public class OrderController {
 			e.printStackTrace();
 			client.sendToClient("Database error: " + e.getMessage());
 		}
+	}
+
+	private void handleGetByCode(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getPayload() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE,
+					Response.ResponseStatus.ERROR, "Error: ID missing.", null));
+			return;
+		}
+		Order order = orderdao.getOrderByConfirmationCode((int)req.getPayload());
+		if (order == null)
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE,
+					Response.ResponseStatus.ERROR, "Error: Code have not found.", null));
+		else {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE,
+					Response.ResponseStatus.SUCCESS, "Error: ID missing.", order));
+			return;
+		}
+		
 	}
 
 	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
