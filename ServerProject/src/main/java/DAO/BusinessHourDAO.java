@@ -13,20 +13,22 @@ public class BusinessHourDAO {
      * Finds the relevant operating hours for a specific date.
      * Priority: 1. Special Date, 2. Regular Day of Week.
      */
-    public OpeningHours getHoursForDate(java.util.Date requestedDate) throws SQLException {
-        java.sql.Date sqlDate = new java.sql.Date(requestedDate.getTime());
+    public OpeningHours getHoursForDate(int date) throws SQLException {
+//        java.sql.Date sqlDate = new java.sql.Date(requestedDate.getTime());
         Calendar cal = Calendar.getInstance();
-        cal.setTime(requestedDate);
+//        cal.setTime(requestedDate);
         int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
 
+//        String sql = "SELECT * FROM opening_hours " +
+//                     "WHERE special_date = ? OR (day_of_week = ? AND special_date IS NULL) " +
+//                     "ORDER BY special_date DESC LIMIT 1";
         String sql = "SELECT * FROM opening_hours " +
-                     "WHERE special_date = ? OR (day_of_week = ? AND special_date IS NULL) " +
-                     "ORDER BY special_date DESC LIMIT 1";
+              "WHERE day_of_week = ? ";
 
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setDate(1, sqlDate);
-            stmt.setInt(2, dayOfWeek);
+            stmt.setInt(1, date);
+//            stmt.setInt(2, dayOfWeek);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return mapResultSetToOpeningHours(rs);
