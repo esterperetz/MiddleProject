@@ -3,6 +3,65 @@
     -fx-background-color: #f4f7f6; /* רקע אפור בהיר-מודרני */
     -fx-font-family: 'Segoe UI', sans-serif;
 }
+.time-button.selected-time {
+    -fx-background-color: #2196F3; /* כחול */
+    -fx-text-fill: white;
+    -fx-border-color: #1976D2;
+}
+
+/*@@@@2 */
+.root {
+    -fx-background-color: #f4f4f4;
+    -fx-font-family: "Segoe UI", sans-serif; /* פונט נקי */
+}
+
+/* עיצוב בסיסי לכל כפתורי השעות */
+.time-button {
+    -fx-pref-width: 100px;
+    -fx-pref-height: 45px;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+}
+
+/* 1. מצב פנוי - ירוק עדין */
+.time-button.available {
+    -fx-background-color: white;
+    -fx-border-color: #4CAF50;
+    -fx-border-radius: 8;
+    -fx-text-fill: #2E7D32;
+}
+
+.time-button.available:hover {
+    -fx-background-color: #E8F5E9; /* ירוק בהיר מאוד במעבר עכבר */
+}
+
+/* 2. מצב רשימת המתנה - כתום בולט */
+.time-button.waitlist {
+    -fx-background-color: #FFF3E0;
+    -fx-border-color: #FF9800;
+    -fx-border-radius: 8;
+    -fx-text-fill: #EF6C00;
+}
+
+.time-button.waitlist:hover {
+    -fx-background-color: #FFE0B2;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 1);
+}
+
+/* 3. מצב כבוי/מלא (ברירת מחדל של ג'אווה FX ל-disabled, אבל אפשר לשנות) */
+.time-button:disabled {
+    -fx-background-color: #E0E0E0;
+    -fx-text-fill: #9E9E9E;
+    -fx-border-color: transparent;
+    -fx-opacity: 0.7;
+}
+
+
+
+
+/*!!!! */
 
 /* כותרת ראשית */
 .title-label {
