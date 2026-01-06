@@ -288,30 +288,30 @@ public class OrderDAO {
 	/**
 	 * Counts overlapping active orders for availability check.
 	 */
-	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int numberOfGuests) throws SQLException {
+	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int minGuestsThreshold) throws SQLException {
 
+	    // ABS = ערך מוחלט (מתעלם אם זה לפני או אחרי, בודק רק את המרחק)
+	    // TIMESTAMPDIFF = מחשב הפרש בדקות
 	    String sql = "SELECT COUNT(*) FROM `order` "
-	            + "WHERE order_status IN ('APPROVED', 'SEATED') " 
-	            + "AND number_of_guests >= ? "
-	            + "AND order_date <= (? + INTERVAL 2 HOUR) "      
-	            + "AND (order_date + INTERVAL 2 HOUR) >= ?";      
+	            + "WHERE order_status IN ('APPROVED', 'SEATED') "
+	            + "AND number_of_guests >= ? "  // מסנן רק הזמנות שמתחרות על אותו גודל שולחן
+	            + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120"; // חוסם שעתיים לפני ואחרי
 
 	    try (Connection con = DBConnection.getInstance().getConnection();
 	         PreparedStatement stmt = con.prepareStatement(sql)) {
 	        
-	        Timestamp newOrderStart = new Timestamp(requestedDate.getTime());
-
-	        stmt.setInt(1, numberOfGuests);
-	        stmt.setTimestamp(2, newOrderStart);
-	        stmt.setTimestamp(3, newOrderStart);
+	        Timestamp reqTime = new Timestamp(requestedDate.getTime());
+	        
+	        stmt.setInt(1, minGuestsThreshold); // התיקון של גודל השולחן (למשל 6 עבור הזמנה של 8)
+	        stmt.setTimestamp(2, reqTime);      // הזמן המבוקש
 
 	        try (ResultSet rs = stmt.executeQuery()) {
 	            return rs.next() ? rs.getInt(1) : 0;
 	        }
-	    }catch(Exception e) {
-	    	System.err.println("Error count Active Orders In Time Range");
+	    } catch(Exception e) {
+	        e.printStackTrace();
+	        return 0;
 	    }
-	    return 0;
 	}
 
 	/* --- NEW FUNCTIONS FOR WAITING LIST THREAD --- */
@@ -346,6 +346,36 @@ public class OrderDAO {
 				return rs.next() ? rs.getInt(1) : 0;
 			}
 		}
+	}public int countActiveOrders(java.util.Date timestamp, int guests) {
+	    int count = 0;
+	    // שאילתה הסופרת כמה הזמנות מתחרות קיימות לשעה הזו
+	    String query = "SELECT COUNT(*) FROM `order` " +
+	                   "WHERE order_date = ? " +
+	                   "AND order_status = 'APPROVED' " + 
+	                   "AND number_of_guests >= ?"; 
+	                   // ההנחה: הזמנה של 2 אנשים לא תופסת שולחן של 6, ולכן לא סופרים אותה
+
+	    try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
+	        
+	        // 1. המרת התאריך ל-Timestamp של SQL (כולל שעה מדויקת)
+	    	stmt.setTimestamp(1, new java.sql.Timestamp(timestamp.getTime()));
+	        
+	        // 2. כמות האורחים
+	    	stmt.setInt(2, guests);
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                count = rs.getInt(1);
+	            }
+	        }
+	    } catch (SQLException e) {
+	    	System.out.println("we can ignore this exception for now");
+	    	return 0;
+//	        e.printStackTrace();
+	    }
+	    
+	    return count;
 	}
 
 	/**
