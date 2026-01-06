@@ -6,8 +6,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 
 import DAO.OrderDAO;
 import DAO.TableDAO;
@@ -24,6 +30,27 @@ public class OrderController {
 	private final CustomerDAO customerDao = new CustomerDAO();
 	private final BusinessHourDAO businessHourDao = new BusinessHourDAO();
 	private final Object tableLock = new Object();
+
+	public OrderController() {
+
+//		Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+//			try {
+//				test();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}, 10, TimeUnit.SECONDS);
+	}
+
+	public void test() throws IOException {
+		Order order = new Order();
+		order.setDateOfPlacingOrder(java.sql.Date.valueOf(LocalDate.now()));
+		order.getArrivalTime();
+		order.setNumberOfGuests(5);
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, order);
+		handle(req, null, null);
+	}
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
@@ -44,7 +71,9 @@ public class OrderController {
 				handleGetById(req, client);
 				break;
 			case GET_AVAILABLE_TIME:
-				getAvailabilityOptions(req,client);
+//				getAvailabilityOptions();
+				checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
+						((Order) req.getPayload()).getNumberOfGuests());
 				break;
 			case CREATE:
 				handleCreate(req, client);
@@ -117,74 +146,46 @@ public class OrderController {
 				new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS, null, order));
 	}
 
-	private void handleCreate(Request req, ConnectionToClient client) throws SQLException, IOException {
-		Object payload = req.getPayload();
-		Order order = null;
-		Customer guest = null;
+	// בתוך OrderController בשרת
+	private boolean handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
+	    Order order = (Order) req.getPayload();
+	    
+	    // 1. בדיקת זמינות לפני שומרים! (אותה לוגיקה בדיוק כמו מקודם)
+	    int guests = order.getNumberOfGuests();
+	    int minGuestsThreshold = (guests > 5) ? 6 : 1;
+	    
+	    int totalTables = tabledao.countSuitableTables(guests);
+	    int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
+	    
+	    // אם אין מקום...
+	    if (totalTables - conflictingOrders <= 0) {
+	        
+	        // --- זה החלק החדש והחשוב ---
+	        // אנחנו מייצרים את רשימת השעות האלטרנטיבית לאותו יום
+	        List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
+	        
+	        // שולחים שגיאה + את הרשימה (Alternatives)
+	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+	                Response.ResponseStatus.ERROR, 
+	                "The restaurant is full at this time. Please see available slots below.", 
+	                alternatives)); // <--- הוספנו את הרשימה כאן
+	        return false;
+	    }
 
-		if (payload instanceof Map) {
-			@SuppressWarnings("unchecked")
-			Map<String, Object> data = (Map<String, Object>) payload;
-			order = (Order) data.get("order");
-			guest = (Customer) data.get("guest");
-		} else if (payload instanceof Order) {
-			order = (Order) payload;
-		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-					"Error: Invalid payload type.", null));
-			return;
-		}
-
-		if (guest != null) {
-			Customer existing = customerDao.getCustomerByEmail(guest.getEmail());
-			if (existing != null) {
-				order.setCustomerId(existing.getCustomerId());
-			} else {
-				boolean created = customerDao.createCustomer(guest);
-				if (created) {
-					order.setCustomerId(guest.getCustomerId());
-				} else {
-					client.sendToClient(new Response(req.getResource(), ActionType.CREATE,
-							Response.ResponseStatus.ERROR, "Error: Failed to create guest profile.", null));
-					return;
-				}
-			}
-		} else {
-			Customer customer = null;
-			if (order.getCustomerId() != null) {
-				customer = customerDao.getCustomerBySubscriberId(order.getCustomerId());
-				if (customer == null) {
-					customer = customerDao.getCustomerBySubscriberCode(order.getCustomerId());
-				}
-			}
-
-			if (customer == null) {
-				System.out.println("Customer not found for Order! ID received: " + order.getCustomerId());
-				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-						"Error: Customer not found in system.", null));
-				return;
-			}
-
-			order.setCustomerId(customer.getCustomerId());
-		}
-
-		// Generate unique confirmation code
-		order.setConfirmationCode(generateUniqueConfirmationCode());
-
-		if (handleCheckAvailability(req, client)) {
-			order.setOrderStatus(OrderStatus.APPROVED);
-			if (orderdao.createOrder(order)) {
-				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-						"Order created.", order));
-				sendOrdersToAllClients();
-			} else {
-				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.DATABASE_ERROR,
-						"Database Error: Failed to create order.", null));
-			   
-			}
-		}
+	    // 2. אם יש מקום - ממשיכים ליצירה הרגילה
+	    boolean success = orderdao.createOrder(order); // הפונקציה הקיימת שלך לשמירה ב-DB
+	    if (success) {
+	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+	                Response.ResponseStatus.SUCCESS, "Order created successfully!", null));
+	        return true;
+	    } else {
+	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to save order.", null));
+	        return false;
+	    }
 	}
-
+	
+	
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
@@ -226,124 +227,108 @@ public class OrderController {
 			java.util.Date orderDate = requestedOrder.getOrderDate();
 			int guests = requestedOrder.getNumberOfGuests();
 
-			int totalSuitableTables = tabledao.countSuitableTables(guests);
+			// 1. חישוב סף אורחים
+			int minGuestsThreshold = (guests > 5) ? 6 : 1;
 
+			// 2. בדיקה ספציפית: האם יש מקום להזמנה הנוכחית?
+			int totalSuitableTables = tabledao.countSuitableTables(guests);
 			if (totalSuitableTables == 0) {
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
 				return false;
 			}
 
-			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, guests);
-//			System.out.println(
-//					"Debug: Total Tables = " + totalSuitableTables + ", Conflicting Orders = " + conflictingOrders);
+			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, minGuestsThreshold);
+			int available = totalSuitableTables - conflictingOrders;
 
-			if (conflictingOrders < totalSuitableTables) {
+			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
+
+			if (available > 0) {
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.SUCCESS, "Table is available.", null));
+						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
 				return true;
 			} else {
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.ERROR, "The restaurant is full at this time.", null));
+						Response.ResponseStatus.ERROR, "The restaurant is full at this time.", timeSlots));
 				return false;
 			}
 
 		} catch (SQLException e) {
+//			e.printStackTrace();
 			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 					Response.ResponseStatus.DATABASE_ERROR, "Database error checking availability.", null));
 			return false;
 		}
 	}
-	
-	private void getAvailabilityOptions(Request req, ConnectionToClient client) throws SQLException, IOException {
-		
+
+	private List<String> getAvailabilityOptions(Date dateOrder) throws SQLException, IOException {
+
+		LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
+		int dayOfWeek = date.getDayOfWeek().getValue(); 
+
+		OpeningHours dayHours = businessHourDao.getHoursForDate(dayOfWeek);
+
 		List<String> options = new ArrayList<>();
-		Order order = (Order) req.getPayload();
-		int  guests  = order.getNumberOfGuests();
-		java.util.Date originalTime = order.getDateOfPlacingOrder();
-	    // נבדוק: השעה המקורית, חצי שעה לפני/אחרי, שעה לפני/אחרי
-	    int[] offsets = {0, -30, 30, -60, 60}; 
-	    
-	    SimpleDateFormat fmt = new SimpleDateFormat("HH:mm");
-	    int totalTables = tabledao.countSuitableTables(guests);
 
-	    for (int offset : offsets) {
-	        long timeMillis = originalTime.getTime() + (offset * 60 * 1000);
-	        Timestamp ts = new Timestamp(timeMillis);
-	        String timeStr = fmt.format(ts);
+		if (dayHours == null || dayHours.isClosed()) {
+			System.out.println("Restaurant is closed.");
+//	        client.sendToClient(new Message(MessageType.SHOW_AVAILABILITY, options));
+			return null;
+		}
 
-	        // בדיקה האם יש מקום
-	        int conflicts = orderdao.countActiveOrdersInTimeRange(ts, guests);
+		LocalTime currentTime = dayHours.getOpenTime().toLocalTime();
+		LocalTime closeTime = dayHours.getCloseTime().toLocalTime();
 
-	        if (conflicts < totalTables) {
-	            options.add(timeStr); 
-	        } else {
-	            options.add(timeStr + " - Waiting List");
-	        }
-	    }
-	    
-	    // מיון פשוט (השעות יסתדרו לפי סדר עולה כי זה טקסט)
-	    options.sort(String::compareTo);
-	    client.sendToClient(new Response(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME,
-				Response.ResponseStatus.SUCCESS, "list of time", options));
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+		LocalTime lastSeatingTime = dayHours.getCloseTime().toLocalTime().minusHours(2);
+		while (!currentTime.isAfter(lastSeatingTime)) {
+
+			LocalDateTime ldt = LocalDateTime.of(date, currentTime);
+			Timestamp checkTime = Timestamp.valueOf(ldt);
+
+			String timeStr = currentTime.format(formatter);
+
+			options.add(timeStr);
+
+			currentTime = currentTime.plusMinutes(30);
+		}
+		System.out.println(options);
+		return options;
+//	    client.sendToClient(new Response(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME,
+//				Response.ResponseStatus.SUCCESS, "list of time", options));
 	}
 
-//	private boolean handleCheckAvailability(Request req, ConnectionToClient client) throws SQLException, IOException {
-//		Order requestedOrder = (Order) req.getPayload();
-//		System.out.println("in hereee-------------");
-//		// 1. Booking time rules: At least 1 hour and no more than 1 month in advance
-//		long now = new Date().getTime();
-//		long requestedMillis = requestedOrder.getOrderDate().getTime();
-//		long diffInHours = (requestedMillis - now) / (1000 * 60 * 60);
-//
-//	
-//		if (diffInHours < 1 || requestedMillis > (now + (31L * 24 * 60 * 60 * 1000))) {
-//			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-//					Response.ResponseStatus.ERROR, "Order must be between 1 hour and 1 month in advance", null));
-//			return false;
-//		}
-//
-//		// 2. Business hours check: Priorities handle overrides for special dates
-//		OpeningHours hours = businessHourDao.getHoursForDate(requestedOrder.getOrderDate());
-//		if (hours == null || hours.isClosed()) {
-//			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-//					Response.ResponseStatus.ERROR, "Restaurant is closed on this date", null));
-//			return false;
-//		}
-//
-////		// Time validation
-////		Time reqTime = new Time(requestedMillis);
-////		if (reqTime.before(hours.getOpenTime()) || reqTime.after(hours.getCloseTime())) {
-////			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-////					Response.ResponseStatus.ERROR, "Requested time is outside operating hours", null));
-////			return false;
-////		}
-//
-//		// 3. Table capacity check
-//		int guests = requestedOrder.getNumberOfGuests();
-//		int totalSuitableTables = tabledao.countSuitableTables(guests);
-////		int findAvailableTable = tabledao.findAvailableTable(guests);
-//		
-//		if (totalSuitableTables == 0) {
-//			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-//					Response.ResponseStatus.ERROR, "No suitable tables for this party size", null));
-//			return false;
-//		}
-////		if (findAvailableTable == 0) {
-////			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-////					Response.ResponseStatus.ERROR, "No suitable tables for this party size", null));
-////			return false;
-////		}
-//		System.out.println("findAvailableTable !!!! "+totalSuitableTables);
-//
-//		int overlappingOrders = orderdao.countActiveOrdersInTimeRange(requestedOrder.getOrderDate(), guests);
-//		boolean available = (totalSuitableTables - overlappingOrders) > 0;
-////		boolean available = (findAvailableTable - overlappingOrders) > 0;
-//		System.out.println(available);
-//		return true;
-////		client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-////				Response.ResponseStatus.SUCCESS, null, available));
-//	}
+	public List<TimeSlotStatus> checkAvailability(Date date, int guests) throws SQLException, IOException {
+
+		List<TimeSlotStatus> results = new ArrayList<>();
+
+		int minGuestsThreshold = (guests > 5) ? 6 : 1;
+
+		int totalTables = tabledao.countSuitableTables(guests);
+		List<String> allSlots = getAvailabilityOptions(date);
+
+		if (allSlots == null)
+			return new ArrayList<>();
+
+		LocalDate localDate = new java.sql.Date(date.getTime()).toLocalDate();
+
+		for (String slotStr : allSlots) {
+
+			LocalTime timeSlot = LocalTime.parse(slotStr);
+			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
+			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
+
+			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, minGuestsThreshold);
+
+			int available = totalTables - conflictingOrders;
+			boolean isFull = (available <= 0); // אם 0 או פחות -> מלא
+
+			results.add(new TimeSlotStatus(slotStr, isFull));
+		}
+
+		System.out.println(results);
+		return results;
+	}
 
 	/**
 	 * Handles customer arrival at the terminal. Checks 15-min rule and assigns a
@@ -496,4 +481,5 @@ public class OrderController {
 		} while (existingOrder != null);
 		return newCode;
 	}
+
 }
