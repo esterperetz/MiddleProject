@@ -89,7 +89,8 @@ public class OrderController {
 					Response.ResponseStatus.ERROR, "Error: ID missing.", null));
 			return;
 		}
-		Order order = orderdao.getOrderByConfirmationCode((int)req.getPayload());
+		//Order order = orderdao.getOrderByConfirmationCode((int)req.getPayload());
+		Order order = orderdao.getByConfirmationCode((int)req.getPayload());
 		if (order == null)
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE,
 					Response.ResponseStatus.ERROR, "Error: Code have not found.", null));
