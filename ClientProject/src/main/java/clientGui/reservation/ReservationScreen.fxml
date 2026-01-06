@@ -2,64 +2,111 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="400.0" spacing="15.0" 
-      styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" 
-      xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="clientGui.reservation.ReservationController">
+<VBox alignment="TOP_CENTER" prefHeight="650.0" prefWidth="450.0" spacing="15.0" 
+styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" 
+xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.reservation.ReservationController">
 
    <padding>
-      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
+      <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
    </padding>
 
    <children>
-      <Label styleClass="title-label" text="Make a Reservation" />
+      <Label styleClass="title-label" text="Make a Reservation">
+         <font>
+            <Font name="System Bold" size="24.0" />
+         </font>
+         <VBox.margin>
+            <Insets bottom="10.0" />
+         </VBox.margin>
+      </Label>
 
-      <GridPane hgap="10.0" vgap="15.0">
+      <VBox spacing="5.0">
+         <children>
+            <Label styleClass="subtitle-label" text="Select Date:" />
+            <DatePicker fx:id="datePicker" maxWidth="1.7976931348623157E308" promptText="Pick a date to see hours" styleClass="input-field" />
+         </children>
+      </VBox>
+
+      <VBox spacing="10.0" VBox.vgrow="ALWAYS">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="15.0">
+               <children>
+                  <Label styleClass="subtitle-label" text="Select Time:" />
+                  
+                  <HBox alignment="CENTER_RIGHT" spacing="10.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <HBox alignment="CENTER" spacing="4.0">
+                           <Circle fill="WHITE" radius="4.0" stroke="#4caf50" />
+                           <Label text="Free" textFill="#777" style="-fx-font-size: 10px;"/>
+                        </HBox>
+                        <HBox alignment="CENTER" spacing="4.0">
+                           <Circle fill="#fff3e0" radius="4.0" stroke="#ff9800" />
+                           <Label text="Waiting List" textFill="#777" style="-fx-font-size: 10px;"/>
+                        </HBox>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+
+            <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="120.0" style="-fx-background-color: transparent; -fx-background: transparent;">
+               <content>
+                  <TilePane fx:id="timeContainer" hgap="10.0" prefColumns="4" tileAlignment="CENTER" vgap="10.0">
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </TilePane>
+               </content>
+            </ScrollPane>
+         </children>
+      </VBox>
+
+      <GridPane hgap="10.0" vgap="12.0">
         <columnConstraints>
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="120.0" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints hgrow="SOMETIMES" maxWidth="100.0" minWidth="10.0" prefWidth="80.0" />
           <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
         </columnConstraints>
         <rowConstraints>
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Label styleClass="subtitle-label" text="Date:" />
-            <DatePicker fx:id="datePicker" prefWidth="250.0" promptText="Select Date" styleClass="input-field" GridPane.columnIndex="1" />
             
-            <Label styleClass="subtitle-label" text="Time:" GridPane.rowIndex="1" />
-            <ComboBox fx:id="timeComboBox" prefWidth="250.0" promptText="Select Time" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label styleClass="subtitle-label" text="Diners:" GridPane.rowIndex="0" />
+            <TextField fx:id="dinersField" promptText="Number of people" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
             
-            <Label styleClass="subtitle-label" text="Diners:" GridPane.rowIndex="2" />
-            <TextField fx:id="dinersField" promptText="Number of people" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            
-            <Label styleClass="subtitle-label" text="Name:" GridPane.rowIndex="3" />
-            <TextField fx:id="nameField" promptText="Your Name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label styleClass="subtitle-label" text="Name:" GridPane.rowIndex="1" />
+            <TextField fx:id="nameField" promptText="Your Name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-            <Label styleClass="subtitle-label" text="Phone:" GridPane.rowIndex="4" />
-            <TextField fx:id="phoneField" promptText="05X-XXXXXXX" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            <Label styleClass="subtitle-label" text="Phone:" GridPane.rowIndex="2" />
+            <TextField fx:id="phoneField" promptText="05X-XXXXXXX" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             
-            <Label styleClass="subtitle-label" text="Email:" GridPane.rowIndex="5" />
-            <TextField fx:id="emailField" promptText="example@mail.com" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            <Label styleClass="subtitle-label" text="Email:" GridPane.rowIndex="3" />
+            <TextField fx:id="emailField" promptText="example@mail.com" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
          </children>
       </GridPane>
 
       <Label fx:id="errorLabel" textFill="#e74c3c" wrapText="true" />
 
-      <Button mnemonicParsing="false" onAction="#submitReservation" prefHeight="45.0" prefWidth="280.0" styleClass="menu-button, primary-button" text="Book Table" />
-      <Button mnemonicParsing="false" onAction="#goBack" prefHeight="45.0" prefWidth="280.0" styleClass="menu-button" text="Back" />
+      <VBox spacing="10.0">
+         <children>
+            <Button mnemonicParsing="false" onAction="#submitReservation" prefHeight="45.0" prefWidth="400.0" styleClass="menu-button, primary-button" text="Book Table" />
+            <Button mnemonicParsing="false" onAction="#goBack" prefHeight="45.0" prefWidth="400.0" styleClass="menu-button" text="Back" />
+         </children>
+      </VBox>
    </children>
 </VBox>
