@@ -8,6 +8,7 @@ import java.io.Serializable;
 public enum ActionType implements Serializable {
     GET_ALL,
     GET_BY_ID,
+    GET,
     GET_ALL_BY_SUBSCRIBER_ID,
     CREATE,
     UPDATE,
