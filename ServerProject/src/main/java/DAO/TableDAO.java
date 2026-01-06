@@ -9,14 +9,11 @@ import entities.Table;
 public class TableDAO {
 
     public List<Table> getAllTables() throws SQLException {
-        String sql = "SELECT * FROM tables";
-        Connection con = null;
-        PreparedStatement stmt = null;
+        String query = "SELECT * FROM tables";
         ResultSet rs = null;
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
+        try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(query)) {
             rs = stmt.executeQuery();
 
             List<Table> list = new ArrayList<>();
@@ -25,10 +22,10 @@ public class TableDAO {
                 list.add(t);
             }
             return list;
-        } finally {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+        } catch(Exception e) {
+        	System.err.println("Error in get all Tables");
         }
+        return null;
     }
 
     public boolean addTable(Table t) throws SQLException {
