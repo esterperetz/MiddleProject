@@ -31,8 +31,8 @@ public class OrderLogic {
 		client.sendRequest(req);
 	}
 	
-	public void getAvailabilityOptions(Date time) {
-		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, time);
+	public void getAvailabilityOptions(Order order) {
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, order);
 		client.sendRequest(req);
 	}
 
