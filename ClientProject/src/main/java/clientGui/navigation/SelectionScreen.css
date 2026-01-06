@@ -12,7 +12,7 @@
 /*@@@@2 */
 .root {
     -fx-background-color: #f4f4f4;
-    -fx-font-family: "Segoe UI", sans-serif; /* פונט נקי */
+    -fx-font-family: "Segoe UI", sans-serif; 
 }
 
 /* עיצוב בסיסי לכל כפתורי השעות */
