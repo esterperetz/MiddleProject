@@ -89,8 +89,8 @@ public class OrderController {
 					Response.ResponseStatus.ERROR, "Error: ID missing.", null));
 			return;
 		}
-		//Order order = orderdao.getOrderByConfirmationCode((int)req.getPayload());
-		Order order = orderdao.getByConfirmationCode((int)req.getPayload());
+
+		Order order = orderdao.getOrderByConfirmationCode((int)req.getPayload());
 		if (order == null)
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE,
 					Response.ResponseStatus.ERROR, "Error: Code have not found.", null));
@@ -143,7 +143,8 @@ public class OrderController {
 		Object payload = req.getPayload();
 		Order order = null;
 		Customer guest = null;
-
+		Customer existing,customer = null;
+		
 		if (payload instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> data = (Map<String, Object>) payload;
@@ -158,7 +159,7 @@ public class OrderController {
 		}
 
 		if (guest != null) {
-			Customer existing = customerDao.getCustomerByEmail(guest.getEmail());
+			existing = customerDao.getCustomerByEmail(guest.getEmail());
 			if (existing != null) {
 				order.setCustomerId(existing.getCustomerId());
 			} else {
@@ -172,7 +173,6 @@ public class OrderController {
 				}
 			}
 		} else {
-			Customer customer = null;
 			if (order.getCustomerId() != null) {
 				customer = customerDao.getCustomerByCustomerId(order.getCustomerId());
 				if (customer == null) {
@@ -181,12 +181,15 @@ public class OrderController {
 			}
 
 			if (customer == null) {
-				System.out.println("Customer not found for Order! ID received: " + order.getCustomerId());
-				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-						"Error: Customer not found in system.", null));
-				return;
+//				System.out.println("Customer not found for Order! ID received: " + order.getCustomerId());
+//				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
+//						"Error: Customer not found in system.", null));
+//				return; Integer subscriberCode, String name, String phoneNumber, String email
+				customer = new Customer(null,order.getClientName(),order.getClientPhone(),order.getClientEmail());
+				customer.setType(CustomerType.REGULAR);
+				customerDao.createCustomer(customer);
 			}
-
+			
 			order.setCustomerId(customer.getCustomerId());
 		}
 
@@ -196,6 +199,8 @@ public class OrderController {
 		if (handleCheckAvailability(req, client)) {
 			order.setOrderStatus(OrderStatus.APPROVED);
 			if (orderdao.createOrder(order)) {
+				EmailService.sendConfirmation(customer,order);
+				System.out.println(EmailService.getContent());
 				client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 						"Order created.", order));
 				sendOrdersToAllClients();
@@ -378,7 +383,7 @@ public class OrderController {
 	private void handleIdentifyAtTerminal(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null)
 			return;
-		Order order = orderdao.getByConfirmationCode(req.getId());
+		Order order = orderdao.getOrderByConfirmationCode(req.getId());
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
@@ -518,7 +523,7 @@ public class OrderController {
 		Order existingOrder;
 		do {
 			newCode = 1000 + (int) (Math.random() * 9000);
-			existingOrder = orderdao.getByConfirmationCode(newCode);
+			existingOrder = orderdao.getOrderByConfirmationCode(newCode);
 		} while (existingOrder != null);
 		return newCode;
 	}

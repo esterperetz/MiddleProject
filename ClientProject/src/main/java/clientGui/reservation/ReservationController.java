@@ -147,12 +147,17 @@ public class ReservationController extends MainNavigator implements MessageListe
 			LocalTime localTime = LocalTime.parse(timeComboBox.getValue());
 			Date orderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
 			int guests = Integer.parseInt(dinersField.getText().trim());
+			String customerEmail = emailField.getText();
+			String customerName = nameField.getText();
+			String customerNumber = phoneField.getText();
 
 			System.out.println("Customer ID used for order: " + customerId);
 
 			Order newOrder = new Order(0, orderDate, guests, 0, customerId, // יהיה null או 0 אם זה אורח
 					null, new Date(), null, null, 0.0, null);
-
+			newOrder.setTempClientEmail(customerEmail);
+			newOrder.setCustomerName(customerName);
+			newOrder.setTempClientPhone(customerNumber);
 			Map<String, Object> requestData = new HashMap<>();
 			requestData.put("order", newOrder);
 
