@@ -169,8 +169,6 @@ public class OrderController {
 	}
 
 	private boolean handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
-	  ////we was here
-		
 		Object payload = req.getPayload();
 	    Order order = null;
 	    Customer guestData = null;
