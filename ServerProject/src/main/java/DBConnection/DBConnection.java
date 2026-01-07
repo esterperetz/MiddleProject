@@ -38,7 +38,8 @@ public class DBConnection {
 		createTableTables(instance.connection);
 		createTableOrder(instance.connection);
 		createTableWaitingList(instance.connection);
-		createTableOpeningHours(instance.connection); // תיקון: נוסף לאתחול
+		createTableOpeningHours(instance.connection); 
+		insertIntoTableOpeningHours(instance.connection);
 		conn_established = true;
 		System.out.println("Single persistent DB Connection established successfully.");
 	}
@@ -193,5 +194,21 @@ public class DBConnection {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void insertIntoTableOpeningHours(Connection con) {
+		Statement stmt;
+	    String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES " +
+	                 "(DAYOFWEEK(NOW()), CURDATE(), CURTIME(), '17:00:00', 0), " +
+	                 "(DAYOFWEEK(NOW()), CURDATE(), '17:00:00', '23:59:59', 0)";
+
+	    try{
+	    	stmt = con.createStatement();
+	        int rowsAffected = stmt.executeUpdate(sql);
+	        
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        System.out.println("Error inserting into opening_hours: " + e.getMessage());
+	    }
 	}
 }
