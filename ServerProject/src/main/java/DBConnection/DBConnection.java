@@ -161,8 +161,6 @@ public class DBConnection {
 		String sql = "CREATE TABLE IF NOT EXISTS waiting_list (" +
 				"waiting_id INT NOT NULL AUTO_INCREMENT, " +
 				"customer_id INT , " +
-//				"identification_details VARCHAR(255) NOT NULL, " +
-//				"full_name VARCHAR(255) NOT NULL, " +
 				"number_of_guests INT NOT NULL, " +
 				"enter_time DATETIME NOT NULL, " +
 				"confirmation_code INT NOT NULL, " +
