@@ -5,14 +5,8 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import DAO.OrderDAO;
-import DAO.WaitingListDAO;
-import entities.ActionType;
-import entities.Order;
-import entities.Request;
-import entities.ResourceType;
-import entities.Response;
-import entities.WaitingList;
+import DAO.*;
+import entities.*;
 import entities.Order.OrderStatus;
 import ocsf.server.ConnectionToClient;
 
@@ -20,6 +14,7 @@ public class WaitingListController {
 
 	private final WaitingListDAO waitingListDAO = new WaitingListDAO();
 	private final OrderDAO orderDAO = new OrderDAO();
+	private final CustomerDAO customerDAO = new CustomerDAO();
 
 	public void handle(Request req, ConnectionToClient client) throws IOException {
 		if (req.getResource() != ResourceType.WAITING_LIST) {
@@ -65,18 +60,58 @@ public class WaitingListController {
 	}
 
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
-		WaitingList item = (WaitingList) req.getPayload();
-		int generatedCode = 1000 + (int) (Math.random() * 9000); // Generate 4-digit code
-		item.setConfirmationCode(generatedCode);
-		item.setEnterTime(new Date());
+	    WaitingList item = (WaitingList) req.getPayload();
+	    
+	    int generatedCode = 1000 + (int) (Math.random() * 9000); 
+	    item.setConfirmationCode(generatedCode);
+	    item.setEnterTime(new Date());
 
-		if (waitingListDAO.enterWaitingList(item)) {
-			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-					Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
-			sendListToAllClients();
-		}
+	    Customer finalCustomer = null;
+	    Integer subCode = item.getCustomer().getSubscriberCode();
+
+	    if(subCode != null && subCode > 0) {
+	        finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
+	        
+	        if (finalCustomer == null) {
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                    Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
+	            return;
+	        }
+	    } else {
+	        String email = item.getCustomer().getEmail();
+	        finalCustomer = customerDAO.getCustomerByEmail(email);
+
+	        if (finalCustomer == null) {
+	            Customer newGuest = item.getCustomer();
+	            newGuest.setType(CustomerType.REGULAR); 
+	            customerDAO.createCustomer(newGuest); 
+	            
+	            finalCustomer = customerDAO.getCustomerByEmail(email);
+	        }
+	    }
+
+	    if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to identify customer.", null));
+	        return;
+	    }
+
+	    // 3. Update the Item with the correct ID
+	    item.setCustomerId(finalCustomer.getCustomerId());
+	    item.setCustomer(finalCustomer); 
+
+	    // 4. Save to Waiting List using the DAO
+	    if (waitingListDAO.enterWaitingList(item)) {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
+	        sendListToAllClients();
+	    } else {
+	         client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
+	    }
 	}
-
+	
+	
 	private void handleExitWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
 			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.EXIT_WAITING_LIST,
@@ -103,9 +138,10 @@ public class WaitingListController {
 		if (entry == null)
 			return false;
 
+		
 		// 2. Create new APPROVED order object
 		Order promotedOrder = new Order(0, new Date(), entry.getNumberOfGuests(), entry.getConfirmationCode(),
-				entry.getCustomerId(), null, new Date(), null, null, 0.0, OrderStatus.APPROVED);
+				entry.getCustomer(), null, new Date(), null, null, 0.0,OrderStatus.APPROVED);
 
 		// 3. Save to database and remove from waiting list
 		if (orderDAO.createOrder(promotedOrder)) {

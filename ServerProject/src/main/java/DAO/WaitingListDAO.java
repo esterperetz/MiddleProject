@@ -108,7 +108,7 @@ public class WaitingListDAO {
             if (item.getCustomerId() == null) {
                 stmt.setNull(1, java.sql.Types.INTEGER);
             } else {
-                stmt.setInt(1, item.getCustomerId());
+                stmt.setInt(1, item.getCustomer().getCustomerId());
             }
 
       
@@ -147,7 +147,7 @@ public class WaitingListDAO {
                 subId,
                 rs.getInt("number_of_guests"),
                 rs.getTimestamp("enter_time"),
-                rs.getInt("confirmation_code")
+                rs.getInt("confirmation_code"), null
         );
     }
    
