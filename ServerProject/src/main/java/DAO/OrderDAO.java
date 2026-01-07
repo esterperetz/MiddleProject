@@ -45,8 +45,8 @@ public class OrderDAO {
 		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number "
 				+ "FROM `order` o "
 				+ "JOIN Customer c ON o.customer_id = c.customer_id "
-				+ "WHERE o.order_date BETWEEN (NOW() + INTERVAL ? MINUTE - INTERVAL 1 MINUTE) "
-				+ "AND (NOW() + INTERVAL ? MINUTE + INTERVAL 1 MINUTE) "
+				+ "WHERE o.order_date BETWEEN (NOW() + INTERVAL ? MINUTE - INTERVAL 2 MINUTE) "
+				+ "AND (NOW() + INTERVAL ? MINUTE + INTERVAL 2 MINUTE) "
 				+ "AND o.reminder_sent = FALSE "
 				+ "AND o.order_status IN ('APPROVED')";
 

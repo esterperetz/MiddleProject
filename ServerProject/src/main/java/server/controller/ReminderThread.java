@@ -44,12 +44,14 @@ public class ReminderThread extends Thread {
 
             if (!orders.isEmpty()) {
                 System.out.println("[ReminderThread] Found " + orders.size() + " orders to remind.");
+              
             }
 
             for (Order order : orders) {
                 // Send actual email via EmailService
-            	System.out.println("YESS");
+            	 
                 EmailService.sendReminder(order);
+                System.out.println("[ReminderThread] Sent reminder to order: " + order.getOrderNumber());
 
                 // Mark as reminded in DB so we don't send again
                 orderDAO.markAsReminded(order.getOrderNumber());
