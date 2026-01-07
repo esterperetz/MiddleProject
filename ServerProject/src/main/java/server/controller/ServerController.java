@@ -24,7 +24,7 @@ public class ServerController extends AbstractServer {
 		this.reminderThread = new ReminderThread();
 //		this.cleanupThread.start();
 //		this.waitingListThread.start();
-//		this.reminderThread.start();
+		this.reminderThread.start();
 		view.log("Background threads (Cleanup, WaitingList, Reminder) initialized and started.");
 	}
 

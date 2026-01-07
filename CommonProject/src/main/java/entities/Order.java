@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class Order implements Serializable {
+	
+
 	private static final long serialVersionUID = 1L;
 
 	// Enum for Order Status
@@ -162,5 +164,14 @@ public class Order implements Serializable {
 			return false;
 		Order other = (Order) obj;
 		return orderNumber == other.orderNumber;
+	}
+	
+	@Override
+	public String toString() {
+		return "Order [orderNumber=" + orderNumber + ", orderDate=" + orderDate + ", numberOfGuests=" + numberOfGuests
+				+ ", confirmationCode=" + confirmationCode + ", CustomerId=" + CustomerId + ", tableNumber="
+				+ tableNumber + ", arrivalTime=" + arrivalTime + ", leavingTime=" + leavingTime + ", totalPrice="
+				+ totalPrice + ", orderStatus=" + orderStatus + ", customer=" + customer + ", reminderSent="
+				+ reminderSent + "]";
 	}
 }

@@ -248,6 +248,10 @@ public class OrderController {
 	        boolean success = orderdao.createOrder(order);
 
 	        if (success) {
+	        	System.out.println(finalCustomer.toString());
+	        	System.out.println(order.toString());
+	        	EmailService.sendConfirmation(finalCustomer, order);
+	        	System.out.println(EmailService.getContent());
 	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 	                    "Order created successfully!", order));
 	            return true;
