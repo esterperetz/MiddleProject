@@ -66,4 +66,11 @@ public class OrderLogic {
 		Request req = new Request(ResourceType.ORDER, ActionType.SEND_EMAIL, null, order);
 		client.sendRequest(req);
 	}
+
+	public void getOrderByConfirmationCode(int code) {
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_CODE, null, code);
+		client.sendRequest(req);
+		
+	}
+
 }

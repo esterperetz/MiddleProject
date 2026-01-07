@@ -75,6 +75,9 @@ public class OrderController {
 				checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
 						((Order) req.getPayload()).getNumberOfGuests());
 				break;
+			case GET_BY_CODE:
+				handleGetByCode(req, client);
+				break;
 			case CREATE:
 				handleCreate(req, client);
 				break;
@@ -107,6 +110,25 @@ public class OrderController {
 			e.printStackTrace();
 			client.sendToClient("Database error: " + e.getMessage());
 		}
+	}
+
+	private void handleGetByCode(Request req, ConnectionToClient client) throws SQLException, IOException {
+		if (req.getPayload() == null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.ERROR,
+					"Error: ID missing.", null));
+			return;
+		}
+
+		Order order = orderdao.getOrderByConfirmationCode((int) req.getPayload());
+		if (order == null)
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.ERROR,
+					"Error: Code have not found.", null));
+		else {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.SUCCESS,
+					"Error: ID missing.", order));
+			return;
+		}
+
 	}
 
 	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
@@ -146,51 +168,112 @@ public class OrderController {
 				new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS, null, order));
 	}
 
-	// בתוך OrderController בשרת
 	private boolean handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
-	    Order order = (Order) req.getPayload();
-	    
-	    // 1. בדיקת זמינות לפני שומרים! (אותה לוגיקה בדיוק כמו מקודם)
-	    int guests = order.getNumberOfGuests();
-	    int minGuestsThreshold = (guests > 5) ? 6 : 1;
-	    
-	    int totalTables = tabledao.countSuitableTables(guests);
-	    int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
-	    
-	    // אם אין מקום...
-	    if (totalTables - conflictingOrders <= 0) {
-	        
-	        // --- זה החלק החדש והחשוב ---
-	        // אנחנו מייצרים את רשימת השעות האלטרנטיבית לאותו יום
-	        List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
-	        
-	        // שולחים שגיאה + את הרשימה (Alternatives)
-	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.ERROR, 
-	                "The restaurant is full at this time. Please see available slots below.", 
-	                alternatives)); // <--- הוספנו את הרשימה כאן
+	    Object payload = req.getPayload();
+	    Order order = null;
+	    Customer guestData = null;
+
+	    // 1. חילוץ הנתונים בצורה בטוחה (ללא קריסה)
+	    if (payload instanceof Map) {
+	        @SuppressWarnings("unchecked")
+	        Map<String, Object> data = (Map<String, Object>) payload;
+	        order = (Order) data.get("order");
+	        guestData = (Customer) data.get("guest");
+	    } else if (payload instanceof Order) {
+	        order = (Order) payload;
+	    } else {
+	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
+	                "Error: Invalid payload type.", null));
 	        return false;
 	    }
 
-	    // 2. אם יש מקום - ממשיכים ליצירה הרגילה
-	    boolean success = orderdao.createOrder(order); // הפונקציה הקיימת שלך לשמירה ב-DB
+	    // בדיקת תקינות בסיסית שאכן קיבלנו הזמנה
+	    if (order == null) {
+	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
+	                "Error: Order data is missing.", null));
+	        return false;
+	    }
+
+	    // 2. בדיקת זמינות (Availability Check)
+	    int guests = order.getNumberOfGuests();
+	    int minGuestsThreshold = (guests > 5) ? 6 : 1;
+	    int totalTables = tabledao.countSuitableTables(guests);
+	    int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
+
+	    if (totalTables - conflictingOrders <= 0) {
+	        List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
+	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
+	                "The restaurant is full at this time. Please see available slots below.", alternatives));
+	        return false;
+	    }
+
+	    // 3. טיפול בלקוח (Customer Handling) - איחוד הלוגיקה
+	    // המטרה: להבטיח של-order יש CustomerId תקין לפני השמירה
+	    Customer finalCustomer = null;
+
+	    if (guestData != null) {
+	        // תרחיש 1: הגיע מידע על אורח (Guest) דרך Map
+	        finalCustomer = customerDao.getCustomerByEmail(guestData.getEmail());
+	        if (finalCustomer == null) {
+	            // האורח לא קיים - ניצור אותו כעת
+	            customerDao.createCustomer(guestData); // נניח שזה מעדכן את ה-ID באובייקט או שנצטרך לשלוף שוב
+	            finalCustomer = customerDao.getCustomerByEmail(guestData.getEmail()); // שליפה לוודא שיש לנו ID
+	        }
+	    } else {
+	        // תרחיש 2: הגיעה רק הזמנה (אולי עם ID, ואולי פרטים חדשים באובייקט ההזמנה)
+	        if (order.getCustomerId() != null) {
+	            finalCustomer = customerDao.getCustomerByCustomerId(order.getCustomerId());
+	        }
+	        
+	        // אם לא נמצא לפי ID, או שלא היה ID - ננסה ליצור לפי הפרטים שבתוך ההזמנה
+	        if (finalCustomer == null) {
+	             // יצירת לקוח חדש על בסיס השדות בהזמנה
+	            finalCustomer = new Customer(null, order.getClientName(), order.getClientPhone(), order.getClientEmail());
+	            finalCustomer.setType(CustomerType.REGULAR);
+	            customerDao.createCustomer(finalCustomer);
+	            
+	            // עדכון ה-ID מה-DB (תלוי איך המימוש של createCustomer עובד, לפעמים צריך לשלוף מחדש)
+	            if (finalCustomer.getCustomerId() == null) {
+	                 Customer temp = customerDao.getCustomerByEmail(order.getClientEmail());
+	                 if (temp != null) finalCustomer.setCustomerId(temp.getCustomerId());
+	            }
+	        }
+	    }
+
+	    // עדכון ה-ID בהזמנה
+	    if (finalCustomer != null) {
+	        order.setCustomerId(finalCustomer.getCustomerId());
+	    } else {
+	        // מקרה קצה: נכשלנו ביצירת/מציאת לקוח
+	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to resolve customer data.", null));
+	        return false;
+	    }
+
+	    // 4. סיום הכנת ההזמנה ושמירה (Unified Save Logic)
+	    order.setConfirmationCode(generateUniqueConfirmationCode());
+	    
+	    // שמירה ב-DB מתבצעת פעם אחת בלבד, בסוף התהליך
+	    boolean success = orderdao.createOrder(order);
+
 	    if (success) {
 	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.SUCCESS, "Order created successfully!", null));
+	                Response.ResponseStatus.SUCCESS, "Order created successfully!", order)); // מחזירים את ההזמנה המעודכנת
 	        return true;
 	    } else {
 	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to save order.", null));
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
 	        return false;
 	    }
 	}
-	
-	
+
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
 			/// need to get email from customer table
-			// EmailService.sendConfirmation(updatedOrder.getClientEmail(),updatedOrder);
+			Customer customer = customerDao.getCustomerByCustomerId(updatedOrder.getCustomerId());
+			if (customer != null)
+				EmailService.sendConfirmation(customer, updatedOrder);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Order updated.", updatedOrder));
@@ -213,7 +296,9 @@ public class OrderController {
 		if (orderdao.deleteOrder(req.getId())) {
 			/// need to get email from customer table
 
-			// EmailService.sendCancelation(order.getClientEmail(),order);
+			Customer customer = customerDao.getCustomerByCustomerId(order.getCustomerId());
+			if (customer != null)
+				EmailService.sendCancelation(customer, order);
 			System.out.println(EmailService.getContent());
 			client.sendToClient(new Response(req.getResource(), ActionType.DELETE, Response.ResponseStatus.SUCCESS,
 					"Order deleted.", order));
@@ -264,7 +349,7 @@ public class OrderController {
 	private List<String> getAvailabilityOptions(Date dateOrder) throws SQLException, IOException {
 
 		LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
-		int dayOfWeek = date.getDayOfWeek().getValue(); 
+		int dayOfWeek = date.getDayOfWeek().getValue();
 
 		OpeningHours dayHours = businessHourDao.getHoursForDate(dayOfWeek);
 
@@ -337,7 +422,7 @@ public class OrderController {
 	private void handleIdentifyAtTerminal(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null)
 			return;
-		Order order = orderdao.getByConfirmationCode(req.getId());
+		Order order = orderdao.getOrderByConfirmationCode(req.getId());
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.APPROVED) {
 			long diffInMinutes = (new Date().getTime() - order.getOrderDate().getTime()) / 60000;
@@ -385,7 +470,7 @@ public class OrderController {
 			// Check if customer is SUBSCRIBER for 10% discount
 			if (order.getCustomerId() != null) {
 				// Use correct DAO method to fetch customer by ID
-				Customer c = customerDao.getCustomerBySubscriberId(order.getCustomerId());
+				Customer c = customerDao.getCustomerByCustomerId(order.getCustomerId());
 				if (c != null && c.getType() == CustomerType.SUBSCRIBER) {
 					amount *= 0.9;
 				}
@@ -477,7 +562,7 @@ public class OrderController {
 		Order existingOrder;
 		do {
 			newCode = 1000 + (int) (Math.random() * 9000);
-			existingOrder = orderdao.getByConfirmationCode(newCode);
+			existingOrder = orderdao.getOrderByConfirmationCode(newCode);
 		} while (existingOrder != null);
 		return newCode;
 	}

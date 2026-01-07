@@ -68,6 +68,9 @@ public class Order implements Serializable {
 	public void setOrderDate(Date orderDate) {
 		this.orderDate = orderDate;
 	}
+	public void setCustomerName(String name) {
+		this.clientName = name;
+	}
 
 	public int getNumberOfGuests() {
 		return numberOfGuests;

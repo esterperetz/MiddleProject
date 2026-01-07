@@ -39,5 +39,5 @@ public enum ActionType implements Serializable {
     UPDATE_ORDER_STATUS, // Change status to SEATED, etc.
     PAY_BILL, // Complete payment and close order
     SEND_EMAIL,
-    RESEND_CONFIRMATION
+    RESEND_CONFIRMATION, GET_BY_CODE, SET_DETAILS
 }

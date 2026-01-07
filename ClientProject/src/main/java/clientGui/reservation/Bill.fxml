@@ -8,8 +8,8 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="TOP_CENTER" spacing="15.0" 
-      prefHeight="550.0" prefWidth="400.0" 
+<VBox alignment="TOP_CENTER" spacing="20.0" 
+      prefHeight="600.0" prefWidth="420.0" 
       stylesheets="@../navigation/SelectionScreen.css" 
       styleClass="main-container"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
@@ -20,44 +20,54 @@
    </padding>
 
    <children>
-      <Label text="Order Bill" styleClass="title-label" />
+      <Label text="Order Bill" styleClass="title-label" style="-fx-font-size: 28px; -fx-text-fill: #2c3e50;" />
       
-      <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-padding: 15;">
+      <VBox spacing="10.0" VBox.vgrow="ALWAYS" 
+            style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.15), 10, 0, 0, 5); -fx-padding: 20;">
          
-         <Label text="Order Summary" style="-fx-font-weight: bold; -fx-text-fill: #7f8c8d;" />
-         <ListView fx:id="itemsList" prefHeight="200.0" style="-fx-background-color: transparent; -fx-border-color: transparent;" />
+         <Label text="Order Summary" style="-fx-font-weight: bold; -fx-text-fill: #95a5a6; -fx-font-size: 14px;" />
          
-         <Separator />
+         <ListView fx:id="itemsList" VBox.vgrow="ALWAYS" 
+                   style="-fx-background-color: transparent; -fx-background-insets: 0; -fx-padding: 5;" />
          
-         <VBox spacing="5.0">
-            
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <Label text="Subtotal:" style="-fx-font-size: 14px; -fx-text-fill: #34495e;" />
-               <Label fx:id="lblOriginalPrice" text="0.00 $" style="-fx-font-size: 14px; -fx-font-weight: bold;" />
+         <Separator style="-fx-opacity: 0.5;" />
+         
+         <VBox spacing="8.0">
+            <HBox alignment="CENTER_LEFT">
+               <Label text="Subtotal" style="-fx-font-size: 15px; -fx-text-fill: #7f8c8d;" />
+               <HBox HBox.hgrow="ALWAYS" />
+               <Label fx:id="lblOriginalPrice" text="0.00 $" style="-fx-font-size: 15px; -fx-font-weight: bold;" />
             </HBox>
 
-            <HBox fx:id="discountBox" alignment="CENTER_LEFT" spacing="10.0" visible="false" managed="false">
-               <Label text="Subscriber Discount (10%):" style="-fx-font-size: 14px; -fx-text-fill: #27ae60;" />
-               <Label fx:id="lblDiscountAmount" text="-0.00 $" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #27ae60;" />
+            <HBox fx:id="discountBox" alignment="CENTER_LEFT" visible="false" managed="false">
+               <Label text="Subscriber Discount (10%)" style="-fx-font-size: 15px; -fx-text-fill: #27ae60;" />
+               <HBox HBox.hgrow="ALWAYS" />
+               <Label fx:id="lblDiscountAmount" text="-0.00 $" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #27ae60;" />
             </HBox>
 
-            <Separator />
+            <Separator style="-fx-padding: 5 0 5 0;" />
 
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <Label text="Total to Pay:" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
-               <HBox HBox.hgrow="ALWAYS" /> <Label fx:id="lblFinalPrice" text="0.00 $" style="-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" />
+            <HBox alignment="CENTER_LEFT">
+               <Label text="Total to Pay" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+               <HBox HBox.hgrow="ALWAYS" />
+               <Label fx:id="lblFinalPrice" text="0.00 $" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" />
             </HBox>
-            
          </VBox>
       </VBox>
 
-      <Button fx:id="btnPay" mnemonicParsing="false" onAction="#payAndReleaseTable" 
-              prefHeight="50.0" prefWidth="340.0" 
-              styleClass="menu-button, primary-button" text="Pay &amp; Release Table">
-         <VBox.margin>
-            <Insets top="20.0" />
-         </VBox.margin>
-      </Button>
+      <HBox spacing="15.0" alignment="CENTER">
+         <Button fx:id="btnCancel" mnemonicParsing="false" onAction="#goBack" 
+                 prefHeight="45.0" prefWidth="150.0" 
+                 styleClass="menu-button" 
+                 style="-fx-background-color: #ecf0f1; -fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-background-radius: 10;" 
+                 text="Cancel" />
+                 
+         <Button fx:id="btnPay" mnemonicParsing="false" onAction="#payAndReleaseTable" 
+                 prefHeight="45.0" prefWidth="200.0" 
+                 styleClass="menu-button, primary-button" 
+                 style="-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10;" 
+                 text="Proceed to Pay" />
+      </HBox>
 
    </children>
 </VBox>

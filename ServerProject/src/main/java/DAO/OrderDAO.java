@@ -258,7 +258,7 @@ public class OrderDAO {
 	/**
 	 * Fetches an APPROVED order by its confirmation code.
 	 */
-	public Order getByConfirmationCode(int code) throws SQLException {
+	public Order getOrderByConfirmationCode(int code) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status = 'APPROVED'";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {

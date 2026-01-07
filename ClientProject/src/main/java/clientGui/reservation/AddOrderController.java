@@ -201,6 +201,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 						null, 0, // total_price
 						status // order_status
 				);
+				newOrder.setTempClientEmail(clientEmail);
 				System.out.println("------------ " + cusId);
 				if (cusId == null) {
 					System.out.println("heloooo ");

@@ -13,7 +13,7 @@ public class ServerController extends AbstractServer {
 	private final OrderCleanupThread cleanupThread;
 	private final WaitingListCheckThread waitingListThread;
 	private final ReminderThread reminderThread;
-
+	
 	public ServerController(int port, ServerViewController view) {
 		super(port);
 		this.view = view;

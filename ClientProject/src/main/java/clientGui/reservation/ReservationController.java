@@ -177,6 +177,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 			java.sql.Timestamp finalReservationTime = java.sql.Timestamp.valueOf(ldt);
 
 			java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
+			String customerEmail = emailField.getText();
+			String customerName = nameField.getText();
+			String customerNumber = phoneField.getText();
 
 			System.out.println("Booking for: " + finalReservationTime);
 
@@ -186,19 +189,25 @@ public class ReservationController extends MainNavigator implements MessageListe
 					0, // status (או דיפולט)
 					customerId, // customerId
 					null, //
-					finalReservationTime, // arrivalTime (התאריך שנבחר!)
+					now, // arrivalTime (התאריך שנבחר!)
 					null, //
 					null, //
 					0.0, // price
 					null //
 			);
+			newOrder.setTempClientEmail(customerEmail);
+			newOrder.setCustomerName(customerName);
+			newOrder.setTempClientPhone(customerNumber);
+			Map<String, Object> requestData = new HashMap<>();
+			requestData.put("order", newOrder);
+
 
 			// עדכון זמן לחיצת הכפתור (חשוב ל-DB)
 			newOrder.setDateOfPlacingOrder(now);
 
 			// --- מכאן הקוד ממשיך רגיל ---
 
-			Map<String, Object> requestData = new HashMap<>();
+//			Map<String, Object> requestData = new HashMap<>();
 			requestData.put("order", newOrder);
 
 			if (isSubscriber != CustomerType.SUBSCRIBER) {

@@ -1,6 +1,7 @@
 package clientGui.reservation;
 
 import java.net.URL;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
@@ -10,7 +11,11 @@ import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
+import entities.Alarm;
 import entities.CustomerType;
+import entities.Order;
+import entities.Response;
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -19,6 +24,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Modality;
@@ -27,7 +33,7 @@ import javafx.stage.Stage;
 public class CheckOutController extends MainNavigator implements  Initializable , MessageListener<Object>{
 
 	@FXML
-	private TextField txtOrderId;
+	private TextField txtConfirmationCode;
 
 	@FXML
 	private Label lblResult;
@@ -36,15 +42,20 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	private CustomerType isSubsriber;
 	private OrderLogic orderLogic;
 	private int tableId;
+
+	private ActionEvent currentEvent;
 	
 	@Override
-    public void initialize(URL location, ResourceBundle resources) {
-        // By default, the button is hidden in FXML (visible="false", managed="false").
-        
-        // --- Check if the current user is a subscriber ---
-        // TODO: Replace 'true' with your actual logic, e.g., ClientUI.currentUser.isSubscriber()
-        //isSubscriber = true; 
+	public void initialize(URL location, ResourceBundle resources) {
+		Platform.runLater(() -> {
+			if (txtConfirmationCode.getScene() != null && txtConfirmationCode.getScene().getWindow() != null) {
+				Stage stage = (Stage) txtConfirmationCode.getScene().getWindow();
+				stage.setOnCloseRequest(event -> {
+					clientUi.disconnectClient();
 
+				});
+			}
+		});
 	}
 	public void initData(Integer subscriberId,CustomerType isSubsriber, int tableId) {
 		// this.clientUi = clientUi;
@@ -56,44 +67,24 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 //		orderLogic.getOrdersBySubscriberCode(subscriberId);
 	
 	}
-	/**
-	 * Triggered when the "Check out" button is clicked.
-	 */
+	
 	@FXML
 	void getPaymentBil(ActionEvent event) {
-		String orderId = txtOrderId.getText();
+	    String ConfirmationCode = txtConfirmationCode.getText();
 
-		// 1. Input Validation
-		// add if the code incorrect
-		if (orderId == null || orderId.trim().isEmpty()) {
-			lblResult.setText("Please enter a valid Order ID.");
-			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
-			return;
-		}
-		BillController bill_controller = super.loadScreen("reservation/Bill",event,clientUi);
-   	 //if(isSubsriber)	
-   		bill_controller.initData(2.3,currentSubscriberId,this.isSubsriber, tableId);
-    	//else
-    		//bill_controller.initData(2.3,currentSubscriberId,false, tableId);
-		//super.loadScreen("reservation/Bill", event,clientUi);
-
-
-		// 2. Server Simulation (Replace this with real server call later)
-		// Example: int tableNumber = ClientUI.chat.getTableRequest(orderId);
-		// int tableNumber = mockServerCheck(orderId);
-
-		// 3. Process Result
-		// if (tableNumber != -1) {
-		// Success: Table is free
-		// lblResult.setText("Table is ready! Table Number: " + tableNumber);
-		// lblResult.setStyle("-fx-text-fill: #51cf66; -fx-font-size: 16px;
-		// -fx-font-weight: bold;"); // Green color
-		// } else {
-		// Failure: Order not found or table occupied
-		// lblResult.setText("Order not found or table is not ready yet.");
-		// lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color
-		// }
-
+	    if (ConfirmationCode == null || ConfirmationCode.trim().isEmpty()) {
+	        lblResult.setText("Please enter a valid Confirmation Code.");
+	        lblResult.setStyle("-fx-text-fill: #ff6b6b;");
+	        return;
+	    }
+	    this.currentEvent = event;
+	    try {
+	    	orderLogic.getOrderByConfirmationCode(Integer.parseInt(ConfirmationCode));
+	    }
+	    catch(NumberFormatException e) {
+	    	Alarm.showAlert("Code Format Error", "Code should be numeric!", Alert.AlertType.ERROR);
+	    }
+	   
 	}
 
 
@@ -125,6 +116,43 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	@Override
 	public void onMessageReceive(Object msg) {
 		// TODO Auto-generated method stub
+	    if (!(msg instanceof Response)) return;
+	    Response res = (Response) msg;
+
+	    Platform.runLater(() -> {
+	        try {
+	            switch (res.getAction()) {
+	                case GET_BY_CODE:
+	                    handleOrderResponse(res);
+	                    break;
+	                default:
+	                    System.out.println("Unhandled Action: " + res.getAction());
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            Alarm.showAlert("System Error", "An error occurred while processing server response.", Alert.AlertType.ERROR);
+	        }
+	    });
+	}
+	
+	private void handleOrderResponse(Response res) {
+		if (res.getStatus().name().equals("SUCCESS")) {
+			
+			 Order order = (Order)res.getData();   
+			 if(order.getTableNumber() != null) { 
+				 order.setLeavingTime(new java.util.Date());
+				 BillController bill_controller = super.loadScreen("reservation/Bill", currentEvent, clientUi);				 
+				 bill_controller.initData(order, currentSubscriberId, this.isSubsriber,order.getTableNumber());
+			 }
+			 else {
+				 Alarm.showAlert("Order Error", "Table Number is Invalid/Not found", Alert.AlertType.ERROR);
+			 }
+		}
+		else {
+			 Alarm.showAlert("Order Error", "Confirmation Code is Invalid/Not found", Alert.AlertType.ERROR);
+		}
+	
+		
 		
 	}
 

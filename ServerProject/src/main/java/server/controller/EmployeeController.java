@@ -70,6 +70,8 @@ public class EmployeeController {
 				boolean success = employeeDAO.createSubscriber(customer);
 				if(success) {
 					try {
+						EmailService.sendEmailToSubscriber(customer);
+						System.out.println(EmailService.getContent());
 						client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 							Response.ResponseStatus.SUCCESS, "Created Subscriber with id: " + customer.getCustomerId(), customer));
 					} catch (IOException e) {
