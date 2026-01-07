@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import DBConnection.DBConnection;
+import entities.Customer;
 import entities.Order;
 import entities.Order.OrderStatus;
 
@@ -59,9 +60,9 @@ public class OrderDAO {
 				while (rs.next()) {
 					Order order = mapResultSetToOrder(rs);
 					// Populate temporary client fields explicitly for email service
-					order.setTempClientEmail(rs.getString("email"));
-					order.setTempClientName(rs.getString("customer_name"));
-					order.setTempClientPhone(rs.getString("phone_number"));
+					order.getCustomer().setEmail(rs.getString("email"));
+					order.getCustomer().setName(rs.getString("customer_name"));
+					order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
 					list.add(order);
 				}
 				return list;
@@ -172,10 +173,10 @@ public class OrderDAO {
 			stmt.setInt(2, o.getNumberOfGuests());
 			stmt.setInt(3, o.getConfirmationCode());
 
-			if (o.getCustomerId() == null) {
+			if (o.getCustomer().getCustomerId() == null) {
 				stmt.setNull(4, Types.INTEGER);
 			} else {
-				stmt.setInt(4, o.getCustomerId());
+				stmt.setInt(4, o.getCustomer().getCustomerId());
 			}
 
 			if (o.getTableNumber() == null) {
@@ -214,10 +215,10 @@ public class OrderDAO {
 			stmt.setInt(2, o.getNumberOfGuests());
 			stmt.setInt(3, o.getConfirmationCode());
 
-			if (o.getCustomerId() == null) {
+			if (o.getCustomer().getCustomerId() == null) {
 				stmt.setNull(4, Types.INTEGER);
 			} else {
-				stmt.setInt(4, o.getCustomerId());
+				stmt.setInt(4, o.getCustomer().getCustomerId());
 			}
 
 			if (o.getTableNumber() == null) {
@@ -290,20 +291,18 @@ public class OrderDAO {
 	 */
 	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int minGuestsThreshold) throws SQLException {
 
-	    // ABS = ערך מוחלט (מתעלם אם זה לפני או אחרי, בודק רק את המרחק)
-	    // TIMESTAMPDIFF = מחשב הפרש בדקות
 	    String sql = "SELECT COUNT(*) FROM `order` "
 	            + "WHERE order_status IN ('APPROVED', 'SEATED') "
-	            + "AND number_of_guests >= ? "  // מסנן רק הזמנות שמתחרות על אותו גודל שולחן
-	            + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120"; // חוסם שעתיים לפני ואחרי
+	            + "AND number_of_guests >= ? "  
+	            + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
 
 	    try (Connection con = DBConnection.getInstance().getConnection();
 	         PreparedStatement stmt = con.prepareStatement(sql)) {
 	        
 	        Timestamp reqTime = new Timestamp(requestedDate.getTime());
 	        
-	        stmt.setInt(1, minGuestsThreshold); // התיקון של גודל השולחן (למשל 6 עבור הזמנה של 8)
-	        stmt.setTimestamp(2, reqTime);      // הזמן המבוקש
+	        stmt.setInt(1, minGuestsThreshold); 
+	        stmt.setTimestamp(2, reqTime);   
 
 	        try (ResultSet rs = stmt.executeQuery()) {
 	            return rs.next() ? rs.getInt(1) : 0;
@@ -404,30 +403,40 @@ public class OrderDAO {
 	 * Helper to map ResultSet row to Order object.
 	 */
 	private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
-		int cusIdTemp = rs.getInt("customer_id");
-		Integer cusId = rs.wasNull() ? null : cusIdTemp;
+	    int cusIdTemp = rs.getInt("customer_id");
+	    Integer cusId = rs.wasNull() ? null : cusIdTemp;
 
-		int tableNumTemp = rs.getInt("table_number");
-		Integer tableNumber = rs.wasNull() ? null : tableNumTemp;
+	    int tableNumTemp = rs.getInt("table_number");
+	    Integer tableNumber = rs.wasNull() ? null : tableNumTemp;
 
-		String statusStr = rs.getString("order_status");
-		OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
+	    String statusStr = rs.getString("order_status");
+	    OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
 
-		Order order = new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"), rs.getInt("number_of_guests"),
-				rs.getInt("confirmation_code"), cusId, tableNumber, rs.getTimestamp("date_of_placing_order"),
-				rs.getTimestamp("arrival_time"), rs.getTimestamp("leaving_time"), rs.getDouble("total_price"), status);
+	    Customer customer = new Customer();
+	    if (cusId != null) {
+	        customer.setCustomerId(cusId);
+	    }
 
-		// Attempt to read reminder_sent, default to false if column missing or null
-		// (though boolean usually not null)
-		// Assuming column exists as per requirements.
-		try {
-			order.setReminderSent(rs.getBoolean("reminder_sent"));
-		} catch (SQLException e) {
-			// Column might not exist in old schema version, ignore or log
-			// System.err.println("Column reminder_sent missing in result set");
-		}
+	    Order order = new Order(
+	            rs.getInt("order_number"), 
+	            rs.getTimestamp("order_date"), 
+	            rs.getInt("number_of_guests"),
+	            rs.getInt("confirmation_code"), 
+	            customer, 
+	            tableNumber, 
+	            rs.getTimestamp("date_of_placing_order"),
+	            rs.getTimestamp("arrival_time"), 
+	            rs.getTimestamp("leaving_time"), 
+	            rs.getDouble("total_price"), 
+	            status
+	    );
 
-		return order;
+	    try {
+	        order.setReminderSent(rs.getBoolean("reminder_sent"));
+	    } catch (SQLException e) {
+	    }
+
+	    return order;
 	}
 
 	public Order getOrderByContact(String contactDetail) throws SQLException {
@@ -448,9 +457,9 @@ public class OrderDAO {
 				if (rs.next()) {
 					Order order = mapResultSetToOrder(rs);
 					// Populate temporary client fields for controller usage
-					order.setTempClientEmail(rs.getString("email"));
-					order.setTempClientName(rs.getString("customer_name"));
-					order.setTempClientPhone(rs.getString("phone_number"));
+					order.getCustomer().setEmail(rs.getString("email"));
+					order.getCustomer().setName(rs.getString("customer_name"));
+					order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
 					return order;
 				}
 				return null;

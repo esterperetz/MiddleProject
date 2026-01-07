@@ -169,11 +169,12 @@ public class OrderController {
 	}
 
 	private boolean handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
-	    Object payload = req.getPayload();
+	  ////we was here
+		
+		Object payload = req.getPayload();
 	    Order order = null;
 	    Customer guestData = null;
 
-	    // 1. חילוץ הנתונים בצורה בטוחה (ללא קריסה)
 	    if (payload instanceof Map) {
 	        @SuppressWarnings("unchecked")
 	        Map<String, Object> data = (Map<String, Object>) payload;
@@ -181,20 +182,11 @@ public class OrderController {
 	        guestData = (Customer) data.get("guest");
 	    } else if (payload instanceof Order) {
 	        order = (Order) payload;
-	    } else {
-	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-	                "Error: Invalid payload type.", null));
-	        return false;
-	    }
+	        guestData = order.getCustomer(); 
+	    } 
 
-	    // בדיקת תקינות בסיסית שאכן קיבלנו הזמנה
-	    if (order == null) {
-	        client.sendToClient(new Response(req.getResource(), ActionType.CREATE, Response.ResponseStatus.ERROR,
-	                "Error: Order data is missing.", null));
-	        return false;
-	    }
+	 
 
-	    // 2. בדיקת זמינות (Availability Check)
 	    int guests = order.getNumberOfGuests();
 	    int minGuestsThreshold = (guests > 5) ? 6 : 1;
 	    int totalTables = tabledao.countSuitableTables(guests);
@@ -203,75 +195,82 @@ public class OrderController {
 	    if (totalTables - conflictingOrders <= 0) {
 	        List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
 	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
-	                "The restaurant is full at this time. Please see available slots below.", alternatives));
+	                "The restaurant is full at this time.", alternatives));
 	        return false;
 	    }
 
-	    // 3. טיפול בלקוח (Customer Handling) - איחוד הלוגיקה
-	    // המטרה: להבטיח של-order יש CustomerId תקין לפני השמירה
 	    Customer finalCustomer = null;
+	    Integer subCode = order.getCustomer().getSubscriberCode();
+	    
+	    if ((subCode == null || subCode == 0) && guestData != null) {
+	        subCode = guestData.getSubscriberCode();
+	    }
 
-	    if (guestData != null) {
-	        // תרחיש 1: הגיע מידע על אורח (Guest) דרך Map
-	        finalCustomer = customerDao.getCustomerByEmail(guestData.getEmail());
-	        if (finalCustomer == null) {
-	            // האורח לא קיים - ניצור אותו כעת
-	            customerDao.createCustomer(guestData); // נניח שזה מעדכן את ה-ID באובייקט או שנצטרך לשלוף שוב
-	            finalCustomer = customerDao.getCustomerByEmail(guestData.getEmail()); // שליפה לוודא שיש לנו ID
-	        }
-	    } else {
-	        // תרחיש 2: הגיעה רק הזמנה (אולי עם ID, ואולי פרטים חדשים באובייקט ההזמנה)
-	        if (order.getCustomerId() != null) {
-	            finalCustomer = customerDao.getCustomerByCustomerId(order.getCustomerId());
-	        }
-	        
-	        // אם לא נמצא לפי ID, או שלא היה ID - ננסה ליצור לפי הפרטים שבתוך ההזמנה
-	        if (finalCustomer == null) {
-	             // יצירת לקוח חדש על בסיס השדות בהזמנה
-	            finalCustomer = new Customer(null, order.getClientName(), order.getClientPhone(), order.getClientEmail());
-	            finalCustomer.setType(CustomerType.REGULAR);
-	            customerDao.createCustomer(finalCustomer);
+	    try {
+	        if (subCode != null && subCode > 0) {
+	            finalCustomer = customerDao.getCustomerBySubscriberCode(subCode);
 	            
-	            // עדכון ה-ID מה-DB (תלוי איך המימוש של createCustomer עובד, לפעמים צריך לשלוף מחדש)
-	            if (finalCustomer.getCustomerId() == null) {
-	                 Customer temp = customerDao.getCustomerByEmail(order.getClientEmail());
-	                 if (temp != null) finalCustomer.setCustomerId(temp.getCustomerId());
+	            if (finalCustomer == null) {
+	                client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, 
+	                        Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
+	                return false;
+	            }
+	        } 
+	        else {
+	        	Customer dataToUse;
+
+	        	if (guestData != null) {
+	        	    dataToUse = guestData;
+	        	} else {
+	        	    dataToUse = order.getCustomer();
+	        	}
+	            finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
+
+	            if (finalCustomer == null) {
+	                dataToUse.setType(CustomerType.REGULAR);
+	                customerDao.createCustomer(dataToUse); 
+	                
+	                finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 	            }
 	        }
-	    }
 
-	    // עדכון ה-ID בהזמנה
-	    if (finalCustomer != null) {
-	        order.setCustomerId(finalCustomer.getCustomerId());
-	    } else {
-	        // מקרה קצה: נכשלנו ביצירת/מציאת לקוח
-	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to resolve customer data.", null));
-	        return false;
-	    }
+	        if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
+	            throw new SQLException("Failed to resolve customer ID.");
+	        }
 
-	    // 4. סיום הכנת ההזמנה ושמירה (Unified Save Logic)
-	    order.setConfirmationCode(generateUniqueConfirmationCode());
-	    
-	    // שמירה ב-DB מתבצעת פעם אחת בלבד, בסוף התהליך
-	    boolean success = orderdao.createOrder(order);
+	        order.getCustomer().setCustomerId(finalCustomer.getCustomerId());
+	        
+	        order.getCustomer().setName(finalCustomer.getName());
+	        order.getCustomer().setPhoneNumber(finalCustomer.getPhoneNumber());
+	        order.getCustomer().setEmail(finalCustomer.getEmail());
 
-	    if (success) {
+	        order.setConfirmationCode(generateUniqueConfirmationCode());
+	        order.setOrderStatus(Order.OrderStatus.APPROVED);
+
+	        boolean success = orderdao.createOrder(order);
+
+	        if (success) {
+	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
+	                    "Order created successfully!", order));
+	            return true;
+	        } else {
+	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+	                    Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
+	            return false;
+	        }
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
 	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.SUCCESS, "Order created successfully!", order)); // מחזירים את ההזמנה המעודכנת
-	        return true;
-	    } else {
-	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
+	                Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
 	        return false;
 	    }
 	}
-
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
 			/// need to get email from customer table
-			Customer customer = customerDao.getCustomerByCustomerId(updatedOrder.getCustomerId());
+			Customer customer = customerDao.getCustomerByCustomerId(updatedOrder.getCustomer().getCustomerId());
 			if (customer != null)
 				EmailService.sendConfirmation(customer, updatedOrder);
 			System.out.println(EmailService.getContent());
@@ -296,7 +295,7 @@ public class OrderController {
 		if (orderdao.deleteOrder(req.getId())) {
 			/// need to get email from customer table
 
-			Customer customer = customerDao.getCustomerByCustomerId(order.getCustomerId());
+			Customer customer = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
 			if (customer != null)
 				EmailService.sendCancelation(customer, order);
 			System.out.println(EmailService.getContent());
@@ -468,9 +467,9 @@ public class OrderController {
 			double amount = order.getTotalPrice();
 
 			// Check if customer is SUBSCRIBER for 10% discount
-			if (order.getCustomerId() != null) {
+			if (order.getCustomer().getCustomerId() != null) {
 				// Use correct DAO method to fetch customer by ID
-				Customer c = customerDao.getCustomerByCustomerId(order.getCustomerId());
+				Customer c = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
 				if (c != null && c.getType() == CustomerType.SUBSCRIBER) {
 					amount *= 0.9;
 				}
@@ -529,8 +528,8 @@ public class OrderController {
 
 			// Construct a temporary Customer object for EmailService
 			// We can use the data fetched by the join in OrderDAO
-			Customer tempCustomer = new Customer(order.getCustomerId(), order.getClientName(), order.getClientPhone(),
-					order.getClientEmail());
+			Customer tempCustomer = new Customer(order.getCustomer().getCustomerId(), order.getCustomer().getName(), order.getCustomer().getPhoneNumber(),
+					order.getCustomer().getEmail());
 
 			// Send Email with NEW code
 			EmailService.sendConfirmation(tempCustomer, order);
