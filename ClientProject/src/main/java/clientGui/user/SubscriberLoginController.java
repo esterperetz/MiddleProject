@@ -20,7 +20,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	@FXML
 	private TextField SubscriberCode;
 	private ActionEvent currentEvent;
-	private int lastEnteredSubId;
+	private int lastEnteredSubCode;
 
 	@FXML
 	public void initialize() {
@@ -46,7 +46,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 		try {
 			this.currentEvent = event;
-			this.lastEnteredSubId = Integer.parseInt(subscriber_Code);
+			this.lastEnteredSubCode = Integer.parseInt(subscriber_Code);
 			UserLogic user = new UserLogic(clientUi);
 			user.getSubscriberById(Integer.parseInt(subscriber_Code));
 
@@ -72,7 +72,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
 									currentEvent, clientUi);
 							if (controller != null) {
-								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubId);
+								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode);
 
 							}
 						} else {
