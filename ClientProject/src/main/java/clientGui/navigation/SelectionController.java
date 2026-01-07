@@ -1,6 +1,8 @@
 package clientGui.navigation;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ResourceBundle;
 
 import client.MessageListener;
 import clientGui.BaseController;
@@ -13,12 +15,13 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class SelectionController extends MainNavigator implements  MessageListener<Object>{
+public class SelectionController extends MainNavigator implements  MessageListener<Object>,Initializable{
 	//private ClientUi clientUi;
  
     @FXML
@@ -31,7 +34,21 @@ public class SelectionController extends MainNavigator implements  MessageListen
     private Button casual_customer;
 	
 	
+    
+    @Override
+	public void initialize(URL location, ResourceBundle resources) {
+		Platform.runLater(() -> {
+			if (casual_customer.getScene() != null && casual_customer.getScene().getWindow() != null) {
+				Stage stage = (Stage) casual_customer.getScene().getWindow();
+				stage.setOnCloseRequest(event -> {
+					clientUi.disconnectClient();
 
+				});
+			}
+		});
+		
+	}
+    
     @FXML
     void pressRepresentorOfTheResturant(ActionEvent event) {
         System.out.println("Navigating to Restaurant Representative screen...");
@@ -78,6 +95,8 @@ public class SelectionController extends MainNavigator implements  MessageListen
         });
 		
 	}
+
+	
 
 /*
 	@Override
