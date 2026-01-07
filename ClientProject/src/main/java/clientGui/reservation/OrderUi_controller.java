@@ -111,16 +111,16 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
             new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderNumber()));
 
         clientNameColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty((cellData.getValue()).getClientName()));
+            new SimpleStringProperty((cellData.getValue()).getCustomer().getName()));
 
         clientPhoneColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty((cellData.getValue()).getClientPhone()));
+            new SimpleStringProperty((cellData.getValue()).getCustomer().getPhoneNumber()));
 
         clientEmailColumn.setCellValueFactory(cellData -> 
-            new SimpleStringProperty((cellData.getValue()).getClientEmail()));
+            new SimpleStringProperty((cellData.getValue()).getCustomer().getEmail()));
 
         customer_idColumn.setCellValueFactory(cellData -> 
-            new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomerId()));
+            new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomer().getCustomerId()));
 
         DateColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderDate()));
@@ -280,7 +280,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
 				                // 1. שליפת נתוני ההזמנה והכנסה ל-Order
 				                o.setOrderNumber((Integer) row.get("order_number"));
-				                o.setCustomerId((Integer) row.get("customer_id"));
+				                o.getCustomer().setCustomerId((Integer) row.get("customer_id"));
 				                o.setNumberOfGuests((Integer) row.get("number_of_guests"));
 				                o.setTotalPrice(((Number) row.get("total_price")).doubleValue()); // המרה בטוחה
 				                o.setConfirmationCode((Integer) row.get("confirmation_code"));
@@ -299,13 +299,16 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 				                if (row.get("date_of_placing_order") != null)
 				                    o.setDateOfPlacingOrder(new java.util.Date(((java.sql.Timestamp) row.get("date_of_placing_order")).getTime()));
 
-				                // 2. שליפת נתוני הלקוח והכנסה לשדות החדשים שיצרנו ב-Order
-				                o.setTempClientName((String) row.get("customer_name"));
-				                o.setTempClientEmail((String) row.get("email"));
-				                o.setTempClientPhone((String) row.get("phone_number"));
-				                o.setTempSubscriberId((Integer) row.get("subscriber_code"));
-
-				                // הוספה לרשימה
+				                o.getCustomer().setName((String) row.get("customer_name"));
+				                o.getCustomer().setEmail((String) row.get("email"));
+				                o.getCustomer().setPhoneNumber((String) row.get("phone_number"));
+//				                o.getCustomer().setSubscriberCode((Integer) row.get("subscriber_code"));
+				                Object subCode = row.get("subscriber_code"); // שולפים כאובייקט כללי
+				                if (subCode != null) {
+				                    o.getCustomer().setSubscriberCode((Integer) subCode);
+				                } else {
+				                    o.getCustomer().setSubscriberCode(0); 
+				                }
 				                orderData.add(o);
 				            }
 				        }

@@ -23,18 +23,20 @@ public class Order implements Serializable {
 	private double totalPrice;
 	private OrderStatus orderStatus;
 
-	private String clientName;
-	private String clientEmail;
-	private String clientPhone;
-	private Integer subscriberId;
+//	private String clientName;
+//	private String clientEmail;
+//	private String clientPhone;
+//	private Integer subscriberCode;
+	private Customer customer;
 
 	// Indicates if a reminder (Email/SMS) has been sent 2 hours prior
 	private boolean reminderSent = false;
 
 	public Order() {
+		this.customer = new Customer();
 	}
 
-	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Integer CustomerId,
+	public Order(int orderNumber, Date orderDate, int numberOfGuests, int confirmationCode, Customer customer,
 			Integer tableNumber, Date dateOfPlacingOrder,
 			Date arrivalTime, Date leavingTime, double totalPrice, OrderStatus orderStatus) {
 
@@ -42,7 +44,7 @@ public class Order implements Serializable {
 		this.orderDate = orderDate;
 		this.numberOfGuests = numberOfGuests;
 		this.confirmationCode = confirmationCode;
-		this.CustomerId = CustomerId;
+		this.customer = customer;
 		this.tableNumber = tableNumber;
 		this.dateOfPlacingOrder = dateOfPlacingOrder;
 		this.arrivalTime = arrivalTime;
@@ -50,6 +52,15 @@ public class Order implements Serializable {
 		this.totalPrice = totalPrice;
 		this.orderStatus = orderStatus;
 
+	}
+	
+
+	public Customer getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	// Getters and Setters
@@ -68,9 +79,6 @@ public class Order implements Serializable {
 	public void setOrderDate(Date orderDate) {
 		this.orderDate = orderDate;
 	}
-	public void setCustomerName(String name) {
-		this.clientName = name;
-	}
 
 	public int getNumberOfGuests() {
 		return numberOfGuests;
@@ -88,13 +96,6 @@ public class Order implements Serializable {
 		this.confirmationCode = confirmationCode;
 	}
 
-	public Integer getCustomerId() {
-		return CustomerId;
-	}
-
-	public void setCustomerId(Integer CustomerId) {
-		this.CustomerId = CustomerId;
-	}
 
 	public Integer getTableNumber() {
 		return tableNumber;
@@ -144,38 +145,6 @@ public class Order implements Serializable {
 		this.orderStatus = orderStatus;
 	}
 
-	// Getters & Setters
-	public String getClientName() {
-		return clientName;
-	}
-
-	public void setTempClientName(String clientName) {
-		this.clientName = clientName;
-	}
-
-	public String getClientEmail() {
-		return clientEmail;
-	}
-
-	public void setTempClientEmail(String clientEmail) {
-		this.clientEmail = clientEmail;
-	}
-
-	public String getClientPhone() {
-		return clientPhone;
-	}
-
-	public void setTempClientPhone(String clientPhone) {
-		this.clientPhone = clientPhone;
-	}
-
-	public Integer getSubscriberId() {
-		return subscriberId;
-	}
-
-	public void setTempSubscriberId(Integer id) {
-		this.subscriberId = id;
-	}
 
 	public boolean isReminderSent() {
 		return reminderSent;

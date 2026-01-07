@@ -224,13 +224,13 @@ public class EmailService {
     }
 
     public static void sendReminder(Order order) {
-        if (order.getClientEmail() == null || order.getClientEmail().isEmpty()) {
+        if (order.getCustomer().getEmail() == null || order.getCustomer().getEmail().isEmpty()) {
             System.err.println("Cannot send reminder: Email is missing for order " + order.getOrderNumber());
             return;
         }
 
         String subject = "Reminder: Your reservation at BISTRO is in 2 hours";
-        Email to = new Email(order.getClientEmail());
+        Email to = new Email(order.getCustomer().getEmail());
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
@@ -246,7 +246,7 @@ public class EmailService {
                         "We look forward to seeing you soon!\n\n" +
                         "If you need to make changes, please contact us.\n" +
                         "Farewell, Bistro Team.",
-                (order.getClientName() != null ? order.getClientName() : "Guest"),
+                (order.getCustomer().getName() != null ? order.getCustomer().getName() : "Guest"),
                 (order.getArrivalTime() != null ? timeFormat.format(order.getArrivalTime()) : "Scheduled time"),
                 (order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "Today"),
                 order.getNumberOfGuests(),
@@ -263,7 +263,7 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Reminder email sent successfully to " + order.getClientEmail());
+                System.out.println("Reminder email sent successfully to " + order.getCustomer().getEmail());
             } else {
                 System.out.println("Error in Sending Reminder: " + response.getBody());
             }

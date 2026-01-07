@@ -82,7 +82,7 @@ public class AddOrderController extends MainNavigator implements MessageListener
 	}
 
 	// public void initData(ClientUi clientUi) {
-	public void initData(Employee emp , Employee.Role isManager) {
+	public void initData(Employee emp, Employee.Role isManager) {
 		this.emp = emp;
 //		this.employeeName = employeeName;
 		this.isManager = isManager;
@@ -147,24 +147,20 @@ public class AddOrderController extends MainNavigator implements MessageListener
 					clientPhone = verifiedSubscriber.getPhoneNumber();
 					clientEmail = verifiedSubscriber.getEmail();
 				} else {
-					// אם זה לקוח מזדמן - לוקחים מהשדות שהמשתמש הקליד
 					clientName = clientNameField.getText().trim();
 					clientPhone = phoneField.getText().trim();
 					clientEmail = emailField.getText().trim();
 				}
 
-				// המרת מנוי (אם יש)
 				Integer cusId = null;
 				if (!subscriberIdField.getText().trim().isEmpty()) {
 					cusId = Integer.parseInt(subscriberIdField.getText().trim());
 				}
 
-				// המרת מספרים
 				int guests = Integer.parseInt(guestsField.getText().trim());
 				// double price = priceField.getText().trim().isEmpty() ? 0.0
 				// : Double.parseDouble(priceField.getText().trim());
 
-				// 3. טיפול בתאריך ושעה (Order Date)
 				LocalDate localDate = datePicker.getValue();
 				String timeString = timeField.getText().trim();
 
@@ -190,43 +186,51 @@ public class AddOrderController extends MainNavigator implements MessageListener
 				// Date.from(localDate.atTime(arrivalTime).atZone(ZoneId.systemDefault()).toInstant());
 				// }
 				OrderStatus status = statusComboBox.getValue();
-				// 5. יצירת האובייקט עם הבנאי החדש והמלא
-				this.newOrder = new Order(0, // order_number (אוטומטי ב-DB)
-						orderDate, // order_date (תאריך ושעה)
-						guests, // number_of_guests
-						0, // confirmation_code (נוצר בשרת)
-						null, // subscriber_id
-						null, new Date(), // date_of_placing_order (עכשיו)
-						arrivalDate, // ArrivalTime (השדה החדש)
-						null, 0, // total_price
-						status // order_status
-				);
-				newOrder.setTempClientEmail(clientEmail);
+				Customer customerForOrder;
+
+				if (isSubscriberVerified && verifiedSubscriber != null) {
+					customerForOrder = verifiedSubscriber;
+				} else {
+					customerForOrder = new Customer(null, // ID (יתקבל מהשרת או יישאר null בינתיים)
+							null, clientName, clientPhone, clientEmail, CustomerType.REGULAR);
+
+					if (cusId != null) {
+						customerForOrder.setSubscriberCode(cusId);
+					}
+				}
+
+				this.newOrder = new Order(0, orderDate, guests, 0, customerForOrder, 
+																						
+						null, new Date(), arrivalDate, null, 0, status);
+
 				System.out.println("------------ " + cusId);
+
 				if (cusId == null) {
-					System.out.println("heloooo ");
-					userLogic.createCustomer(
-							new Customer(null, null, clientName, clientPhone, clientEmail, CustomerType.REGULAR));
+					System.out.println("Creating new customer...");
+					userLogic.createCustomer(customerForOrder);
 				} else {
 					System.out.println("ME HERE");
-					newOrder.setCustomerId(cusId);
+					newOrder.getCustomer().setCustomerId(cusId);
 					orderLogic.createOrder(newOrder);
 				}
+				
 			} catch (NumberFormatException e) {
 				Alarm.showAlert("Input Error", "Guests and Price must be valid numbers.", Alert.AlertType.ERROR);
 			} catch (Exception e) {
 				Alarm.showAlert("Error", "An error occurred while saving.", Alert.AlertType.ERROR);
 //				 e.printStackTrace();
 			}
+			
 		});
 
 	}
+
 
 	@FXML
 	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
-			controller.initData(emp,clientUi,this.isManager);
+			controller.initData(emp, clientUi, this.isManager);
 		} else {
 			System.err.println("Error: Could not load OrderUi_controllerr.");
 		}
@@ -234,81 +238,84 @@ public class AddOrderController extends MainNavigator implements MessageListener
 
 	@Override
 	public void onMessageReceive(Object msg) {
-	    if (!(msg instanceof Response)) return;
-	    Response res = (Response) msg;
+		if (!(msg instanceof Response))
+			return;
+		Response res = (Response) msg;
 
-	    Platform.runLater(() -> {
-	        try {
-	            switch (res.getResource()) {
-	                case CUSTOMER:
-	                    handleCustomerResponse(res);
-	                    break;
-	                case ORDER:
-	                    handleOrderResponse(res);
-	                    break;
-	                default:
-	                    System.out.println("Unhandled resource: " + res.getResource());
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	            Alarm.showAlert("System Error", "An error occurred while processing server response.", Alert.AlertType.ERROR);
-	        }
-	    });
+		Platform.runLater(() -> {
+			try {
+				switch (res.getResource()) {
+				case CUSTOMER:
+					handleCustomerResponse(res);
+					break;
+				case ORDER:
+					handleOrderResponse(res);
+					break;
+				default:
+					System.out.println("Unhandled resource: " + res.getResource());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				Alarm.showAlert("System Error", "An error occurred while processing server response.",
+						Alert.AlertType.ERROR);
+			}
+		});
 	}
 
 	private void handleCustomerResponse(Response res) {
-	    Customer cus = (Customer) res.getData();
-	    
-	    if (res.getAction() == ActionType.GET_BY_ID) {
-	        if (res.getStatus() == ResponseStatus.SUCCESS && cus != null) {
-	            this.verifiedSubscriber = cus;
-	            isSubscriberVerified = true;
-	            fillAndLockFields(cus);
-	            // כאן לא עוברים מסך - רק נותנים למשתמש לראות שהמנוי זוהה
-	        } else {
-	            handleInvalidSubscriber("Subscriber ID not found.");
-	        }
-	    } 
-	    else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
-	        if (res.getStatus() == ResponseStatus.SUCCESS) {
-	            // הלקוח נוצר בהצלחה, עכשיו אפשר ליצור את ההזמנה עבורו
-	            this.newOrder.setCustomerId(cus.getCustomerId());
-	            orderLogic.createOrder(newOrder); 
-	            // שים לב: אין כאן loadScreen! מחכים לתשובה של ה-ORDER
-	        } else {
-	            Alarm.showAlert("Error", "Could not register new customer: " + res.getMessage_from_server(), Alert.AlertType.ERROR);
-	        }
-	    }
+		Customer cus = (Customer) res.getData();
+
+		if (res.getAction() == ActionType.GET_BY_ID) {
+			if (res.getStatus() == ResponseStatus.SUCCESS && cus != null) {
+				this.verifiedSubscriber = cus;
+				isSubscriberVerified = true;
+				fillAndLockFields(cus);
+				// כאן לא עוברים מסך - רק נותנים למשתמש לראות שהמנוי זוהה
+			} else {
+				handleInvalidSubscriber("Subscriber ID not found.");
+			}
+		} else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
+			if (res.getStatus() == ResponseStatus.SUCCESS) {
+				// הלקוח נוצר בהצלחה, עכשיו אפשר ליצור את ההזמנה עבורו
+				this.newOrder.getCustomer().setCustomerId(cus.getCustomerId());
+				orderLogic.createOrder(newOrder);
+				// שים לב: אין כאן loadScreen! מחכים לתשובה של ה-ORDER
+			} else {
+				Alarm.showAlert("Error", "Could not register new customer: " + res.getMessage_from_server(),
+						Alert.AlertType.ERROR);
+			}
+		}
 	}
 
 	private void handleOrderResponse(Response res) {
-	    if (res.getAction() == ActionType.CREATE) {
-	        if (res.getStatus() == ResponseStatus.SUCCESS) {
-	            Alarm.showAlert("Success", "Order placed successfully!", Alert.AlertType.INFORMATION);
-	            
-	            // רק כאן - אחרי שהכל הסתיים - עוברים מסך
-	            navigateToOrdersList();
-	        } else {
-	            Alarm.showAlert("Error", "Failed to place order: " + res.getMessage_from_server(), Alert.AlertType.ERROR);
-	        }
-	    }
-	}
-	
-	private void navigateToOrdersList() {
-	    // שימוש באחד השדות כדי לקבל את ה-Scene, זה יותר בטוח מ-ActionEvent
-	    if (clientNameField.getScene() == null) {
-	        System.err.println("Error: Scene is null, cannot navigate.");
-	        return;
-	    }
+		if (res.getAction() == ActionType.CREATE) {
+			if (res.getStatus() == ResponseStatus.SUCCESS) {
+				Alarm.showAlert("Success", "Order placed successfully!", Alert.AlertType.INFORMATION);
 
-	    // טעינת המסך הבא
-	    // אם ה-loadScreen שלך דורש ActionEvent, ננסה להעביר את ה-currentEvent המקורי
-	    // אבל עדיף לעדכן את המעבר שישתמש ב-Node כלשהו:
-	    OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
-	    
-	    if (controller != null) {
-	        controller.initData(emp,clientUi,this.isManager);
-	    }
+				// רק כאן - אחרי שהכל הסתיים - עוברים מסך
+				navigateToOrdersList();
+			} else {
+				Alarm.showAlert("Error", "Failed to place order: " + res.getMessage_from_server(),
+						Alert.AlertType.ERROR);
+			}
+		}
+	}
+
+	private void navigateToOrdersList() {
+		// שימוש באחד השדות כדי לקבל את ה-Scene, זה יותר בטוח מ-ActionEvent
+		if (clientNameField.getScene() == null) {
+			System.err.println("Error: Scene is null, cannot navigate.");
+			return;
+		}
+
+		// טעינת המסך הבא
+		// אם ה-loadScreen שלך דורש ActionEvent, ננסה להעביר את ה-currentEvent המקורי
+		// אבל עדיף לעדכן את המעבר שישתמש ב-Node כלשהו:
+		OrderUi_controller controller = super.loadScreen("reservation/orderUi", currentEvent, clientUi);
+
+		if (controller != null) {
+			controller.initData(emp, clientUi, this.isManager);
+		}
 	}
 
 	private void handleInvalidSubscriber(String errorMessage) {

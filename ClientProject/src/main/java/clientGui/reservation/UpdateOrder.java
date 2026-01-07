@@ -12,6 +12,7 @@ import java.util.ResourceBundle;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import entities.Alarm;
+import entities.Customer;
 import entities.Employee;
 import entities.Order;
 import entities.Order.OrderStatus;
@@ -85,9 +86,9 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		this.mainController = mainController; // Store main controller reference
 		orderIdField.setText(String.valueOf(o.getOrderNumber()));
 
-		if (o.getCustomerId() != null && o.getSubscriberId() != null && o.getSubscriberId() != 0) {
+		if (o.getCustomer().getCustomerId() != null && o.getCustomer().getSubscriberCode() != null && o.getCustomer().getSubscriberCode() != 0) {
 			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
-			subscriberIdField.setText(String.valueOf(o.getSubscriberId()));
+			subscriberIdField.setText(String.valueOf(o.getCustomer().getSubscriberCode()));
 			setClientFieldsEditable(false); // נעילה
 		}
 //			else if (o.getCustomerId() != null && o.getCustomerId() != 0) {
@@ -101,9 +102,9 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		}
 
 		// 2. מילוי פרטי לקוח (Strings)
-		clientNameField.setText(o.getClientName());
-		phoneField.setText(o.getClientPhone());
-		emailField.setText(o.getClientEmail());
+		clientNameField.setText(o.getCustomer().getName());
+		phoneField.setText(o.getCustomer().getPhoneNumber());
+		emailField.setText(o.getCustomer().getEmail());
 
 		// 3. מילוי מספרים
 		guestsField.setText(String.valueOf(o.getNumberOfGuests()));
@@ -185,7 +186,6 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			double price = Double.parseDouble(priceField.getText());
 			OrderStatus status = statusComboBox.getValue();
 
-			// 3. הרכבת תאריך ההזמנה (LocalDate + String -> Date)
 			if (timeField.getText().isEmpty()) {
 				throw new IllegalArgumentException("Time is missing");
 			}
@@ -194,36 +194,35 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			LocalTime localTime = LocalTime.parse(timeField.getText()); // מצפה ל-HH:mm
 			Date newOrderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
 
-			// טיפול בשעת הגעה (אם יש)
 			Date newArrivalTime = o.getArrivalTime(); // ברירת מחדל: הישן
 			if (!arrivalTimeField.getText().isEmpty()) {
 				LocalTime arrivalT = LocalTime.parse(arrivalTimeField.getText());
 				newArrivalTime = Date.from(localDate.atTime(arrivalT).atZone(ZoneId.systemDefault()).toInstant());
 			}
 
-			// 3. בדיקה שה-ID קיים (למרות שהוא נעול)
 			if (ol == null) {
 				String header = "Input Error";
 				String context = "Order ID is missing.";
 				Alarm.showAlert(header, context, Alert.AlertType.ERROR);
 			} else {
-
-				// 4. יצירת האובייקט המעודכן
-				// שים לב: אנחנו לוקחים את הנתונים החדשים מהמשתנים שיצרנו למעלה,
-				// ואת הנתונים הקבועים (כמו ID וקוד אישור) מהאובייקט המקורי (selectedOrder/o)
-				Order updatedOrder = new Order(o.getOrderNumber(), // ID מקורי
-						newOrderDate, // תאריך חדש
-						guests, // אורחים חדש
-						o.getConfirmationCode(), // קוד מקורי
-						o.getCustomerId(), // מנוי מקורי
-						null, o.getDateOfPlacingOrder(), // תאריך יצירה מקורי
-						newArrivalTime, // הגעה חדש
-						null, price, // מחיר חדש
-						status // סטטוס חדש
+				Customer updatedCustomer = o.getCustomer();
+		        if (updatedCustomer == null) {
+		            updatedCustomer = new Customer(); 
+		        }
+		        updatedCustomer.setName(name);       
+		        updatedCustomer.setPhoneNumber(phone); 
+		        updatedCustomer.setEmail(email);
+				Order updatedOrder = new Order(o.getOrderNumber(),
+						newOrderDate, 
+						guests,
+						o.getConfirmationCode(),
+						updatedCustomer,
+						null, o.getDateOfPlacingOrder(),
+						newArrivalTime, 
+						null, price, 
+						status 
 				);
 
-				// 5. שליחה ועדכון
-				// if (ol != null) {
 				ol.updateOrder(updatedOrder);
 				OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
