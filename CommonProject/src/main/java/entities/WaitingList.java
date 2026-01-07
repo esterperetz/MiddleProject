@@ -6,31 +6,38 @@ import java.util.Date;
 public class WaitingList implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	private int waitingId;
+	private Integer waitingId;
 	private Integer customerId;
-//	private String identificationDetails; //Phone or Email for non subscriber
-//	private String fullName;
+
 	private int numberOfGuests;
 	private Date enterTime;
 	private int confirmationCode;
+	private Customer customer;
 
-	public WaitingList(int waitingId, Integer customerId,
-			int numberOfGuests, Date enterTime, int confirmationCode) {
+	public WaitingList(Integer waitingId, Integer customerId,
+			int numberOfGuests, Date enterTime, int confirmationCode,Customer customer) {
 		this.waitingId = waitingId;
 		this.customerId = customerId;
-//		this.identificationDetails = identificationDetails;
-//		this.fullName = fullName;
 		this.numberOfGuests = numberOfGuests;
 		this.enterTime = enterTime;
 		this.confirmationCode = confirmationCode;
+		this.customer = customer;
+	}
+
+	public Customer getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	// Getters and Setters
-	public int getWaitingId() {
+	public Integer getWaitingId() {
 		return waitingId;
 	}
 
-	public void setWaitingId(int waitingId) {
+	public void setWaitingId(Integer waitingId) {
 		this.waitingId = waitingId;
 	}
 
@@ -41,22 +48,6 @@ public class WaitingList implements Serializable {
 	public void setCustomerId(Integer customerId) {
 		this.customerId = customerId;
 	}
-//
-//	public String getIdentificationDetails() {
-//		return identificationDetails;
-//	}
-//
-//	public void setIdentificationDetails(String identificationDetails) {
-//		this.identificationDetails = identificationDetails;
-//	}
-
-//	public String getFullName() {
-//		return fullName;
-//	}
-//
-//	public void setFullName(String fullName) {
-//		this.fullName = fullName;
-//	}
 
 	public int getNumberOfGuests() {
 		return numberOfGuests;

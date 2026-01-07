@@ -13,6 +13,9 @@ public class Customer implements Serializable {
 	private CustomerType type;
 	private Integer customerId; 
 	
+	public Customer() {
+		
+	}
 	public Customer(Integer subscriberCode, String name, String phoneNumber, String email) {
 		this.subscriberCode = subscriberCode;
 		this.name = name;
