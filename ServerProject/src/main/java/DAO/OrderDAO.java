@@ -32,8 +32,7 @@ public class OrderDAO {
 
 	/**
 	 * Retrieves orders that are scheduled between 'minutesAhead' - 1 and
-	 * 'minutesAhead' + 1 minutes from now,
-	 * and have NOT been reminded yet.
+	 * 'minutesAhead' + 1 minutes from now, and have NOT been reminded yet.
 	 * 
 	 * @param minutesAhead The target time window in minutes (e.g., 120 for 2 hours)
 	 */
@@ -42,12 +41,10 @@ public class OrderDAO {
 		// AND reminder_sent is FALSE.
 		// JOIN to fetch minimal customer details for email
 
-		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number "
-				+ "FROM `order` o "
+		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number " + "FROM `order` o "
 				+ "JOIN Customer c ON o.customer_id = c.customer_id "
 				+ "WHERE o.order_date BETWEEN (NOW() + INTERVAL ? MINUTE - INTERVAL 2 MINUTE) "
-				+ "AND (NOW() + INTERVAL ? MINUTE + INTERVAL 2 MINUTE) "
-				+ "AND o.reminder_sent = FALSE "
+				+ "AND (NOW() + INTERVAL ? MINUTE + INTERVAL 2 MINUTE) " + "AND o.reminder_sent = FALSE "
 				+ "AND o.order_status IN ('APPROVED')";
 
 		try (Connection con = DBConnection.getInstance().getConnection();
@@ -85,13 +82,11 @@ public class OrderDAO {
 	public List<Map<String, Object>> getAllOrdersWithCustomers() {
 		List<Map<String, Object>> resultList = new ArrayList<>();
 
-		String sql = "SELECT " +
-				" c.subscriber_code, c.email, c.customer_name, c.phone_number, " +
-				" o.order_number, o.customer_id, o.order_date, o.arrival_time, " +
-				" o.number_of_guests, o.total_price, o.order_status, " +
-				" o.confirmation_code, o.date_of_placing_order " +
-				"FROM Customer c " +
-				"JOIN `order` o ON c.customer_id = o.customer_id";
+		String sql = "SELECT " + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
+				+ " o.order_number, o.customer_id, o.order_date, o.arrival_time, "
+				+ " o.number_of_guests, o.total_price, o.order_status, "
+				+ " o.confirmation_code, o.date_of_placing_order " + "FROM Customer c "
+				+ "JOIN `order` o ON c.customer_id = o.customer_id";
 
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql);
@@ -259,17 +254,79 @@ public class OrderDAO {
 	/**
 	 * Fetches an APPROVED order by its confirmation code.
 	 */
+
 	public Order getOrderByConfirmationCode(int code) throws SQLException {
-		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status = 'APPROVED'";
+		String sql = "SELECT * FROM `order` " + "WHERE confirmation_code = ? " + "AND order_status = 'APPROVED' ";
+				
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {
-			stmt.setInt(1, code);
+			
+				stmt.setInt(1, code);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
 					return mapResultSetToOrder(rs);
 				}
 				return null;
 			}
+		}
+	}
+	public Order getOrderByConfirmationCodeApproved(int code,int customerId) throws SQLException {
+		String sql = "SELECT * FROM `order` " + "WHERE (customer_id = ? OR confirmation_code = ?) " + "AND order_status = 'APPROVED' "
+				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
+			
+				stmt.setInt(1, customerId);
+				stmt.setInt(2, code);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return mapResultSetToOrder(rs);
+				}
+				return null;
+			}
+		}
+	}
+
+	public Order getOrderByConfirmationCodeSeated(int code,int customerId) throws SQLException {
+		String sql = "SELECT * FROM `order` " + "WHERE(customer_id =? OR confirmation_code = ?) " + "AND order_status = 'SEATED' ";
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
+			stmt.setInt(1, customerId);
+			stmt.setInt(2, code);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return mapResultSetToOrder(rs);
+				}
+				return null;
+			}
+		}
+	}
+
+	public boolean updateOrderCheckOut(int orderId, double totalPrice, Order.OrderStatus status) throws SQLException {
+		String sql = "UPDATE `order` SET  order_status = ?, leaving_time = NOW() ,total_price = ? WHERE order_number = ?";
+
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
+
+			stmt.setString(1, status.name());
+			stmt.setDouble(2, totalPrice);
+			stmt.setInt(3, orderId);
+
+			return stmt.executeUpdate() > 0;
+		}
+	}
+
+	public boolean updateOrderSeating(int orderId, int tableNum, Order.OrderStatus status) throws SQLException {
+		String sql = "UPDATE `order` SET table_number = ?, order_status = ?, arrival_time = NOW() WHERE order_number = ?";
+
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
+
+			stmt.setInt(1, tableNum);
+			stmt.setString(2, status.name());
+			stmt.setInt(3, orderId);
+
+			return stmt.executeUpdate() > 0;
 		}
 	}
 
@@ -291,26 +348,24 @@ public class OrderDAO {
 	 */
 	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int minGuestsThreshold) throws SQLException {
 
-	    String sql = "SELECT COUNT(*) FROM `order` "
-	            + "WHERE order_status IN ('APPROVED', 'SEATED') "
-	            + "AND number_of_guests >= ? "  
-	            + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
+		String sql = "SELECT COUNT(*) FROM `order` " + "WHERE order_status IN ('APPROVED', 'SEATED') "
+				+ "AND number_of_guests >= ? " + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
 
-	    try (Connection con = DBConnection.getInstance().getConnection();
-	         PreparedStatement stmt = con.prepareStatement(sql)) {
-	        
-	        Timestamp reqTime = new Timestamp(requestedDate.getTime());
-	        
-	        stmt.setInt(1, minGuestsThreshold); 
-	        stmt.setTimestamp(2, reqTime);   
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
 
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            return rs.next() ? rs.getInt(1) : 0;
-	        }
-	    } catch(Exception e) {
-	        e.printStackTrace();
-	        return 0;
-	    }
+			Timestamp reqTime = new Timestamp(requestedDate.getTime());
+
+			stmt.setInt(1, minGuestsThreshold);
+			stmt.setTimestamp(2, reqTime);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				return rs.next() ? rs.getInt(1) : 0;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		}
 	}
 
 	/* --- NEW FUNCTIONS FOR WAITING LIST THREAD --- */
@@ -345,36 +400,36 @@ public class OrderDAO {
 				return rs.next() ? rs.getInt(1) : 0;
 			}
 		}
-	}public int countActiveOrders(java.util.Date timestamp, int guests) {
-	    int count = 0;
-	    // שאילתה הסופרת כמה הזמנות מתחרות קיימות לשעה הזו
-	    String query = "SELECT COUNT(*) FROM `order` " +
-	                   "WHERE order_date = ? " +
-	                   "AND order_status = 'APPROVED' " + 
-	                   "AND number_of_guests >= ?"; 
-	                   // ההנחה: הזמנה של 2 אנשים לא תופסת שולחן של 6, ולכן לא סופרים אותה
+	}
 
-	    try (Connection con = DBConnection.getInstance().getConnection();
+	public int countActiveOrders(java.util.Date timestamp, int guests) {
+		int count = 0;
+		// שאילתה הסופרת כמה הזמנות מתחרות קיימות לשעה הזו
+		String query = "SELECT COUNT(*) FROM `order` " + "WHERE order_date = ? " + "AND order_status = 'APPROVED' "
+				+ "AND number_of_guests >= ?";
+		// ההנחה: הזמנה של 2 אנשים לא תופסת שולחן של 6, ולכן לא סופרים אותה
+
+		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(query)) {
-	        
-	        // 1. המרת התאריך ל-Timestamp של SQL (כולל שעה מדויקת)
-	    	stmt.setTimestamp(1, new java.sql.Timestamp(timestamp.getTime()));
-	        
-	        // 2. כמות האורחים
-	    	stmt.setInt(2, guests);
 
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            if (rs.next()) {
-	                count = rs.getInt(1);
-	            }
-	        }
-	    } catch (SQLException e) {
-	    	System.out.println("we can ignore this exception for now");
-	    	return 0;
+			// 1. המרת התאריך ל-Timestamp של SQL (כולל שעה מדויקת)
+			stmt.setTimestamp(1, new java.sql.Timestamp(timestamp.getTime()));
+
+			// 2. כמות האורחים
+			stmt.setInt(2, guests);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					count = rs.getInt(1);
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("we can ignore this exception for now");
+			return 0;
 //	        e.printStackTrace();
-	    }
-	    
-	    return count;
+		}
+
+		return count;
 	}
 
 	/**
@@ -403,49 +458,36 @@ public class OrderDAO {
 	 * Helper to map ResultSet row to Order object.
 	 */
 	private Order mapResultSetToOrder(ResultSet rs) throws SQLException {
-	    int cusIdTemp = rs.getInt("customer_id");
-	    Integer cusId = rs.wasNull() ? null : cusIdTemp;
+		int cusIdTemp = rs.getInt("customer_id");
+		Integer cusId = rs.wasNull() ? null : cusIdTemp;
 
-	    int tableNumTemp = rs.getInt("table_number");
-	    Integer tableNumber = rs.wasNull() ? null : tableNumTemp;
+		int tableNumTemp = rs.getInt("table_number");
+		Integer tableNumber = rs.wasNull() ? null : tableNumTemp;
 
-	    String statusStr = rs.getString("order_status");
-	    OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
+		String statusStr = rs.getString("order_status");
+		OrderStatus status = (statusStr != null) ? OrderStatus.valueOf(statusStr) : OrderStatus.APPROVED;
 
-	    Customer customer = new Customer();
-	    if (cusId != null) {
-	        customer.setCustomerId(cusId);
-	    }
+		Customer customer = new Customer();
+		if (cusId != null) {
+			customer.setCustomerId(cusId);
+		}
 
-	    Order order = new Order(
-	            rs.getInt("order_number"), 
-	            rs.getTimestamp("order_date"), 
-	            rs.getInt("number_of_guests"),
-	            rs.getInt("confirmation_code"), 
-	            customer, 
-	            tableNumber, 
-	            rs.getTimestamp("date_of_placing_order"),
-	            rs.getTimestamp("arrival_time"), 
-	            rs.getTimestamp("leaving_time"), 
-	            rs.getDouble("total_price"), 
-	            status
-	    );
+		Order order = new Order(rs.getInt("order_number"), rs.getTimestamp("order_date"), rs.getInt("number_of_guests"),
+				rs.getInt("confirmation_code"), customer, tableNumber, rs.getTimestamp("date_of_placing_order"),
+				rs.getTimestamp("arrival_time"), rs.getTimestamp("leaving_time"), rs.getDouble("total_price"), status);
 
-	    try {
-	        order.setReminderSent(rs.getBoolean("reminder_sent"));
-	    } catch (SQLException e) {
-	    }
+		try {
+			order.setReminderSent(rs.getBoolean("reminder_sent"));
+		} catch (SQLException e) {
+		}
 
-	    return order;
+		return order;
 	}
 
 	public Order getOrderByContact(String contactDetail) throws SQLException {
-		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number "
-				+ "FROM `order` o "
-				+ "JOIN Customer c ON o.customer_id = c.customer_id "
-				+ "WHERE (c.email = ? OR c.phone_number = ?) "
-				+ "AND o.order_status = 'APPROVED' "
-				+ "AND o.order_date > NOW() "
+		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number " + "FROM `order` o "
+				+ "JOIN Customer c ON o.customer_id = c.customer_id " + "WHERE (c.email = ? OR c.phone_number = ?) "
+				+ "AND o.order_status = 'APPROVED' " + "AND o.order_date > NOW() "
 				+ "ORDER BY o.order_date ASC LIMIT 1";
 
 		try (Connection con = DBConnection.getInstance().getConnection();
