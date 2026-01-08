@@ -33,14 +33,6 @@ public class OrderController {
 
 	public OrderController() {
 
-//		Executors.newSingleThreadScheduledExecutor().schedule(() -> {
-//			try {
-//				test();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}, 10, TimeUnit.SECONDS);
 	}
 
 	public void test() throws IOException {
@@ -71,7 +63,6 @@ public class OrderController {
 				handleGetById(req, client);
 				break;
 			case GET_AVAILABLE_TIME:
-//				getAvailabilityOptions();
 				checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
 						((Order) req.getPayload()).getNumberOfGuests());
 				break;
@@ -83,6 +74,9 @@ public class OrderController {
 				break;
 			case UPDATE:
 				handleUpdate(req, client);
+				break;
+			case UPDATE_CHECKOUT:
+				handelUpdateCheckOut(req,client);
 				break;
 			case DELETE:
 				handleDelete(req, client);
@@ -118,14 +112,19 @@ public class OrderController {
 					"Error: ID missing.", null));
 			return;
 		}
-
-		Order order = orderdao.getOrderByConfirmationCode((int) req.getPayload());
+		Customer customer = customerDao.getCustomerBySubscriberCode((int) req.getId());
+		if(customer == null) {
+			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
+					"CANOT find coustomerId by subscriber code ", null));
+			return;
+		}
+		Order order = orderdao.getOrderByConfirmationCodeSeated((int) req.getPayload(),customer.getCustomerId());
 		if (order == null)
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.ERROR,
-					"Error: Code have not found.", null));
+					"Error: order have not found.", null));
 		else {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.SUCCESS,
-					"Error: ID missing.", order));
+					"Check out successfully.", order));
 			return;
 		}
 
@@ -268,6 +267,9 @@ public class OrderController {
 	        return false;
 	    }
 	}
+	
+	
+	
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
@@ -282,6 +284,31 @@ public class OrderController {
 		}
 	}
 
+	private void handelUpdateCheckOut(Request req, ConnectionToClient client) throws SQLException, IOException {
+		Order order = (Order) req.getPayload();
+		boolean updateOrder = orderdao.updateOrderCheckOut(order.getOrderNumber(),order.getTotalPrice(),Order.OrderStatus.PAID);
+		if (!updateOrder) {
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
+					"Error: CANOT update order.", null));
+			/// need to get email from customer table
+			
+			return;
+		}
+		boolean updateTable =  tabledao.updateTableStatus(order.getTableNumber(),0);
+		if(!updateTable) {
+			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
+					"Error: CANOT update table.", null));
+			/// need to get email from customer table
+			return;
+		}
+		client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
+				"Order updated.", order));
+		sendOrdersToAllClients();
+		
+	   
+	
+	
+	}
 	private void handleDelete(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null)
 			return;
@@ -290,7 +317,7 @@ public class OrderController {
 		Order order = orderdao.getOrder(req.getId());
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			if (order.getTableNumber() != null) {
-				tabledao.updateTableStatus(order.getTableNumber(), false);
+				tabledao.updateTableStatus(order.getTableNumber(), 0);
 			}
 		}
 
@@ -442,7 +469,7 @@ public class OrderController {
 						order.setTableNumber(tableNum); // Assign table to order
 						orderdao.updateOrder(order);
 
-						tabledao.updateTableStatus(tableNum, true);
+						tabledao.updateTableStatus(tableNum, 1);
 
 						client.sendToClient(new Response(ResourceType.ORDER, ActionType.IDENTIFY_AT_TERMINAL,
 								Response.ResponseStatus.SUCCESS, "Table assigned: " + tableNum,
@@ -484,7 +511,7 @@ public class OrderController {
 			if (orderdao.updateOrder(order)) {
 				// release table in DB
 				if (order.getTableNumber() != null) {
-					tabledao.updateTableStatus(order.getTableNumber(), false);
+					tabledao.updateTableStatus(order.getTableNumber(), 0);
 				}
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
 						Response.ResponseStatus.SUCCESS, "Paid", amount));
