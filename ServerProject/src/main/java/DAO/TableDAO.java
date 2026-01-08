@@ -106,10 +106,6 @@ public class TableDAO {
         } catch(Exception e) {
         	System.err.println("Error in count Suitable Tables");
         }
-//            finally {
-//            if (rs != null) rs.close();
-//            if (stmt != null) stmt.close();
-//        }
 		return 0;
     }
     public Integer findAvailableTable(int guests) throws SQLException {
@@ -125,7 +121,7 @@ public class TableDAO {
                 if (rs.next()) {
                     return rs.getInt("table_number");
                 }
-                return null; // No suitable table found right now
+                return null; 
             }catch(Exception e) {
             	System.err.println("No suitable table found right now");
             }
@@ -139,11 +135,11 @@ public class TableDAO {
     /**
      * Updates the physical occupancy status of a table[cite: 51].
      */
-    public boolean updateTableStatus(int tableNumber, boolean isOccupied) throws SQLException {
+    public boolean updateTableStatus(int tableNumber, int isOccupied) throws SQLException {
         String sql = "UPDATE tables SET is_occupied = ? WHERE table_number = ?";
         try (Connection con = DBConnection.getInstance().getConnection();
              PreparedStatement stmt = con.prepareStatement(sql)) {
-            stmt.setBoolean(1, isOccupied);
+            stmt.setInt(1, isOccupied);
             stmt.setInt(2, tableNumber);
             return stmt.executeUpdate() > 0;
         }catch(Exception e) {
