@@ -20,6 +20,11 @@ public class ForgetCodeController extends MainNavigator implements MessageListen
 
     private ClientUi clientUi;
 
+    
+    
+    public void initData() {
+    	
+    }
     @FXML
     void recoverReservationCode(ActionEvent event) {
         String email = txtEmail.getText();
