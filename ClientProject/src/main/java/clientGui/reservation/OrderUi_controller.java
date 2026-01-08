@@ -1,31 +1,24 @@
 package clientGui.reservation;
 
-import java.net.URL;
 import java.time.LocalDate;
 import java.time.ZoneId;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import client.MessageListener;
-import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
-import entities.ActionType;
 import entities.Alarm;
-import entities.Customer;
 import entities.Employee;
 import entities.Employee.Role;
 import entities.Order;
-import entities.Request;
 import entities.Response;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -33,16 +26,10 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
@@ -55,32 +42,30 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	@FXML
     private DatePicker filterDatePicker;
     
-    // רשימה מסוננת שתהיה מקושרת לטבלה במקום הרשימה הרגילה
     private FilteredList<Order> filteredData;
-    // --- 1. משתנים התואמים ל-FXML החדש ---
     @FXML
     private TableColumn<Order, Integer> Order_numberColumn;
     
     @FXML
-    private TableColumn<Order, String> clientNameColumn;  // החליף את fullNameColumn
+    private TableColumn<Order, String> clientNameColumn;  
     
     @FXML
-    private TableColumn<Order, String> clientPhoneColumn; // החליף את identificationDetailsColumn
+    private TableColumn<Order, String> clientPhoneColumn; 
     
     @FXML
-    private TableColumn<Order, String> clientEmailColumn; // שדה חדש!
+    private TableColumn<Order, String> clientEmailColumn; 
     
     @FXML
     private TableColumn<Order, Integer> customer_idColumn;
 
     @FXML
-    private TableColumn<Order, Date> DateColumn; // Order Date
+    private TableColumn<Order, Date> DateColumn; 
     
     @FXML
-    private TableColumn<Order, Date> arrivalTimeColumn;   // שדה חדש!
+    private TableColumn<Order, Date> arrivalTimeColumn;   
     
     @FXML
-    private TableColumn<Order, Integer> itemColumn; // Guests
+    private TableColumn<Order, Integer> itemColumn; 
     
     @FXML
     private TableColumn<Order, Double> totalPriceColumn;
@@ -105,7 +90,6 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
  
     @FXML
     private void initialize() {
-        // --- 2. חיבור הנתונים לטבלה (הקוד הקיים שלך נשאר זהה) ---
 
         Order_numberColumn.setCellValueFactory(cellData -> 
             new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderNumber()));
@@ -145,32 +129,22 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
         setupEditableColumns();
 
-        // -----------------------------------------------------------
-        // --- כאן מתחיל הקוד החדש שהוספנו לסינון ---
-        // -----------------------------------------------------------
-
-        // 1. עוטפים את הנתונים המקוריים (orderData) ברשימה מסוננת
+      
         filteredData = new FilteredList<>(orderData, p -> true);
 
-        // 2. מגדירים לטבלה להציג את הרשימה המסוננת (במקום orderData ישירות)
         orderTable.setItems(filteredData);
 
-        // 3. בודקים אם ה-DatePicker קיים (כדי למנוע קריסה אם לא הוספת אותו ב-FXML)
         if (filterDatePicker != null) {
-            // הוספת מאזין: כל פעם שמשנים תאריך, הקוד הזה ירוץ
         	filterDatePicker.valueProperty().addListener((observable, oldValue, selectedDate) -> {
         	    filteredData.setPredicate(order -> {
-        	        // 1. אם לא נבחר תאריך -> תציג הכל (או שתחליט להסתיר, תלוי בך)
         	        if (selectedDate == null) {
         	            return true; 
         	        }
 
-        	        // 2. אם להזמנה אין תאריך -> הסתר אותה
         	        if (((Order)order).getOrderDate() == null) {
         	            return false;
         	        }
 
-        	        // 3. המרת תאריך ההזמנה ל-LocalDate
         	        LocalDate orderDate;
         	        if (((Order)order).getOrderDate() instanceof java.sql.Date) {
         	            orderDate = ((java.sql.Date) ((Order)order).getOrderDate()).toLocalDate();
@@ -180,17 +154,13 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         	                          .toLocalDate();
         	        }
 
-        	        // 4. --- הגדרת הטווח (מה שבקשת) ---
         	        
-        	        LocalDate today = LocalDate.now(); // התאריך של היום
+        	        LocalDate today = LocalDate.now(); 
 
-        	        // תנאי א': התאריך חייב להיות "גדול או שווה" לתאריך שבחרת
         	        boolean isAfterSelection = !orderDate.isBefore(selectedDate);
 
-        	        // תנאי ב': התאריך חייב להיות "קטן או שווה" להיום
         	        boolean isBeforeToday = !orderDate.isAfter(today);
 
-        	        // החזר אמת רק אם שני התנאים מתקיימים
         	        return isAfterSelection && isBeforeToday;
         	    });
         	});
@@ -198,7 +168,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     }
     @FXML
     private void handleClearFilter(ActionEvent event) {
-        filterDatePicker.setValue(null); // זה יפעיל את ה-Listener ויחזיר את כל הרשימה
+        filterDatePicker.setValue(null); 
     }
 	/**
 	 * Initializes this controller with an existing ClientUi and server IP.
@@ -208,10 +178,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 	 * @param ip       The server IP address.
 	 */
 	
-    public void initData() {
-		// TODO Auto-generated method stub
-		
-	}
+   
 	public void initData(Employee emp, ClientUi clientUi, Role isManager) {
 		this.emp = emp;
 		this.clientUi = clientUi;
