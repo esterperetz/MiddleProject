@@ -8,17 +8,22 @@ import entities.WaitingList;
 
 public class WaitingListLogic {
 
-		private final ClientUi client;
+	private final ClientUi client;
 
-		public WaitingListLogic(ClientUi client) {
-			this.client = client;
-		}
+	public WaitingListLogic(ClientUi client) {
+		this.client = client;
+	}
 
-		public void enterToWaitingList(WaitingList waitingList) {
-			
-			Request req = new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, null, waitingList);
-			client.sendRequest(req);
-		}
+	public void getAllWaitingListCustomer() {
 
+		Request req = new Request(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST, null, null);
+		client.sendRequest(req);
+	}
+
+	public void enterToWaitingList(WaitingList waitingList) {
+
+		Request req = new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, null, waitingList);
+		client.sendRequest(req);
+	}
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import DAO.*;
 import entities.*;
@@ -28,7 +29,9 @@ public class WaitingListController {
 			case GET_ALL:
 				handleGetAll(req, client);
 				break;
-
+			case GET_ALL_LIST:
+				handleGetAllListWithCustomer(req,client);
+				break;
 			case ENTER_WAITING_LIST:
 				handleEnterWaitingList(req, client);
 				break;
@@ -55,6 +58,12 @@ public class WaitingListController {
 
 	private void handleGetAll(Request req, ConnectionToClient client) throws SQLException, IOException {
 		List<WaitingList> list = waitingListDAO.getAllWaitingList();
+		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
+				null, list));
+	}
+	
+	private void handleGetAllListWithCustomer(Request req, ConnectionToClient client) throws SQLException, IOException {
+		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
 		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
 				null, list));
 	}
