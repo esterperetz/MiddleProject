@@ -1,13 +1,9 @@
 package clientGui.reservation;
 
 import java.net.URL;
-import java.util.Date;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
-import clientGui.BaseController;
-import clientGui.ClientUi;
-import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
@@ -16,18 +12,12 @@ import entities.CustomerType;
 import entities.Order;
 import entities.Response;
 import javafx.application.Platform;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class CheckOutController extends MainNavigator implements  Initializable , MessageListener<Object>{
@@ -38,7 +28,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	@FXML
 	private Label lblResult;
 
-	private Integer currentSubscriberId;
+	private Integer currentSubscriberCode;
 	private CustomerType isSubsriber;
 	private OrderLogic orderLogic;
 	private int tableId;
@@ -57,13 +47,13 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 			}
 		});
 	}
-	public void initData(Integer subscriberId,CustomerType isSubsriber, int tableId) {
+	public void initData(Integer subscriberCode,CustomerType isSubsriber, int tableId) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubsriber=isSubsriber;
-		this.currentSubscriberId = subscriberId;
+		this.currentSubscriberCode= subscriberCode;
 		this.orderLogic = new OrderLogic(clientUi);
-		System.out.println("Fetching history for subscriber: " + subscriberId);
+		System.out.println("Fetching history for subscriber: " + subscriberCode);
 //		orderLogic.getOrdersBySubscriberCode(subscriberId);
 	
 	}
@@ -79,7 +69,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	    }
 	    this.currentEvent = event;
 	    try {
-	    	orderLogic.getOrderByConfirmationCode(Integer.parseInt(ConfirmationCode));
+	    	orderLogic.getOrderByConfirmationCode(Integer.parseInt(ConfirmationCode),currentSubscriberCode);
 	    }
 	    catch(NumberFormatException e) {
 	    	Alarm.showAlert("Code Format Error", "Code should be numeric!", Alert.AlertType.ERROR);
@@ -101,7 +91,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
     	//if (isSubsriber)
 		if(controller!=null)
 		{
-    		controller.initData(clientUi,isSubsriber, currentSubscriberId);
+    		controller.initData(clientUi,isSubsriber, currentSubscriberCode);
         } else {
             System.err.println("Error: Could not load SubscriberOption.");
         }
@@ -142,7 +132,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 			 if(order.getTableNumber() != null) { 
 				 order.setLeavingTime(new java.util.Date());
 				 BillController bill_controller = super.loadScreen("reservation/Bill", currentEvent, clientUi);				 
-				 bill_controller.initData(order, currentSubscriberId, this.isSubsriber,order.getTableNumber());
+				 bill_controller.initData(order, currentSubscriberCode, this.isSubsriber,order.getTableNumber());
 			 }
 			 else {
 				 Alarm.showAlert("Order Error", "Table Number is Invalid/Not found", Alert.AlertType.ERROR);
