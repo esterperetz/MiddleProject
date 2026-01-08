@@ -31,11 +31,13 @@ public enum ActionType implements Serializable {
     GET_AVAILABLE_TIME,// Verify table availability before booking
 
     // Waiting List specific
+    GET_ALL_LIST,
     ENTER_WAITING_LIST,
     EXIT_WAITING_LIST,
     PROMOTE_TO_ORDER,
     IDENTIFY_AT_TERMINAL,
     // Table & Billing management
+    UPDATE_CHECKOUT,
     UPDATE_ORDER_STATUS, // Change status to SEATED, etc.
     PAY_BILL, // Complete payment and close order
     SEND_EMAIL,
