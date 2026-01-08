@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
-import clientGui.BaseController;
-import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
@@ -76,7 +74,6 @@ public class PaymentController extends MainNavigator implements MessageListener<
 
 	@FXML
 	void processPayment(ActionEvent event) {
-		// 1. איפוס שגיאות קודמות
 		lblError.setVisible(false);
 
 		String cardNum = txtCardNumber.getText().trim();
@@ -84,13 +81,12 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		String expiry = txtExpiry.getText().trim();
 		String cvv = txtCVV.getText().trim();
 
-		// 2. ולידציה בסיסית (Validation)
 		if (cardNum.isEmpty() || id.isEmpty() || expiry.isEmpty() || cvv.isEmpty()) {
 			showError("Please fill in all fields.");
 			return;
 		}
 
-		if (cardNum.length() < 12) { // בדיקה שטחית לאורך כרטיס
+		if (cardNum.length() < 12) { 
 			showError("Invalid Card Number.");
 			return;
 		}
@@ -105,11 +101,11 @@ public class PaymentController extends MainNavigator implements MessageListener<
 
 		System.out.println("Payment Approved! Table " + tableId + " released.");
 		
-		order.setOrderStatus(OrderStatus.PAID);
-		orderLogic.updateOrder(order);
+//		order.setOrderStatus(OrderStatus.PAID);
+		orderLogic.updateOrderCheckOut(order);
 		
 		Alarm.showAlert("Payment Sucssesfully!","You paid "+totalPrice + " to Bistro, Thank you!", AlertType.INFORMATION);
-		System.out.println("Order closed at: " + order.getLeavingTime());
+//		System.out.println("Order closed at: " + order.getLeavingTime());
 		
 		// Alert pay good
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
