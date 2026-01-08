@@ -50,6 +50,10 @@ public class OrderLogic {
 		Request req = new Request(ResourceType.ORDER, ActionType.UPDATE, order.getOrderNumber(), order);
 		client.sendRequest(req);
 	}
+	public void updateOrderCheckOut(Order order) {
+		Request req = new Request(ResourceType.ORDER, ActionType.UPDATE_CHECKOUT, order.getOrderNumber(), order);
+		client.sendRequest(req);
+	}
 	
 
 	public void deleteOrder(int orderId) {
@@ -67,8 +71,8 @@ public class OrderLogic {
 		client.sendRequest(req);
 	}
 
-	public void getOrderByConfirmationCode(int code) {
-		Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_CODE, null, code);
+	public void getOrderByConfirmationCode(int code,int currentSubscriberCode) {
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_BY_CODE, currentSubscriberCode, code);
 		client.sendRequest(req);
 		
 	}
