@@ -13,6 +13,7 @@ import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
 import entities.ActionType;
+import entities.Customer;
 import entities.CustomerType;
 import entities.Order;
 import entities.Response;
@@ -48,6 +49,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	private OrderLogic orderLogic;
 	private int currentSubscriberId;
 	private CustomerType isSubscriber;
+	private Customer customer;
 	
 	
     @Override
@@ -65,12 +67,13 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	}
 
 	// public void initData(ClientUi clientUi, int subscriberId) {
-	public void initData(int subscriberId,CustomerType isSubscriber) {
+	public void initData(int subscriberId,CustomerType isSubscriber,Customer customer) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubscriber=isSubscriber;
 		this.currentSubscriberId = subscriberId;
 		this.orderLogic = new OrderLogic(clientUi);
+		this.customer = customer;
 		System.out.println("Fetching history for subscriber: " + subscriberId);
 		orderLogic.getOrdersBySubscriberId(subscriberId);
 	
@@ -117,7 +120,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	void goBackBtn(ActionEvent event) {
 //		clientUi.removeListener(this);
 		SubscriberOptionController subscriberOptionController = super.loadScreen("user/SubscriberOption", event, clientUi);
-		subscriberOptionController.initData(clientUi, isSubscriber, currentSubscriberId);
+		subscriberOptionController.initData(clientUi, isSubscriber, currentSubscriberId,customer);
 	}
 
 	@Override
@@ -144,6 +147,8 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 							// כאן אפשר להוסיף Alarm.showAlert אם רוצים
 						}
 					}
+					else
+						System.out.println("Action isnt GET ALL BY SUBSCRIBER ID");
 				}
 			});
 		} catch (Exception e) {

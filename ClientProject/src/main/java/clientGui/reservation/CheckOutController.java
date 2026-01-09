@@ -8,6 +8,7 @@ import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
 import entities.Alarm;
+import entities.Customer;
 import entities.CustomerType;
 import entities.Order;
 import entities.Response;
@@ -34,6 +35,8 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	private int tableId;
 
 	private ActionEvent currentEvent;
+
+	private Customer customer;
 	
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
@@ -47,12 +50,13 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 			}
 		});
 	}
-	public void initData(Integer subscriberCode,CustomerType isSubsriber, int tableId) {
+	public void initData(Integer subscriberCode,CustomerType isSubsriber, int tableId,Customer customer) {
 		// this.clientUi = clientUi;
 //		this.clientUi.addListener(this);
 		this.isSubsriber=isSubsriber;
 		this.currentSubscriberCode= subscriberCode;
 		this.orderLogic = new OrderLogic(clientUi);
+		this.customer = customer;
 		System.out.println("Fetching history for subscriber: " + subscriberCode);
 //		orderLogic.getOrdersBySubscriberCode(subscriberId);
 	
@@ -91,7 +95,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
     	//if (isSubsriber)
 		if(controller!=null)
 		{
-    		controller.initData(clientUi,isSubsriber, currentSubscriberCode);
+    		controller.initData(clientUi,isSubsriber, currentSubscriberCode,customer);
         } else {
             System.err.println("Error: Could not load SubscriberOption.");
         }
@@ -132,7 +136,7 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 			 if(order.getTableNumber() != null) { 
 				 order.setLeavingTime(new java.util.Date());
 				 BillController bill_controller = super.loadScreen("reservation/Bill", currentEvent, clientUi);				 
-				 bill_controller.initData(order, currentSubscriberCode, this.isSubsriber,order.getTableNumber());
+				 bill_controller.initData(order, currentSubscriberCode, this.isSubsriber,order.getTableNumber(),customer);
 			 }
 			 else {
 				 Alarm.showAlert("Order Error", "Table Number is Invalid/Not found", Alert.AlertType.ERROR);

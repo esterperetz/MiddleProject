@@ -1,5 +1,6 @@
 package clientGui.reservation;
 
+import entities.Customer;
 import entities.CustomerType;
 import entities.Order;
 import javafx.application.Platform;
@@ -40,6 +41,7 @@ public class BillController extends MainNavigator implements  Initializable , Me
 	private int tableId;
 	private CustomerType customerType;
 	private ActionEvent currentEvent;
+	private Customer customer;
 
     
     
@@ -55,11 +57,12 @@ public class BillController extends MainNavigator implements  Initializable , Me
 			}
 		});
 	}
-    public void initData(Order order, Integer subscriberId, CustomerType customerType, int tableId) {
+    public void initData(Order order, Integer subscriberId, CustomerType customerType, int tableId,Customer customer) {
     	this.order = order;
     	this.subId = subscriberId;
     	this.tableId = tableId;
     	this.customerType = customerType;
+    	this.customer = customer;
     	
         generateBill(order, customerType == CustomerType.SUBSCRIBER);
     }
@@ -116,7 +119,7 @@ public class BillController extends MainNavigator implements  Initializable , Me
      
        order.setTotalPrice(totalPrice);
        if (control!= null)
-    	   control.initData(order,totalPrice,subId ,customerType , tableId);
+    	   control.initData(order,totalPrice,subId ,customerType , tableId,customer);
        else
     	   System.err.println("Error: PaymentController could not be loaded. Check if the FXML path is correct.");
      
@@ -134,7 +137,7 @@ public class BillController extends MainNavigator implements  Initializable , Me
 	    this.currentEvent = event;
 
 	   CheckOutController control = super.loadScreen("reservation/CheckOutScreen", event, clientUi);
-	   control.initData(subId, customerType, tableId);
+	   control.initData(subId, customerType, tableId,customer);
 	}
 
 	

@@ -61,6 +61,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 	private String selectedTime = null;
 	private Button selectedButton = null;
 	private boolean isWaitlist = false;
+	private Customer customer;
 
 	@FXML
 	public void initialize() {
@@ -102,13 +103,14 @@ public class ReservationController extends MainNavigator implements MessageListe
 //		phoneField.setOnMouseClicked(e -> errorLabel.setText(""));
 	}
 
-	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subscriberCode) {
+	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subscriberCode,Customer customer) {
 		this.clientUi = clientUi;
 		System.out.println("in reservation "+subscriberCode);
 		this.isSubscriber = isSubscriberStatus;
 		this.subscriberCode = subscriberCode;
 		this.orderLogic = new OrderLogic(clientUi);
 		this.waitingListLogic = new WaitingListLogic(clientUi);
+		this.customer = customer;
 
 		loadHours();
 	}
@@ -238,7 +240,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 	void goBack(ActionEvent event) {
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 		if (controller != null) {
-			controller.initData(clientUi, isSubscriber, subscriberCode);
+			controller.initData(clientUi, isSubscriber, subscriberCode,customer);
 		}
 	}
 
@@ -345,7 +347,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Success", "Table Booked successfully!", Alert.AlertType.INFORMATION);
-				super.loadScreen("navigation/SelectionScreen", currentEvent, clientUi);
+				Order order = (Order)res.getData();
+				SubscriberOptionController control = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
+				control.initData(clientUi, isSubscriber, subscriberCode,order.getCustomer());
 			}
 
 			else if (res.getStatus() == ResponseStatus.ERROR) {

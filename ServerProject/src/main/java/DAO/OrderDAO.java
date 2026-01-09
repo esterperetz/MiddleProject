@@ -287,11 +287,16 @@ public class OrderDAO {
 		}
 	}
 
-	public Order getOrderByConfirmationCodeSeated(int code,int customerId) throws SQLException {
+	public Order getOrderByConfirmationCodeSeated(int code,Integer customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE(customer_id =? OR confirmation_code = ?) " + "AND order_status = 'SEATED' ";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {
-			stmt.setInt(1, customerId);
+			if(customerId != 0) {
+				stmt.setInt(1, customerId);
+			}else {
+				stmt.setInt(1, Types.INTEGER);
+			}
+			
 			stmt.setInt(2, code);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {

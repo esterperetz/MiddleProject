@@ -67,9 +67,12 @@ public class TableController {
 
 	private void handleGetTable(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int conformationCode = (int) req.getPayload();
-		int subscriberCode = (int)req.getId();
+		int customerId = (int)req.getId();
 		System.out.println("the code is: ------ " + conformationCode);
-		Customer customer = customerDAO.getCustomerBySubscriberCode(subscriberCode);
+		System.out.println("cust id: " + customerId);
+
+		Customer customer = customerDAO.getCustomerByCustomerId(customerId);
+		System.out.println(customer);
 		if(customer == null) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
 					"CANOT find coustomerId by subscriber code ", null));
@@ -78,7 +81,7 @@ public class TableController {
 		Order order = orderDAO.getOrderByConfirmationCodeApproved(conformationCode,customer.getCustomerId());
 		if (order == null) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
-					"CANOT find order with this conformation code", null));
+					"ORDER NULL,CANOT find order with this conformation code", null));
 			return;
 		}
 
