@@ -64,7 +64,7 @@ public class WaitingListController {
 	
 	private void handleGetAllListWithCustomer(Request req, ConnectionToClient client) throws SQLException, IOException {
 		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
-		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
+		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST, Response.ResponseStatus.SUCCESS,
 				null, list));
 	}
 

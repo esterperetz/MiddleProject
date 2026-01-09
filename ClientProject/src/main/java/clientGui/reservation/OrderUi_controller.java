@@ -223,29 +223,24 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
 				Object data = res.getData();
-				//understand what the action of the requast
 				switch (res.getAction()) {
 
 				case GET_ALL:
 					if (data instanceof List) {
 				        List<?> list = (List<?>) data;
 				        
-				        // ניקוי הטבלה
 				        orderData.clear();
 
-				        // בדיקה שהרשימה לא ריקה
 				        if (list.isEmpty()) {
 				            orderTable.refresh();
 				            return;
 				        }
 
-				        // לולאה שעוברת על ה-Map וממירה ל-Order
 				        for (Object obj : list) {
 				            if (obj instanceof Map) {
 				                Map<String, Object> row = (Map<String, Object>) obj;
 				                Order o = new Order();
 
-				                // 1. שליפת נתוני ההזמנה והכנסה ל-Order
 				                o.setOrderNumber((Integer) row.get("order_number"));
 				                o.getCustomer().setCustomerId((Integer) row.get("customer_id"));
 				                o.setNumberOfGuests((Integer) row.get("number_of_guests"));

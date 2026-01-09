@@ -67,21 +67,38 @@ public class TableController {
 
 	private void handleGetTable(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int conformationCode = (int) req.getPayload();
-		int customerId = (int)req.getId();
+
+		int customerId = (int)req.getId(); 
+
+		int subscriberCode = (int) req.getId();
+
 		System.out.println("the code is: ------ " + conformationCode);
+
 		System.out.println("cust id: " + customerId);
 
-		Customer customer = customerDAO.getCustomerByCustomerId(customerId);
-		System.out.println(customer);
-		if(customer == null) {
-			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
-					"CANOT find coustomerId by subscriber code ", null));
-			return;
+
+
+		Customer customer = new Customer();
+		if (subscriberCode != 0) {
+			customer = customerDAO.getCustomerBySubscriberCode(subscriberCode);
+			if (customer == null) {
+				client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
+						"CANOT find coustomerId by subscriber code ", null));
+				return;
+			}
+
 		}
-		Order order = orderDAO.getOrderByConfirmationCodeApproved(conformationCode,customer.getCustomerId());
+
+		Order order = orderDAO.getOrderByConfirmationCode(conformationCode);
 		if (order == null) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
 					"ORDER NULL,CANOT find order with this conformation code", null));
+			return;
+		}
+		 order = orderDAO.getOrderByConfirmationCodeApproved(conformationCode, customer.getCustomerId());
+		if (order == null) {
+			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
+					"You arrived too early", null));
 			return;
 		}
 
@@ -89,7 +106,7 @@ public class TableController {
 
 		if (tableNumber == null) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
-					"CANOT find suit table", null));
+					"NO suitable table is available please wait for notifiaction ", null));
 			return;
 		}
 
@@ -103,8 +120,9 @@ public class TableController {
 		}
 		client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.SUCCESS,
 				"get tableNumber", tableNumber));
+		}
 
-	}
+	
 
 	private void handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Table newTable = (Table) req.getPayload();

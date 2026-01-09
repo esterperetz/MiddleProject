@@ -14,6 +14,9 @@ public class WaitingList implements Serializable {
 	private int confirmationCode;
 	private Customer customer;
 
+	public WaitingList() {
+		
+	}
 	public WaitingList(Integer waitingId, Integer customerId,
 			int numberOfGuests, Date enterTime, int confirmationCode,Customer customer) {
 		this.waitingId = waitingId;
