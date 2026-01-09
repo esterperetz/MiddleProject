@@ -18,8 +18,8 @@ public class OrderDAO {
 	// */
 	public List<Order> getAllOrders() throws SQLException {
 		String sql = "SELECT * FROM `order`";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql);
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
 
 			List<Order> list = new ArrayList<>();
@@ -33,8 +33,7 @@ public class OrderDAO {
 	/**
 	 * Retrieves orders that are scheduled between 'minutesAhead' - 1 and
 	 * 'minutesAhead' + 1 minutes from now, and have NOT been reminded yet.
-	 * 
-	 * @param minutesAhead The target time window in minutes (e.g., 120 for 2 hours)
+	 * * @param minutesAhead The target time window in minutes (e.g., 120 for 2 hours)
 	 */
 	public List<Order> getOrdersForReminder(int minutesAhead) throws SQLException {
 		// We look for orders where (order_date) is roughly (now + minutesAhead)
@@ -47,8 +46,8 @@ public class OrderDAO {
 				+ "AND (NOW() + INTERVAL ? MINUTE + INTERVAL 2 MINUTE) " + "AND o.reminder_sent = FALSE "
 				+ "AND o.order_status IN ('APPROVED')";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, minutesAhead);
 			stmt.setInt(2, minutesAhead);
 
@@ -72,8 +71,8 @@ public class OrderDAO {
 	 */
 	public boolean markAsReminded(int orderNumber) throws SQLException {
 		String sql = "UPDATE `order` SET reminder_sent = TRUE WHERE order_number = ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, orderNumber);
 			return stmt.executeUpdate() > 0;
 		}
@@ -88,31 +87,34 @@ public class OrderDAO {
 				+ " o.confirmation_code, o.date_of_placing_order " + "FROM Customer c "
 				+ "JOIN `order` o ON c.customer_id = o.customer_id";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql);
-				ResultSet rs = stmt.executeQuery()) {
+		Connection con;
+		try {
+			con = DBConnection.getInstance().getConnection();
+			try (PreparedStatement stmt = con.prepareStatement(sql);
+					ResultSet rs = stmt.executeQuery()) {
 
-			while (rs.next()) {
-				Map<String, Object> row = new HashMap<>();
+				while (rs.next()) {
+					Map<String, Object> row = new HashMap<>();
 
-				// customer
-				row.put("customer_name", rs.getString("customer_name"));
-				row.put("email", rs.getString("email"));
-				row.put("phone_number", rs.getString("phone_number"));
-				row.put("subscriber_code", (Integer) rs.getObject("subscriber_code")); // מאפשר null
+					// customer
+					row.put("customer_name", rs.getString("customer_name"));
+					row.put("email", rs.getString("email"));
+					row.put("phone_number", rs.getString("phone_number"));
+					row.put("subscriber_code", (Integer) rs.getObject("subscriber_code")); // מאפשר null
 
-				// order
-				row.put("order_number", rs.getInt("order_number"));
-				row.put("customer_id", rs.getInt("customer_id"));
-				row.put("order_date", rs.getTimestamp("order_date"));
-				row.put("arrival_time", rs.getTimestamp("arrival_time"));
-				row.put("number_of_guests", rs.getInt("number_of_guests"));
-				row.put("total_price", rs.getDouble("total_price"));
-				row.put("order_status", rs.getString("order_status"));
-				row.put("confirmation_code", rs.getInt("confirmation_code"));
-				row.put("date_of_placing_order", rs.getTimestamp("date_of_placing_order"));
+					// order
+					row.put("order_number", rs.getInt("order_number"));
+					row.put("customer_id", rs.getInt("customer_id"));
+					row.put("order_date", rs.getTimestamp("order_date"));
+					row.put("arrival_time", rs.getTimestamp("arrival_time"));
+					row.put("number_of_guests", rs.getInt("number_of_guests"));
+					row.put("total_price", rs.getDouble("total_price"));
+					row.put("order_status", rs.getString("order_status"));
+					row.put("confirmation_code", rs.getInt("confirmation_code"));
+					row.put("date_of_placing_order", rs.getTimestamp("date_of_placing_order"));
 
-				resultList.add(row);
+					resultList.add(row);
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -123,8 +125,8 @@ public class OrderDAO {
 
 	public List<Order> getOrdersByCustomerId(int customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE customer_id = ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, customerId);
 			try (ResultSet rs = stmt.executeQuery()) {
 				List<Order> orderList = new ArrayList<>();
@@ -141,8 +143,8 @@ public class OrderDAO {
 	 */
 	public Order getOrder(int id) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE order_number = ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, id);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
@@ -161,8 +163,8 @@ public class OrderDAO {
 				+ "date_of_placing_order,arrival_time, total_price, order_status) "
 				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			stmt.setTimestamp(1, new Timestamp(o.getOrderDate().getTime()));
 			stmt.setInt(2, o.getNumberOfGuests());
@@ -203,8 +205,8 @@ public class OrderDAO {
 				+ "customer_id = ?, table_number = ?, date_of_placing_order = ?, "
 				+ "arrival_time = ?, total_price = ?, order_status = ?, reminder_sent = ? " + "WHERE order_number = ?";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			stmt.setTimestamp(1, new Timestamp(o.getOrderDate().getTime()));
 			stmt.setInt(2, o.getNumberOfGuests());
@@ -244,8 +246,8 @@ public class OrderDAO {
 	 */
 	public boolean deleteOrder(int id) throws SQLException {
 		String sql = "DELETE FROM `order` WHERE order_number = ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, id);
 			return stmt.executeUpdate() > 0;
 		}
@@ -258,8 +260,8 @@ public class OrderDAO {
 	public Order getOrderByConfirmationCode(int code) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE confirmation_code = ? " + "AND order_status = 'APPROVED' ";
 				
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			
 				stmt.setInt(1, code);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -273,8 +275,8 @@ public class OrderDAO {
 	public Order getOrderByConfirmationCodeApproved(int code,int customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE (customer_id = ? OR confirmation_code = ?) " + "AND order_status = 'APPROVED' "
 				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			
 				stmt.setInt(1, customerId);
 				stmt.setInt(2, code);
@@ -289,8 +291,8 @@ public class OrderDAO {
 
 	public Order getOrderByConfirmationCodeSeated(int code,int customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE(customer_id =? OR confirmation_code = ?) " + "AND order_status = 'SEATED' ";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, customerId);
 			stmt.setInt(2, code);
 			try (ResultSet rs = stmt.executeQuery()) {
@@ -305,8 +307,8 @@ public class OrderDAO {
 	public boolean updateOrderCheckOut(int orderId, double totalPrice, Order.OrderStatus status) throws SQLException {
 		String sql = "UPDATE `order` SET  order_status = ?, leaving_time = NOW() ,total_price = ? WHERE order_number = ?";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			stmt.setString(1, status.name());
 			stmt.setDouble(2, totalPrice);
@@ -319,8 +321,8 @@ public class OrderDAO {
 	public boolean updateOrderSeating(int orderId, int tableNum, Order.OrderStatus status) throws SQLException {
 		String sql = "UPDATE `order` SET table_number = ?, order_status = ?, arrival_time = NOW() WHERE order_number = ?";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			stmt.setInt(1, tableNum);
 			stmt.setString(2, status.name());
@@ -335,8 +337,8 @@ public class OrderDAO {
 	 */
 	public boolean updateOrderStatus(int orderNumber, Order.OrderStatus status) throws SQLException {
 		String sql = "UPDATE `order` SET order_status = ? WHERE order_number = ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setString(1, status.name());
 			stmt.setInt(2, orderNumber);
 			return stmt.executeUpdate() > 0;
@@ -351,8 +353,8 @@ public class OrderDAO {
 		String sql = "SELECT COUNT(*) FROM `order` " + "WHERE order_status IN ('APPROVED', 'SEATED') "
 				+ "AND number_of_guests >= ? " + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			Timestamp reqTime = new Timestamp(requestedDate.getTime());
 
@@ -375,8 +377,8 @@ public class OrderDAO {
 	 */
 	public int countCurrentlySeatedOrders(int guests) throws SQLException {
 		String sql = "SELECT COUNT(*) FROM `order` WHERE order_status = 'SEATED' AND number_of_guests >= ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, guests);
 			try (ResultSet rs = stmt.executeQuery()) {
 				return rs.next() ? rs.getInt(1) : 0;
@@ -391,8 +393,8 @@ public class OrderDAO {
 	public int countApprovedOrdersInRange(java.util.Date start, java.util.Date end, int guests) throws SQLException {
 		String sql = "SELECT COUNT(*) FROM `order` WHERE order_status = 'APPROVED' "
 				+ "AND order_date BETWEEN ? AND ? AND number_of_guests >= ?";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setTimestamp(1, new Timestamp(start.getTime()));
 			stmt.setTimestamp(2, new Timestamp(end.getTime()));
 			stmt.setInt(3, guests);
@@ -409,18 +411,21 @@ public class OrderDAO {
 				+ "AND number_of_guests >= ?";
 		// ההנחה: הזמנה של 2 אנשים לא תופסת שולחן של 6, ולכן לא סופרים אותה
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(query)) {
+		Connection con;
+		try {
+			con = DBConnection.getInstance().getConnection();
+			try (PreparedStatement stmt = con.prepareStatement(query)) {
 
-			// 1. המרת התאריך ל-Timestamp של SQL (כולל שעה מדויקת)
-			stmt.setTimestamp(1, new java.sql.Timestamp(timestamp.getTime()));
+				// 1. המרת התאריך ל-Timestamp של SQL (כולל שעה מדויקת)
+				stmt.setTimestamp(1, new java.sql.Timestamp(timestamp.getTime()));
 
-			// 2. כמות האורחים
-			stmt.setInt(2, guests);
+				// 2. כמות האורחים
+				stmt.setInt(2, guests);
 
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					count = rs.getInt(1);
+				try (ResultSet rs = stmt.executeQuery()) {
+					if (rs.next()) {
+						count = rs.getInt(1);
+					}
 				}
 			}
 		} catch (SQLException e) {
@@ -439,8 +444,8 @@ public class OrderDAO {
 	public List<Order> getOrdersByStatus(Order.OrderStatus status) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE order_status = ?";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
 			stmt.setString(1, status.name());
 
@@ -490,8 +495,8 @@ public class OrderDAO {
 				+ "AND o.order_status = 'APPROVED' " + "AND o.order_date > NOW() "
 				+ "ORDER BY o.order_date ASC LIMIT 1";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setString(1, contactDetail);
 			stmt.setString(2, contactDetail);
 

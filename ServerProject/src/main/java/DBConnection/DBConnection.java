@@ -51,7 +51,7 @@ public class DBConnection {
 		return instance;
 	}
 
-	public Connection getConnection() throws SQLException {
+	public synchronized Connection getConnection() throws SQLException {
 		if (connection == null || connection.isClosed() || !connection.isValid(10)) {
 			System.out.println("Connection is stale or closed. Re-establishing connection.");
 			try {
