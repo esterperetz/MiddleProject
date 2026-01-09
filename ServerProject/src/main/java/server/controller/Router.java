@@ -18,6 +18,7 @@ public class Router {
 	private final BusinessHourController businessHourController;
 	private final EmployeeController employeeController;
 	private final ReportController reportController;
+	private final MyFileController myFileController;
 	private static List<ConnectionToClient> clients;
 
 	public Router() {
@@ -28,6 +29,7 @@ public class Router {
 		this.businessHourController = new BusinessHourController();
 		this.employeeController = new EmployeeController();
 		this.reportController = new ReportController(); 
+		this.myFileController=new MyFileController();
 		
 		if (clients == null) {
 			clients = new ArrayList<>();
@@ -61,6 +63,9 @@ public class Router {
             break;
 		case REPORT:
 			reportController.handle(req, client);
+			break;
+		case REPORT_MONTHLY:
+			myFileController.handle(req,client);
 			break;
 
 		default:
