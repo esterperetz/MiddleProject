@@ -133,11 +133,18 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	public void initData(ClientUi clientUi, Employee.Role isManager) {
 		this.clientUi = clientUi;
-		
-		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
-		// isManager = true; // בהמשך זה יגיע מ-User
-		if (isManager == Employee.Role.MANAGER) {
-			this.isManager = Employee.Role.MANAGER;
+
+		// 3. הגדרת הרשאות
+		// Use persistent user session if available
+		if (clientUi.getUser() != null) {
+			this.em = clientUi.getUser().getUserName();
+			this.isManager = clientUi.getUser().getRole();
+		} else {
+			this.isManager = isManager; // Fallback to parameter
+		}
+
+		if (this.isManager == Employee.Role.MANAGER) {
+			// this.isManager = Employee.Role.MANAGER;
 			this.isManagerFlag = true;
 
 			btnViewReports.setVisible(true);
@@ -156,19 +163,19 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			lblDashboardTitle.setText("Hello, " + em);
 			lblDashboardSubtitle.setText("Employee Dashboard");
 		}
-//		// הצגת הכפתור אם צריך
-//		//if (this.isManager) {
-//			//btnViewReports.setVisible(true);
-//			//btnViewReports.setManaged(true);
-//		} else {
-//			btnViewReports.setVisible(false);
-//			btnViewReports.setManaged(false);
-//		}
+		// // הצגת הכפתור אם צריך
+		// //if (this.isManager) {
+		// //btnViewReports.setVisible(true);
+		// //btnViewReports.setManaged(true);
+		// } else {
+		// btnViewReports.setVisible(false);
+		// btnViewReports.setManaged(false);
+		// }
 		if (this.clientUi == null) {
 			System.err.println("Error: ClientUi is null in ManagerOptionsController!");
 			return;
 		}
-//		this.clientUi.addListener(this);
+		// this.clientUi.addListener(this);
 
 		// 4. עכשיו בטוח לקרוא לשרת כי clientUi קיים
 		loadStandardHours();
@@ -323,13 +330,13 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		// ((ReservationController) controller).setData(true, null, null, null);
 		// clientGui.reservation.OrderUi_controller controller =
 		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
-//		clientUi.removeListener(this);
+		// clientUi.removeListener(this);
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
 			////////////////////////////////////////////////////////////// check if button
 			////////////////////////////////////////////////////////////// disapear
 			// controller.initData(clientUi, clientUi.getIp());
-			controller.initData(this.isManager,em);
+			controller.initData(this.isManager, em);
 
 		} else {
 			System.err.println("Failed to load OrderUi. Check FXML path name.");
@@ -342,7 +349,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 		try {
 			RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event,
 					clientUi);
-			registerEmployee.initData(this.clientUi, this.isManager,em);
+			registerEmployee.initData(this.clientUi, this.isManager, em);
 		} catch (NullPointerException e) {
 			System.out.println("Error: the object RegisterEmployeeController is null");
 

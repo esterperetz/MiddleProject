@@ -1,5 +1,7 @@
 package clientGui.managerTeam;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -12,143 +14,155 @@ import entities.Request;
 import entities.ResourceType;
 import entities.Response;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.chart.BarChart;
-import javafx.scene.chart.CategoryAxis;
-import javafx.scene.chart.LineChart;
+import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.XYChart;
-import javafx.stage.Stage;
+import javafx.scene.control.ComboBox;
 
 public class ReportsController extends MainNavigator implements MessageListener<Object> {
 
-    @FXML private BarChart<String, Number> barChartTimes;
-    @FXML private LineChart<String, Number> lineChartOrders;
-    @FXML private CategoryAxis xAxisTimes;
-    @FXML private CategoryAxis xAxisDays;
-    
-    private Employee.Role isManager;
+    @FXML
+    private AreaChart<String, Number> barChartTimes;
+    @FXML
+    private AreaChart<String, Number> lineChartOrders;
+    @FXML
+    private ComboBox<String> comboMonth;
+    @FXML
+    private ComboBox<String> comboYear;
+    private Employee.Role role;
 
     @FXML
     public void initialize() {
-        // Disable animation for smoother updates when data arrives
-        barChartTimes.setAnimated(false);
-        lineChartOrders.setAnimated(false);
+        // Disable animations for performance/stability
+        if (barChartTimes != null)
+            barChartTimes.setAnimated(false);
+        if (lineChartOrders != null)
+            lineChartOrders.setAnimated(false);
+
+        if (comboMonth != null) {
+            comboMonth.setItems(FXCollections.observableArrayList("01", "02", "03", "04", "05", "06", "07", "08", "09",
+                    "10", "11", "12"));
+        }
+
+        if (comboYear != null) {
+            ArrayList<String> years = new ArrayList<>();
+            int currentYear = LocalDate.now().getYear();
+            for (int i = 0; i < 5; i++) {
+                years.add(String.valueOf(currentYear - i));
+            }
+            comboYear.setItems(FXCollections.observableArrayList(years));
+        }
     }
 
-    /**
-     * Initializes controller, registers listener, and requests report data.
-     */
-    public void initData(ClientUi c, Employee.Role isManager) {
+    public void initData(ClientUi c, Employee.Role role) {
         this.clientUi = c;
-        this.isManager = isManager;
-        
-        // Register this controller to receive server messages
-        this.clientUi.addListener(this);
+        this.role = role;
 
-        // Send request to server
-        Request req = new Request(ResourceType.REPORT, ActionType.GET_MONTHLY_REPORT, null, null);
-        this.clientUi.sendRequest(req);
+        // precise default value setting
+        LocalDate now = LocalDate.now();
+        if (comboMonth != null)
+            comboMonth.setValue(String.format("%02d", now.getMonthValue()));
+        if (comboYear != null)
+            comboYear.setValue(String.valueOf(now.getYear()));
+
+        this.clientUi.addListener(this);
+        sendRequest();
     }
 
-    /**
-     * Handles the server response containing the nested Map structure.
-     */
+    @FXML
+    void refreshReportsBtn(ActionEvent e) {
+        sendRequest();
+    }
+
+    private void sendRequest() {
+        if (comboMonth == null || comboYear == null)
+            return;
+        String filter = comboMonth.getValue() + "/" + comboYear.getValue();
+        clientUi.sendRequest(new Request(ResourceType.REPORT, ActionType.GET_MONTHLY_REPORT, null, filter));
+    }
+
     @Override
+    @SuppressWarnings("unchecked")
     public void onMessageReceive(Object msg) {
         if (msg instanceof Response) {
-            Response response = (Response) msg;
+            Response res = (Response) msg;
+            if (res.getAction() == ActionType.GET_MONTHLY_REPORT
+                    && res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                // We trust the server to send the Map<String, Object> structure
+                Map<String, Object> data = (Map<String, Object>) res.getData();
 
-            // Check if this response is for the report request
-            if (response.getAction() == ActionType.GET_MONTHLY_REPORT && 
-                response.getStatus() == Response.ResponseStatus.SUCCESS) {
-
-                // Unpack the main map (Map<String, Object>) from response.getData()
-                @SuppressWarnings("unchecked")
-                Map<String, Object> fullData = (Map<String, Object>) response.getData();
-                
-                if (fullData != null) {
-                    // Extract inner maps using keys defined in Server ReportController
-                    @SuppressWarnings("unchecked")
-                    Map<Integer, Integer> arrivals = (Map<Integer, Integer>) fullData.get("arrivals");
-                    @SuppressWarnings("unchecked")
-                    Map<Integer, Integer> departures = (Map<Integer, Integer>) fullData.get("departures");
-                    @SuppressWarnings("unchecked")
-                    Map<Integer, Integer> cancellations = (Map<Integer, Integer>) fullData.get("cancellations");
-                    @SuppressWarnings("unchecked")
-                    Map<String, Integer> dailyOrders = (Map<String, Integer>) fullData.get("dailyOrders");
-
-                    // Update UI on JavaFX Application Thread
-                    Platform.runLater(() -> {
-                        updateTimeChart(arrivals, departures, cancellations);
-                        updateTrendsChart(dailyOrders);
-                    });
-                }
+                Platform.runLater(() -> {
+                    try {
+                        updateTimeChart((Map<Integer, Integer>) data.get("arrivals"),
+                                (Map<Integer, Integer>) data.get("departures"),
+                                (Map<Integer, Integer>) data.get("cancellations"));
+                        updateTrendsChart((Map<String, Integer>) data.get("dailyOrders"));
+                    } catch (Exception e) {
+                        e.printStackTrace(); // Log casting errors if they occur
+                    }
+                });
             }
         }
     }
 
-    /**
-     * Updates the BarChart with hourly activity data.
-     */
-    private void updateTimeChart(Map<Integer, Integer> arrivals, Map<Integer, Integer> departures, Map<Integer, Integer> cancellations) {
+    private void updateTimeChart(Map<Integer, Integer> arr, Map<Integer, Integer> dep, Map<Integer, Integer> canc) {
+        if (barChartTimes == null)
+            return;
+
         barChartTimes.getData().clear();
 
-        XYChart.Series<String, Number> seriesArrivals = new XYChart.Series<>();
-        seriesArrivals.setName("Arrivals");
-        
-        XYChart.Series<String, Number> seriesDepartures = new XYChart.Series<>();
-        seriesDepartures.setName("Departures");
-        
-        XYChart.Series<String, Number> seriesCancellations = new XYChart.Series<>();
-        seriesCancellations.setName("Late/No-Show");
+        XYChart.Series<String, Number> s1 = new XYChart.Series<>();
+        s1.setName("Arrivals");
 
-        // Iterate hours 0-23
+        XYChart.Series<String, Number> s2 = new XYChart.Series<>();
+        s2.setName("Departures");
+
+        XYChart.Series<String, Number> s3 = new XYChart.Series<>();
+        s3.setName("Late/No-Show");
+
         for (int i = 0; i < 24; i++) {
-            String hourLabel = String.format("%02d:00", i);
-            seriesArrivals.getData().add(new XYChart.Data<>(hourLabel, arrivals.getOrDefault(i, 0)));
-            seriesDepartures.getData().add(new XYChart.Data<>(hourLabel, departures.getOrDefault(i, 0)));
-            seriesCancellations.getData().add(new XYChart.Data<>(hourLabel, cancellations.getOrDefault(i, 0)));
-        }
+            String h = String.format("%02d:00", i);
+            int val1 = arr != null ? arr.getOrDefault(i, 0) : 0;
+            int val2 = dep != null ? dep.getOrDefault(i, 0) : 0;
+            int val3 = canc != null ? canc.getOrDefault(i, 0) : 0;
 
-        barChartTimes.getData().addAll(seriesArrivals, seriesDepartures, seriesCancellations);
+            s1.getData().add(new XYChart.Data<>(h, val1));
+            s2.getData().add(new XYChart.Data<>(h, val2));
+            s3.getData().add(new XYChart.Data<>(h, val3));
+        }
+        barChartTimes.getData().addAll(s1, s2, s3);
     }
 
-    /**
-     * Updates the LineChart with daily order trends.
-     */
-    private void updateTrendsChart(Map<String, Integer> dailyOrders) {
+    private void updateTrendsChart(Map<String, Integer> daily) {
+        if (lineChartOrders == null)
+            return;
+
         lineChartOrders.getData().clear();
+        XYChart.Series<String, Number> s = new XYChart.Series<>();
+        s.setName("Total Orders");
 
-        XYChart.Series<String, Number> seriesOrders = new XYChart.Series<>();
-        seriesOrders.setName("Total Orders");
-
-        // Use TreeMap to sort dates chronologically (assuming format allows or TreeMap default sort)
-        Map<String, Integer> sortedOrders = new TreeMap<>(dailyOrders);
-
-        for (Map.Entry<String, Integer> entry : sortedOrders.entrySet()) {
-            seriesOrders.getData().add(new XYChart.Data<>(entry.getKey(), entry.getValue()));
+        if (daily != null) {
+            // Using TreeMap to sort by date string (simple sort, assumes DD/MM format holds
+            // somewhat or is sorted by server)
+            // Ideally server sorts it. ReportDAO already sorts by date.
+            new TreeMap<>(daily).forEach((k, v) -> s.getData().add(new XYChart.Data<>(k, v)));
         }
 
-        lineChartOrders.getData().add(seriesOrders);
+        lineChartOrders.getData().add(s);
     }
 
     @FXML
-    void goBackBtn(ActionEvent event) {
-        System.out.println("Going back...");
-        // Navigate back to Manager Options
-        ManagerOptionsController controller = 
-                super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
-        if (controller != null) {
-            controller.initData(clientUi, this.isManager);
-        } else {
-            System.err.println("Error: Could not load ManagerOptionsController.");
-        }
-    }
-
-    @FXML
-    void closeScreen(ActionEvent event) {
-        ((Stage)((Node)event.getSource()).getScene().getWindow()).close();
+    void goBackBtn(ActionEvent e) {
+        // Assuming ManagerOptionsController exists and handles initData
+        // We use super.loadScreen which returns MainNavigator, so we cast to
+        // ManagerOptionsController
+        // Correct usage depends on the actual return type of loadScreen being generic
+        // or overridden
+        // But based on user code it seemed to work.
+        ManagerOptionsController c = super.loadScreen("managerTeam/EmployeeOption", e, clientUi);
+        if (c != null)
+            c.initData(clientUi, role);
     }
 }

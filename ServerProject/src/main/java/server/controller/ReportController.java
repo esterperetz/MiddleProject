@@ -14,52 +14,53 @@ import ocsf.server.ConnectionToClient;
 
 public class ReportController {
 
-    private final ReportDAO reportDAO = new ReportDAO();
+    private final ReportDAO reportDao = new ReportDAO();
 
-    /**
-     * Handles incoming report requests.
-     * Aggregates hashmaps (data) from multiple DAO methods into a single response hashmap.
-     */
-    public void handle(Request req, ConnectionToClient client) {
-        // Validate action type
-        if (req.getAction() != ActionType.GET_MONTHLY_REPORT) {
+    public void handle(Request req, ConnectionToClient client) throws IOException {
+        if (req.getResource() != ResourceType.REPORT) {
+            client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.ERROR,
+                    "Error: Incorrect resource type requested.", null));
             return;
         }
 
         try {
-            // Fetch data for all charts
-            Map<Integer, Integer> arrivals = reportDAO.getArrivalsByHour();
-            Map<Integer, Integer> departures = reportDAO.getDeparturesByHour();
-            Map<Integer, Integer> cancellations = reportDAO.getCancellationsByHour();
-            Map<String, Integer> dailyOrders = reportDAO.getDailyOrderCount();
-
-            // Pack all hashmaps into a single hashmap to send to client
-            Map<String, Object> fullReportData = new HashMap<>();
-            fullReportData.put("arrivals", arrivals);
-            fullReportData.put("departures", departures);
-            fullReportData.put("cancellations", cancellations);
-            fullReportData.put("dailyOrders", dailyOrders);
-            System.out.println("DEBUG REPORT: Daily Orders Map -> " + dailyOrders);
-            System.out.println("DEBUG REPORT: Arrivals Map -> " + arrivals);
-            // Send successful response
-            client.sendToClient(new Response(
-                    ResourceType.REPORT, 
-                    ActionType.GET_MONTHLY_REPORT, 
-                    Response.ResponseStatus.SUCCESS, 
-                    null, 
-                    fullReportData
-            ));
-
-        } catch (SQLException | IOException e) {
+            switch (req.getAction()) {
+                case GET_MONTHLY_REPORT:
+                    handleGetMonthlyReport(req, client);
+                    break;
+                default:
+                    client.sendToClient(new Response(req.getResource(), req.getAction(), Response.ResponseStatus.ERROR,
+                            "Unsupported action", null));
+            }
+        } catch (SQLException e) {
             e.printStackTrace();
-            try {
-                client.sendToClient(new Response(
-                		ResourceType.REPORT, 
-                		ActionType.GET_MONTHLY_REPORT, 
-                		Response.ResponseStatus.ERROR, 
-                		"Failed to generate report", 
-                		null));
-            } catch (IOException ex) { ex.printStackTrace(); }
+            client.sendToClient(new Response(req.getResource(), req.getAction(), Response.ResponseStatus.ERROR,
+                    "Database error: " + e.getMessage(), null));
         }
+    }
+
+    private void handleGetMonthlyReport(Request req, ConnectionToClient client) throws SQLException, IOException {
+        String filter = (String) req.getPayload();
+        Integer month = null;
+        Integer year = null;
+
+        if (filter != null && filter.contains("/")) {
+            String[] parts = filter.split("/");
+            try {
+                month = Integer.parseInt(parts[0]);
+                year = Integer.parseInt(parts[1]);
+            } catch (NumberFormatException e) {
+                // Keep nulls
+            }
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("arrivals", reportDao.getArrivalsByHour(month, year));
+        data.put("departures", reportDao.getDeparturesByHour(month, year));
+        data.put("cancellations", reportDao.getCancellationsByHour(month, year));
+        data.put("dailyOrders", reportDao.getDailyOrderCount(month, year));
+
+        client.sendToClient(new Response(req.getResource(), ActionType.GET_MONTHLY_REPORT,
+                Response.ResponseStatus.SUCCESS, null, data));
     }
 }

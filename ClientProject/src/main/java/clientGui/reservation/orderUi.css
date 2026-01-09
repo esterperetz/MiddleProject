@@ -1,84 +1,159 @@
-/* OrderUiStyle.css */
+/* OrderUiStyle.css - High Class Premium Theme */
 
-/* רקע כללי בהיר ונקי */
+.root {
+    -fx-background-color: #0d0d0d;
+}
+
 .main-background {
-    -fx-background-color: #f4f7f6;
+    -fx-background-image: url('../managerTeam/restaurant_background.png');
+    -fx-background-size: cover;
+    -fx-background-position: center center;
 }
 
-/* עיצוב הכותרת הראשית */
+/* Glassmorphism Container */
+.glass-pane {
+    -fx-background-color: rgba(30, 30, 30, 0.85);
+    /* Semi-transparent dark background */
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
+    /* Subtle Gold border */
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 20, 0, 0, 10);
+    -fx-padding: 20;
+}
+
+/* Header - Gold and Elegant */
 .header-label {
-    -fx-text-fill: #2c3e50;
-    -fx-effect: dropshadow(one-pass-box, rgba(0,0,0,0.1), 5, 0.0, 0, 1);
+    -fx-text-fill: #D4AF37;
+    /* Gold */
+    -fx-font-size: 28px;
+    -fx-font-family: "Cinzel", "Times New Roman", "Segoe UI Light";
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.3), 10, 0, 0, 0);
 }
 
-/* עיצוב כפתור החזרה */
+/* Back Button - Minimalist Gold */
 .back-button {
     -fx-background-color: transparent;
-    -fx-text-fill: #7f8c8d;
+    -fx-text-fill: #ecf0f1;
     -fx-font-size: 14px;
     -fx-cursor: hand;
-}
-.back-button:hover {
-    -fx-text-fill: #2c3e50;
-    -fx-underline: true;
+    -fx-border-color: #7f8c8d;
+    -fx-border-radius: 20;
+    -fx-background-radius: 20;
+    -fx-padding: 5 15;
 }
 
-/* עיצוב כללי לטבלה */
+.back-button:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.1);
+    -fx-border-color: #bdc3c7;
+    -fx-text-fill: #D4AF37;
+}
+
+/* Date Picker */
+.date-picker .text-field {
+    -fx-background-color: rgba(0, 0, 0, 0.5);
+    -fx-text-fill: white;
+    -fx-border-color: #555;
+}
+
+.date-picker .button {
+    -fx-background-color: #D4AF37;
+}
+
+/* Table View - Dark and Sleek */
 .table-view {
     -fx-background-color: transparent;
-    -fx-border-color: #bdc3c7;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
     -fx-border-width: 1px;
-    -fx-border-radius: 5px;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5);
-}
-.table-view .column-header-background {
-    -fx-background-color: #ecf0f1;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: #bdc3c7;
-}
-.table-view .column-header .label {
-    -fx-text-fill: #2c3e50;
-    -fx-font-weight: bold;
-}
-.table-row-cell:selected {
-    -fx-background-color: #3498db; /* צבע כחול לשורה נבחרת */
+    -fx-placeholder-label-fill: #7f8c8d;
 }
 
-/* עיצוב בסיסי לכפתורי הפעולה התחתונים */
+.table-view .column-header-background {
+    -fx-background-color: #1e1e1e;
+    -fx-border-width: 0 0 2px 0;
+    -fx-border-color: #D4AF37;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #D4AF37;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ecf0f1;
+    -fx-alignment: CENTER;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(212, 175, 55, 0.3);
+    -fx-text-fill: white;
+}
+
+.table-view .scroll-bar:horizontal .thumb,
+.table-view .scroll-bar:vertical .thumb {
+    -fx-background-color: #555;
+}
+
+/* Action Buttons - Gold/Black Luxury */
 .action-button {
     -fx-font-size: 14px;
     -fx-font-weight: bold;
-    -fx-text-fill: white;
-    -fx-background-radius: 20px; /* כפתורים עגולים */
+    -fx-text-fill: #121212;
+    -fx-background-radius: 5;
     -fx-cursor: hand;
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 2);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 5, 0, 0, 2);
+    -fx-border-width: 0;
 }
+
 .action-button:hover {
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.3), 8, 0, 0, 3);
-}
-.action-button:pressed {
-     -fx-effect: none;
-     -fx-translate-y: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.4), 10, 0, 0, 0);
 }
 
-/* צבעים ספציפיים לכל כפתור */
+/* Specific Buttons */
+/* ADD - Gold */
 .add-button {
-    -fx-background-color: #2ecc71; /* ירוק */
+    -fx-background-color: linear-gradient(to bottom, #D4AF37, #B8860B);
+    -fx-text-fill: #121212;
 }
+
 .add-button:hover {
-    -fx-background-color: #27ae60;
+    -fx-background-color: linear-gradient(to bottom, #F4C430, #D4AF37);
 }
 
+/* UPDATE - Dark Grey/Gold Border */
 .update-button {
-    -fx-background-color: #f39c12; /* כתום */
-}
-.update-button:hover {
-    -fx-background-color: #d35400;
+    -fx-background-color: transparent;
+    -fx-border-color: #D4AF37;
+    -fx-text-fill: #D4AF37;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5;
 }
 
-.delete-button {
-    -fx-background-color: #e74c3c; /* אדום */
+.update-button:hover {
+    -fx-background-color: rgba(212, 175, 55, 0.15);
 }
+
+/* DELETE - Muted Red/Dark */
+.delete-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #c0392b;
+    -fx-text-fill: #c0392b;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5;
+}
+
 .delete-button:hover {
-    -fx-background-color: #c0392b;
+    -fx-background-color: rgba(192, 57, 43, 0.1);
+    -fx-text-fill: #e74c3c;
+    -fx-border-color: #e74c3c;
 }

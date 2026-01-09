@@ -418,4 +418,16 @@ public class OrderDAO {
 			}
 		}
 	}
+
+	public int cancelExpiredOrders() throws SQLException {
+		// Cancel orders that are 'APPROVED' but the time has passed by more than 20
+		// minutes
+		String sql = "UPDATE `order` SET order_status = 'CANCELLED' "
+				+ "WHERE order_status = 'APPROVED' AND order_date < (NOW() - INTERVAL 20 MINUTE)";
+
+		try (Connection con = DBConnection.getInstance().getConnection();
+				PreparedStatement stmt = con.prepareStatement(sql)) {
+			return stmt.executeUpdate();
+		}
+	}
 }

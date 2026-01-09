@@ -25,7 +25,7 @@ public class DBConnection {
 			return;
 		}
 
-		String url = String.format("jdbc:mysql://%s:3306/%s?serverTimezone=Asia/Jerusalem&useSSL=false", host, schema);
+		String url = String.format("jdbc:mysql://%s:3306/%s?serverTimezone=Asia/Jerusalem&useSSL=false&allowPublicKeyRetrieval=true", host, schema);
 		dbUrl = url;
 		dbUser = user;
 		dbPass = pass;

@@ -104,6 +104,9 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 									isManager = false;
 
 								}
+								// Save persistent user session
+								clientUi.setUser(emp);
+
 								ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 										currentEvent, clientUi);
 

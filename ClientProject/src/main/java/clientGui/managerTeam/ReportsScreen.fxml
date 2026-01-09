@@ -1,24 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.AreaChart?>
 <?import javafx.scene.chart.CategoryAxis?>
-<?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+
 <ScrollPane fitToWidth="true" hbarPolicy="NEVER" pannable="true" 
             prefHeight="700.0" prefWidth="900.0" 
+            styleClass="main-background"
             stylesheets="@../managerTeam/ReportStyle.css" 
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
             fx:controller="clientGui.managerTeam.ReportsController">
 
    <content>
-      <VBox alignment="TOP_CENTER" spacing="30.0" styleClass="main-container">
+      <VBox alignment="TOP_CENTER" spacing="30.0">
          <padding>
             <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
          </padding>
@@ -37,30 +39,40 @@
                </children>
             </HBox>
             
-            <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-padding: 20;">
-               <Label text="Activity Times: Arrivals, Departures &amp; Delays" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #34495e;" />
+            <!-- Date Filter Section -->
+            <HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 15; -fx-background-color: rgba(30, 30, 30, 0.4); -fx-background-radius: 10; -fx-border-color: rgba(212, 175, 55, 0.1); -fx-border-radius: 10;">
+               <children>
+                  <Label text="Filter Period:" style="-fx-text-fill: #D4AF37; -fx-font-weight: bold; -fx-font-size: 14px;" />
+                  <ComboBox fx:id="comboMonth" prefWidth="130.0" promptText="Select Month" styleClass="menu-button"/>
+                  <ComboBox fx:id="comboYear" prefWidth="100.0" promptText="Year" styleClass="menu-button"/>
+                  <Button onAction="#refreshReportsBtn" text="Apply Filter" styleClass="action-icon-button" />
+               </children>
+            </HBox>
+            
+            <VBox spacing="10.0" styleClass="chart-pane" VBox.vgrow="ALWAYS" fillWidth="true">
+               <Label text="Activity Times: Arrivals, Departures &amp; Delays" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #ecf0f1;" />
                
-               <BarChart fx:id="barChartTimes" prefHeight="350.0" legendSide="BOTTOM">
+               <AreaChart fx:id="barChartTimes" prefHeight="350.0" legendSide="BOTTOM" maxWidth="Infinity" HBox.hgrow="ALWAYS">
                  <xAxis>
                    <CategoryAxis label="Hour of Day" side="BOTTOM" fx:id="xAxisTimes"/>
                  </xAxis>
                  <yAxis>
                    <NumberAxis label="Number of Customers" side="LEFT" />
                  </yAxis>
-               </BarChart>
+               </AreaChart>
             </VBox>
 
-            <VBox spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 2); -fx-padding: 20;">
-               <Label text="Orders vs. Waiting List Trends" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #34495e;" />
+            <VBox spacing="10.0" styleClass="chart-pane" VBox.vgrow="ALWAYS" fillWidth="true">
+               <Label text="Orders vs. Waiting List Trends" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #ecf0f1;" />
                
-               <LineChart fx:id="lineChartOrders" prefHeight="350.0" createSymbols="false" legendSide="BOTTOM">
+               <AreaChart fx:id="lineChartOrders" prefHeight="350.0" createSymbols="true" legendSide="BOTTOM" maxWidth="Infinity" HBox.hgrow="ALWAYS">
                  <xAxis>
                    <CategoryAxis label="Day of Month" side="BOTTOM" fx:id="xAxisDays"/>
                  </xAxis>
                  <yAxis>
                    <NumberAxis label="Count" side="LEFT" />
                  </yAxis>
-               </LineChart>
+               </AreaChart>
             </VBox>
             
          </children>

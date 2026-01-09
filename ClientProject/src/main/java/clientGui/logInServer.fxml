@@ -6,22 +6,29 @@
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="clientGui.LoginController"
-            prefWidth="400.0" prefHeight="200.0">
+            prefWidth="500.0" prefHeight="350.0"
+            stylesheets="@managerTeam/EmployeeOption.css" styleClass="main-background">
 
     <children>
-        <Label layoutX="40.0" layoutY="40.0" text="Server IP:"/>
+        <VBox alignment="CENTER" spacing="20.0" 
+              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" 
+              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+              
+            <Label text="Connect to Server" styleClass="title-label" style="-fx-font-size: 24px;"/>
 
-        <TextField fx:id="txtIp"
-                   layoutX="120.0" layoutY="36.0"
-                   prefWidth="200.0"
-                   promptText="e.g. 127.0.0.1"/>
-
-        <Button text="Connect"
-                layoutX="120.0" layoutY="80.0"
-                onAction="#onConnect"/>
-
-        <Label fx:id="lblStatus"
-               layoutX="40.0" layoutY="130.0"
-               prefWidth="300.0"/>
+            <VBox spacing="5.0" alignment="CENTER" style="-fx-padding: 20; -fx-background-color: rgba(30,30,30,0.8); -fx-background-radius: 15; -fx-border-color: #D4AF37; -fx-border-radius: 15;">
+                <HBox alignment="CENTER" spacing="10.0">
+                     <Label text="Server IP:" style="-fx-text-fill: white; -fx-font-weight: bold;"/>
+                     <TextField fx:id="txtIp" promptText="e.g. 127.0.0.1" styleClass="text-field" prefWidth="200.0"/>
+                </HBox>
+                
+                <Label fx:id="lblStatus" text="" style="-fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
+                
+                <HBox alignment="CENTER" spacing="15.0" style="-fx-padding: 10 0 0 0;">
+                    <Button text="Connect" onAction="#onConnect" styleClass="action-button" prefWidth="120.0" style="-fx-font-weight: bold; -fx-text-fill: black;"/>
+                    <Button text="Recover Lost Code" onAction="#onRecoverCode" styleClass="menu-button" style="-fx-border-color: #f39c12; -fx-text-fill: #f39c12;"/>
+                </HBox>
+            </VBox>
+        </VBox>
     </children>
 </AnchorPane>

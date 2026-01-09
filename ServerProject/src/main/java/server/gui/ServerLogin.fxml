@@ -12,49 +12,54 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.gui.ServerLoginController">
+<AnchorPane xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="server.gui.ServerLoginController" stylesheets="@serverStyle.css" styleClass="main-background">
 
     <children>
-        <VBox spacing="10" AnchorPane.bottomAnchor="20" AnchorPane.leftAnchor="20" AnchorPane.rightAnchor="20" AnchorPane.topAnchor="20">
-            <children>
-
-                <Label style="-fx-font-size: 18px;" text="Server Login" />
-
-                <GridPane hgap="10" vgap="10">
-                    <columnConstraints>
-                        <ColumnConstraints halignment="RIGHT" prefWidth="100" />
-                        <ColumnConstraints prefWidth="200" />
-                    </columnConstraints>
-
-                    <children>
-                        <Label text="User name:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <TextField fx:id="txtUserName" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-						<TextField fx:id="Scheme" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                 		 <Label text="Scheme:" GridPane.rowIndex="1" />
-                        <Label text="Password:" GridPane.rowIndex="2" />
-                        <PasswordField fx:id="txtPassword" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  
-                    </children>
-               <rowConstraints>
-                  <RowConstraints />
-                  <RowConstraints />
-                  <RowConstraints />
-               </rowConstraints>
-                </GridPane>
-
-                <HBox spacing="10">
-                    <children>
-                        <Button fx:id="btnSend" onAction="#onSend" text="Send" />
-                        <Button fx:id="btnExit" onAction="#onExit" text="Exit" />
-                    </children>
-                </HBox>
-
-                <Label fx:id="lblStatus" />
-
-            </children>
-            <padding>
-                <Insets bottom="10" left="10" right="10" top="10" />
-            </padding>
+        <VBox alignment="CENTER" AnchorPane.bottomAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.topAnchor="0">
+            <VBox spacing="20" styleClass="card-pane" maxWidth="400" alignment="CENTER">
+                <children>
+    
+                    <Label styleClass="title-label" text="Bistro Server" />
+                    <Label text="Please log in to continue" style="-fx-text-fill: #aaaaaa; -fx-font-size: 12px;"/>
+    
+                    <GridPane hgap="15" vgap="15" alignment="CENTER">
+                        <columnConstraints>
+                            <ColumnConstraints halignment="RIGHT" minWidth="80" />
+                            <ColumnConstraints prefWidth="200" />
+                        </columnConstraints>
+    
+                        <children>
+                            <Label text="User Name:" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                            <TextField fx:id="txtUserName" GridPane.columnIndex="1" GridPane.rowIndex="0" promptText="Enter username"/>
+                            
+                            <Label text="Scheme:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                            <TextField fx:id="Scheme" GridPane.columnIndex="1" GridPane.rowIndex="1" promptText="Database scheme"/>
+                            
+                            <Label text="Password:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                            <PasswordField fx:id="txtPassword" GridPane.columnIndex="1" GridPane.rowIndex="2" promptText="Enter password"/>
+                      
+                        </children>
+                   <rowConstraints>
+                      <RowConstraints />
+                      <RowConstraints />
+                      <RowConstraints />
+                   </rowConstraints>
+                    </GridPane>
+    
+                    <HBox spacing="20" alignment="CENTER" style="-fx-padding: 10 0 0 0;">
+                        <children>
+                            <Button fx:id="btnSend" onAction="#onSend" text="Login" prefWidth="120" />
+                            <Button fx:id="btnExit" onAction="#onExit" text="Exit" prefWidth="120" style="-fx-background-color: #555; -fx-text-fill: white;" />
+                        </children>
+                    </HBox>
+    
+                    <Label fx:id="lblStatus" style="-fx-text-fill: #e74c3c;"/>
+    
+                </children>
+                <padding>
+                    <Insets bottom="40" left="40" right="40" top="40" />
+                </padding>
+            </VBox>
         </VBox>
     </children>
 </AnchorPane>

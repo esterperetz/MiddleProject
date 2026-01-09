@@ -25,32 +25,37 @@ public class CustomerController {
 				e.printStackTrace();
 			}
 			return;
-		} 
+		}
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 
 		try {
 			switch (action) {
-			case REGISTER_CUSTOMER:
-				registerCustomer(req, client);
-				break;
+				case REGISTER_CUSTOMER:
+					registerCustomer(req, client);
+					break;
 
-			case GET_BY_ID:
-				getSubscriberById(req, client);
-				break;
+				case GET_BY_ID:
+					getSubscriberById(req, client);
+					break;
 
-			case GET_ALL:
-				getAllSubscribers(req, client);
-				break;
+				case GET_ALL:
+					getAllSubscribers(req, client);
+					break;
 
-			case UPDATE:
-				updateSubscriber(req, client);
-				break;
+				case UPDATE:
+					updateSubscriber(req, client);
+					break;
 
-			default:
-				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-						Response.ResponseStatus.ERROR, "Error: Unknown action for User/Subscriber resource.", null));
-				break;
+				case FORGOT_CODE:
+					handleForgotCode(req, client);
+					break;
+
+				default:
+					client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
+							Response.ResponseStatus.ERROR, "Error: Unknown action for User/Subscriber resource.",
+							null));
+					break;
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -60,8 +65,8 @@ public class CustomerController {
 	}
 
 	private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
-//		boolean isUnique = false;
-//		int code;
+		boolean isUnique = false;
+		int code;
 		Customer newCub = (Customer) req.getPayload();
 
 		// Updated to camelCase
@@ -71,20 +76,20 @@ public class CustomerController {
 					Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
 			return;
 		}
-//		if (newCub.getType() == CustomerType.SUBSCRIBER) {
-//
-//			// לולאה שרצה עד שנמצא מספר פנוי
-//			do {
-//				// הגרלת מספר (למשל מספר בן 5 ספרות: 10000 עד 99999)
-//				code = 10000 + (int) (Math.random() * 90000);
-//
-//				// בדיקה מול ה-DB אם המספר הזה כבר קיים
-//				if (CustomerDAO.getCustomerBySubscriberCode(code) == null) {
-//					isUnique = true;
-//				}
-//			} while (!isUnique);
-//			newCub.setSubscriberCode(code);
-//		}
+		if (newCub.getType() == CustomerType.SUBSCRIBER) {
+
+			// Loop until a unique number is found
+			do {
+				// Generate a number (e.g., 5 digits: 10000 to 99999)
+				code = 10000 + (int) (Math.random() * 90000);
+
+				// Check against DB if this number already exists
+				if (CustomerDAO.getCustomerBySubscriberCode(code) == null) {
+					isUnique = true;
+				}
+			} while (!isUnique);
+			newCub.setSubscriberCode(code);
+		}
 
 		boolean success = CustomerDAO.createCustomer(newCub);
 		if (success) {
@@ -125,6 +130,29 @@ public class CustomerController {
 		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
 					"Error: Failed to update subscriber.", null));
+		}
+	}
+
+	private void handleForgotCode(Request req, ConnectionToClient client) throws IOException {
+		try {
+			String idStr = (String) req.getPayload();
+			int subId = Integer.parseInt(idStr);
+			Customer sub = CustomerDAO.getCustomerBySubscriberCode(subId);
+
+			if (sub != null) {
+				// Mock sending email
+				System.out.println("Processing Forgot Code for Subscriber ID: " + subId);
+				System.out.println("Mock: Sending email to " + sub.getEmail() + " with code.");
+
+				client.sendToClient(new Response(req.getResource(), ActionType.FORGOT_CODE,
+						Response.ResponseStatus.SUCCESS, "Code sent to your email/phone.", null));
+			} else {
+				client.sendToClient(new Response(req.getResource(), ActionType.FORGOT_CODE,
+						Response.ResponseStatus.ERROR, "Error: Subscriber not found.", null));
+			}
+		} catch (Exception e) {
+			client.sendToClient(new Response(req.getResource(), ActionType.FORGOT_CODE,
+					Response.ResponseStatus.ERROR, "Error: Invalid ID format.", null));
 		}
 	}
 }

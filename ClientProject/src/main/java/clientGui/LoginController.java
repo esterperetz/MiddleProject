@@ -1,7 +1,5 @@
 package clientGui;
 
-	
-
 import java.io.IOException;
 
 import client.ChatClient;
@@ -19,18 +17,18 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class LoginController extends MainNavigator {
-	
+
     @FXML
     private TextField txtIp;
 
     @FXML
     private Label lblStatus;
 
-//    private ClientUi clientUi;
+    // private ClientUi clientUi;
 
     @FXML
     private void onConnect(ActionEvent event) {
-    	String ip = txtIp.getText().trim();
+        String ip = txtIp.getText().trim();
 
         if (ip.isEmpty()) {
             lblStatus.setText("Please enter server IP");
@@ -40,34 +38,41 @@ public class LoginController extends MainNavigator {
         try {
             // 1. יצירת החיבור
             ClientUi clientUi = new ClientUi(ip);
-            
-            if (clientUi != null) { 
-            	setClientUi(clientUi);
-            	javafx.scene.Node source = (javafx.scene.Node) event.getSource();
+
+            if (clientUi != null) {
+                setClientUi(clientUi);
+                javafx.scene.Node source = (javafx.scene.Node) event.getSource();
                 Stage stage = (Stage) source.getScene().getWindow();
-            	setStage(stage);
+                setStage(stage);
                 // הערה: כדאי להוסיף בדיקה ב-ClientUi אם החיבור לשרת באמת הצליח
-                
+
                 lblStatus.setText("Login succeeded!");
 
                 // 2. מעבר למסך הבא באמצעות הנביגטור והעברת ה-ClientUi
-               super.loadScreen("navigation/SelectionScreen",event,clientUi);
-                
-            }
-            else {
+                super.loadScreen("navigation/SelectionScreen", event, clientUi);
+
+            } else {
                 lblStatus.setText("Login failed (clientUi is null)");
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
             lblStatus.setText("Login failed: " + e.getMessage());
         }
     }
 
+    //
+    // public ClientUi getClientUi() {
+    // return clientUi;
+    // }
 
-//  
-//    public ClientUi getClientUi() {
-//        return clientUi;
-//    }
+    @FXML
+    private void onRecoverCode(ActionEvent event) {
+        try {
+            lblStatus.setText("Code Recovery Initiated...");
+            lblStatus.setStyle("-fx-text-fill: #2ecc71;"); // Green
+        } catch (Exception e) {
+            lblStatus.setText("Recovery Failed: " + e.getMessage());
+        }
+    }
 }
-

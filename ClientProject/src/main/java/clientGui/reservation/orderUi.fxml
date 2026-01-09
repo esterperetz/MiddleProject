@@ -12,6 +12,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.control.DatePicker?>
 
+
 <AnchorPane prefHeight="600.0" prefWidth="1100.0"
 	styleClass="main-background" stylesheets="@../reservation/orderUi.css"
 	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -20,12 +21,13 @@
 	<children>
 		<VBox spacing="20.0" AnchorPane.bottomAnchor="0.0"
 			AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-			AnchorPane.topAnchor="0.0">
+			AnchorPane.topAnchor="0.0" alignment="CENTER">
 			<padding>
 				<Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
 			</padding>
 			<children>
-
+            
+            <VBox spacing="15.0" styleClass="glass-pane" VBox.vgrow="ALWAYS">
 				<BorderPane>
 					<left>
 						<Button graphicTextGap="10.0" mnemonicParsing="false"
@@ -35,27 +37,26 @@
 					<center>
 						<Label styleClass="header-label" text="Order Management"
 							BorderPane.alignment="CENTER">
-							<font>
-								<Font name="System Bold" size="24.0" />
-							</font>
 						</Label>
 					</center>
 					<right>
 						<HBox prefWidth="80.0" BorderPane.alignment="CENTER" />
 					</right>
 				</BorderPane>
+                
 				<HBox alignment="CENTER_LEFT" spacing="15.0">
 					<children>
-						<Label text="Filter by Date:" style="-fx-font-weight: bold;" />
+						<Label text="Filter by Date:" style="-fx-font-weight: bold; -fx-text-fill: #bdc3c7;" />
 						<DatePicker fx:id="filterDatePicker"
 							promptText="Select date to filter" prefWidth="150.0" />
 						<Button text="Clear Filter" onAction="#handleClearFilter"
-							styleClass="action-button" />
+							styleClass="action-button" style="-fx-background-color: #555; -fx-text-fill: white;" />
 					</children>
 					<VBox.margin>
 						<Insets bottom="10.0" />
 					</VBox.margin>
 				</HBox>
+                
 				<TableView fx:id="orderTable" editable="true"
 					VBox.vgrow="ALWAYS">
 					<columns>
@@ -92,7 +93,7 @@
 						<TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
 					</columnResizePolicy>
 					<placeholder>
-						<Label text="No orders to display" />
+						<Label text="No orders to display" style="-fx-text-fill: #7f8c8d;"/>
 					</placeholder>
 				</TableView>
 
@@ -112,6 +113,7 @@
 						<Insets top="10.0" />
 					</VBox.margin>
 				</HBox>
+            </VBox>
 
 			</children>
 		</VBox>
