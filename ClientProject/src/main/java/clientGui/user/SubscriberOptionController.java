@@ -1,6 +1,7 @@
 package clientGui.user;
 
 import javafx.scene.control.Button;
+import javafx.stage.Stage;
 //import java.util.ResourceBundle;
 import clientGui.BaseController;
 import clientGui.ClientUi;
@@ -10,6 +11,7 @@ import clientGui.reservation.GetTableController;
 import clientGui.reservation.ReservationController;
 import entities.CustomerType;
 import javafx.fxml.FXML;
+import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 
@@ -41,6 +43,16 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         // --- Check if the current user is a subscriber ---
         // TODO: Replace 'true' with your actual logic, e.g., ClientUI.currentUser.isSubscriber()
         //isSubscriber = true; 
+    	
+    	Platform.runLater(() -> {
+			if (btnSubscriberSpecial.getScene() != null && btnSubscriberSpecial.getScene().getWindow() != null) {
+				Stage stage = (Stage) btnSubscriberSpecial.getScene().getWindow();
+				stage.setOnCloseRequest(event -> {
+					clientUi.disconnectClient();
+
+				});
+			}
+		});
 
         if (isSubscriber == CustomerType.SUBSCRIBER) {
             // If the user is a subscriber, reveal the button and let it take up space in the layout
