@@ -81,6 +81,10 @@
 
 						<TableColumn fx:id="colCustomerName"
 							text="Customer Name" />
+
+						<TableColumn fx:id="colCustomerPhone"
+							text="Phone Number" />
+						<TableColumn fx:id="colCustomerEmail" text="Email" />
 					</columns>
 
 					<columnResizePolicy>
