@@ -13,6 +13,7 @@ public class ServerController extends AbstractServer {
 	private final OrderCleanupThread cleanupThread;
 	private final WaitingListCheckThread waitingListThread;
 	private final ReminderThread reminderThread;
+	private final MonthlyReportThread monthlyReportThread;
 	
 	public ServerController(int port, ServerViewController view) {
 		super(port);
@@ -22,10 +23,12 @@ public class ServerController extends AbstractServer {
 		this.cleanupThread = new OrderCleanupThread();
 		this.waitingListThread = new WaitingListCheckThread();
 		this.reminderThread = new ReminderThread();
+		this.monthlyReportThread=new MonthlyReportThread();
 		this.cleanupThread.start();
 		this.waitingListThread.start();
 		this.reminderThread.start();
-		view.log("Background threads (Cleanup, WaitingList, Reminder) initialized and started.");
+		this.monthlyReportThread.start();
+		view.log("Background threads (Cleanup, WaitingList, Reminder,monthlyReport) initialized and started.");
 	}
 
 	/**
@@ -87,6 +90,8 @@ public class ServerController extends AbstractServer {
 			waitingListThread.stopThread();
 		if (reminderThread != null)
 			reminderThread.stopThread();
+		if (monthlyReportThread != null) 
+			monthlyReportThread.stopThread();
 		/// need to send all clients from here
 		Router.sendToAllClients("quit");
 		DBConnection.getInstance().closeConnection();
