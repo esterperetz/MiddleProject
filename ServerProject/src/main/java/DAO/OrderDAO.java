@@ -485,4 +485,58 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
+	//to manager reports 
+	public List<Order> getFinishedOrdersByMonth(int month, int year) throws SQLException {
+	    // 1. וודא שה-SQL שולף את השם (c.customer_name)
+	    String sql = "SELECT o.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
+	                 "FROM `order` o " +
+	                 "LEFT JOIN Customer c ON o.customer_id = c.customer_id " +
+	                 "WHERE (MONTH(o.order_date) = ? AND YEAR(o.order_date) = ?) " +
+	                 "AND o.order_status IN ('PAID', 'CANCELLED') " + 
+	                 "ORDER BY o.order_date ASC";
+
+	    Connection con = DBConnection.getInstance().getConnection();
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        stmt.setInt(1, month);
+	        stmt.setInt(2, year);
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            List<Order> list = new ArrayList<>();
+	            while (rs.next()) {
+	                // המרה בסיסית של נתוני ההזמנה
+	                Order order = mapResultSetToOrder(rs);
+	                
+	                // --- התיקון: מילוי פרטי הלקוח מתוך ה-JOIN ---
+	                
+	                // וודא שיש אובייקט לקוח (בדרך כלל נוצר ב-mapResultSetToOrder אם יש customer_id)
+	                if (order.getCustomer() == null) {
+	                    order.setCustomer(new entities.Customer());
+	                }
+
+	                // הגדרת השם ידנית מהתוצאה של ה-SQL
+	                String nameFromDB = rs.getString("customer_name");
+	                if (nameFromDB != null) {
+	                    order.getCustomer().setName(nameFromDB); // <--- זו השורה שחסרה לך!
+	                } else {
+	                    order.getCustomer().setName("Guest"); // במקרה שאין שם
+	                }
+
+	                // מילוי שאר הפרטים אם הם חסרים בדוח
+	                order.getCustomer().setEmail(rs.getString("email"));
+	                
+	                // טיפול בסוג לקוח (כפי שכבר עשינו)
+	                if (rs.getString("customer_type") != null) {
+	                    try {
+	                        order.getCustomer().setType(entities.CustomerType.valueOf(rs.getString("customer_type")));
+	                    } catch (Exception e) {}
+	                }
+
+	                list.add(order);
+	            }
+	            return list;
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	}
 }
