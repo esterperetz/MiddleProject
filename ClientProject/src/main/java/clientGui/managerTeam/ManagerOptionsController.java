@@ -6,11 +6,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.reservation.OrderUi_controller;
-import clientGui.reservation.ReservationController;
 import clientGui.reservation.WaitingListController;
 import clientGui.user.RegisterSubscriberController;
 import entities.Employee;
@@ -310,7 +308,12 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	void goToWaitingListBtn(ActionEvent event) {
 
 		WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
-		waiting_list.initData(emp,this.clientUi, this.isManager);
+		if (waiting_list != null) {
+			waiting_list.initData(emp,this.clientUi, this.isManager);
+
+		} else {
+			System.err.println("Failed to load WaitingList. Check FXML path name.");
+		}
 	}
 
 	/**
@@ -318,18 +321,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	 */
 	@FXML
 	void goToOrderDetailsBtn(ActionEvent event) {
-		// Passing nulls as this is a general view, not specific to one order yet
-		// BaseController controller =
-		// MainNavigator.loadScreen("reservation/ReservationScreen", clientUi);
-		// ((ReservationController) controller).setData(true, null, null, null);
-		// clientGui.reservation.OrderUi_controller controller =
-		// MainNavigator.loadScreen("reservation/orderUi", clientUi);
-//		clientUi.removeListener(this);
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
 		if (controller != null) {
-			////////////////////////////////////////////////////////////// check if button
-			////////////////////////////////////////////////////////////// disapear
-			// controller.initData(clientUi, clientUi.getIp());
+		
 			controller.initData(emp,this.clientUi, this.isManager);
 
 		} else {
