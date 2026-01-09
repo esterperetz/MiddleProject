@@ -30,20 +30,10 @@ public class ClientUi {
      *
      * @param ip The server IP address.
      */
-    public ClientUi(String ip) {
-    	try {
-			chatClient = new ChatClient(ip, 5555, this);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-			String header="Error";
-			String content="Connection failed, try a different ip";
-			Alarm.showAlertWithException(header, content,Alert.AlertType.ERROR, e);
-			 //Alert alert = new Alert(Alert.AlertType.ERROR);
-		     //alert.setTitle("Error");
-		     //alert.setContentText("Connection failed, try a different ip");
-		     //alert.showAndWait();
-		}
+    public ClientUi(String ip) throws IOException {  //ADDED IOEXCE
+    	
+    	chatClient = new ChatClient(ip, 5555, this);
+		
     	this.ip = ip;
     	this.listeners = new ArrayList<>();
 //    	clientGui.reservation.OrderUi_controller controller = new clientGui.reservation.OrderUi_controller();
