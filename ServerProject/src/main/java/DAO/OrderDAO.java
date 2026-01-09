@@ -270,13 +270,16 @@ public class OrderDAO {
 			}
 		}
 	}
-	public Order getOrderByConfirmationCodeApproved(int code,int customerId) throws SQLException {
+	public Order getOrderByConfirmationCodeApproved(int code,Integer customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE (customer_id = ? OR confirmation_code = ?) " + "AND order_status = 'APPROVED' "
 				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {
-			
-				stmt.setInt(1, customerId);
+				if(customerId != null)
+					stmt.setInt(1, customerId);
+				else
+					stmt.setInt(1, Types.INTEGER);
+				
 				stmt.setInt(2, code);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {

@@ -62,7 +62,7 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 		try {
 			
-			tableLogic.getTable(Integer.parseInt(conformationCode),customer.getCustomerId());
+			tableLogic.getTable(Integer.parseInt(conformationCode),subscriberCode);
 			System.out.println(" GOOD From check table : " + customer.getCustomerId());
 		}catch(Exception e) {
 			System.out.println(" ERROR From check table : " + customer);
