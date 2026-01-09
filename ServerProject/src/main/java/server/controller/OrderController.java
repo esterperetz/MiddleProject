@@ -53,52 +53,52 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-			case GET_ALL:
-				handleGetAll(req, client);
-				break;
-			case GET_ALL_BY_SUBSCRIBER_ID:
-				handleGetAllBySubscriberId(req, client);
-				break;
-			case GET_BY_ID:
-				handleGetById(req, client);
-				break;
-			case GET_AVAILABLE_TIME:
-				checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
-						((Order) req.getPayload()).getNumberOfGuests());
-				break;
-			case GET_BY_CODE:
-				handleGetByCode(req, client);
-				break;
-			case CREATE:
-				handleCreate(req, client);
-				break;
-			case UPDATE:
-				handleUpdate(req, client);
-				break;
-			case UPDATE_CHECKOUT:
-				handelUpdateCheckOut(req,client);
-				break;
-			case DELETE:
-				handleDelete(req, client);
-				break;
-			case CHECK_AVAILABILITY:
-				handleCheckAvailability(req, client);
-				break;
-			case IDENTIFY_AT_TERMINAL:
-				handleIdentifyAtTerminal(req, client);
-				break;
-			case PAY_BILL:
-				handlePayBill(req, client);
-				break;
-			case SEND_EMAIL:
-				handleSendEmail(req, client);
-				break;
-			case RESEND_CONFIRMATION:
-				handleResendConfirmation(req, client);
-				break;
-			default:
-				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
-						"Unsupported action: " + req.getAction(), null));
+				case GET_ALL:
+					handleGetAll(req, client);
+					break;
+				case GET_ALL_BY_SUBSCRIBER_ID:
+					handleGetAllBySubscriberId(req, client);
+					break;
+				case GET_BY_ID:
+					handleGetById(req, client);
+					break;
+				case GET_AVAILABLE_TIME:
+					checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
+							((Order) req.getPayload()).getNumberOfGuests());
+					break;
+				case GET_BY_CODE:
+					handleGetByCode(req, client);
+					break;
+				case CREATE:
+					handleCreate(req, client);
+					break;
+				case UPDATE:
+					handleUpdate(req, client);
+					break;
+				case UPDATE_CHECKOUT:
+					handelUpdateCheckOut(req, client);
+					break;
+				case DELETE:
+					handleDelete(req, client);
+					break;
+				case CHECK_AVAILABILITY:
+					handleCheckAvailability(req, client);
+					break;
+				case IDENTIFY_AT_TERMINAL:
+					handleIdentifyAtTerminal(req, client);
+					break;
+				case PAY_BILL:
+					handlePayBill(req, client);
+					break;
+				case SEND_EMAIL:
+					handleSendEmail(req, client);
+					break;
+				case RESEND_CONFIRMATION:
+					handleResendConfirmation(req, client);
+					break;
+				default:
+					client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+							"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -114,16 +114,16 @@ public class OrderController {
 		}
 		Customer customer = new Customer();
 		customer.setCustomerId(0);
-		if((int) req.getId() != 0) {
+		if ((int) req.getId() != 0) {
 			customer = customerDao.getCustomerBySubscriberCode((int) req.getId());
-			if(customer == null) {
+			if (customer == null) {
 				client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
 						"ERROR CHECKOUT :CANOT find coustomerId by subscriber code ", null));
 				return;
 			}
 		}
-	
-		Order order = orderdao.getOrderByConfirmationCodeSeated((int) req.getPayload() ,customer.getCustomerId());
+
+		Order order = orderdao.getOrderByConfirmationCodeSeated((int) req.getPayload(), customer.getCustomerId());
 		if (order == null)
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.ERROR,
 					"Error: order have not found.", null));
@@ -174,109 +174,104 @@ public class OrderController {
 
 	private boolean handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Object payload = req.getPayload();
-	    Order order = null;
-	    Customer guestData = null;
+		Order order = null;
+		Customer guestData = null;
 
-	    if (payload instanceof Map) {
-	        @SuppressWarnings("unchecked")
-	        Map<String, Object> data = (Map<String, Object>) payload;
-	        order = (Order) data.get("order");
-	        guestData = (Customer) data.get("guest");
-	    } else if (payload instanceof Order) {
-	        order = (Order) payload;
-	        guestData = order.getCustomer(); 
-	    } 
+		if (payload instanceof Map) {
+			@SuppressWarnings("unchecked")
+			Map<String, Object> data = (Map<String, Object>) payload;
+			order = (Order) data.get("order");
+			guestData = (Customer) data.get("guest");
+		} else if (payload instanceof Order) {
+			order = (Order) payload;
+			guestData = order.getCustomer();
+		}
 
-	 
+		int guests = order.getNumberOfGuests();
+		int minGuestsThreshold = (guests > 5) ? 6 : 1;
+		int totalTables = tabledao.countSuitableTables(guests);
+		int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
 
-	    int guests = order.getNumberOfGuests();
-	    int minGuestsThreshold = (guests > 5) ? 6 : 1;
-	    int totalTables = tabledao.countSuitableTables(guests);
-	    int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
+		if (totalTables - conflictingOrders <= 0) {
+			List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
+					"The restaurant is full at this time.", alternatives));
+			return false;
+		}
 
-	    if (totalTables - conflictingOrders <= 0) {
-	        List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
-	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
-	                "The restaurant is full at this time.", alternatives));
-	        return false;
-	    }
+		Customer finalCustomer = null;
+		Integer subCode = order.getCustomer().getSubscriberCode();
 
-	    Customer finalCustomer = null;
-	    Integer subCode = order.getCustomer().getSubscriberCode();
-	    
-	    if ((subCode == null || subCode == 0) && guestData != null) {
-	        subCode = guestData.getSubscriberCode();
-	    }
+		if ((subCode == null || subCode == 0) && guestData != null) {
+			subCode = guestData.getSubscriberCode();
+		}
 
-	    try {
-	        if (subCode != null && subCode > 0) {
-	            finalCustomer = customerDao.getCustomerBySubscriberCode(subCode);
-	            
-	            if (finalCustomer == null) {
-	                client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, 
-	                        Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
-	                return false;
-	            }
-	        } 
-	        else {
-	        	Customer dataToUse;
+		try {
+			if (subCode != null && subCode > 0) {
+				finalCustomer = customerDao.getCustomerBySubscriberCode(subCode);
 
-	        	if (guestData != null) {
-	        	    dataToUse = guestData;
-	        	} else {
-	        	    dataToUse = order.getCustomer();
-	        	}
-	            finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
+				if (finalCustomer == null) {
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+							Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
+					return false;
+				}
+			} else {
+				Customer dataToUse;
 
-	            if (finalCustomer == null) {
-	                dataToUse.setType(CustomerType.REGULAR);
-	                customerDao.createCustomer(dataToUse); 
-	                
-	                finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
-	            }
-	        }
+				if (guestData != null) {
+					dataToUse = guestData;
+				} else {
+					dataToUse = order.getCustomer();
+				}
+				finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 
-	        if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
-	            throw new SQLException("Failed to resolve customer ID.");
-	        }
+				if (finalCustomer == null) {
+					dataToUse.setType(CustomerType.REGULAR);
+					customerDao.createCustomer(dataToUse);
 
-	        order.getCustomer().setCustomerId(finalCustomer.getCustomerId());
-	        
-	        order.getCustomer().setName(finalCustomer.getName());
-	        order.getCustomer().setPhoneNumber(finalCustomer.getPhoneNumber());
-	        order.getCustomer().setEmail(finalCustomer.getEmail());
+					finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
+				}
+			}
 
-	        order.setConfirmationCode(generateUniqueConfirmationCode());
-	        order.setOrderStatus(Order.OrderStatus.APPROVED);
+			if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
+				throw new SQLException("Failed to resolve customer ID.");
+			}
 
-	        boolean success = orderdao.createOrder(order);
+			order.getCustomer().setCustomerId(finalCustomer.getCustomerId());
 
-	        if (success) {
-	        	System.out.println(finalCustomer.toString());
-	        	System.out.println(order.toString());
-	        	EmailService.sendConfirmation(finalCustomer, order);
-	        	System.out.println(EmailService.getContent());
-	        	System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
-	        	order.setCustomer(finalCustomer);
-	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-	                    "Order created successfully!", order));
-	            return true;
-	        } else {
-	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                    Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
-	            return false;
-	        }
+			order.getCustomer().setName(finalCustomer.getName());
+			order.getCustomer().setPhoneNumber(finalCustomer.getPhoneNumber());
+			order.getCustomer().setEmail(finalCustomer.getEmail());
 
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	        client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-	                Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
-	        return false;
-	    }
+			order.setConfirmationCode(generateUniqueConfirmationCode());
+			order.setOrderStatus(Order.OrderStatus.APPROVED);
+
+			boolean success = orderdao.createOrder(order);
+
+			if (success) {
+				System.out.println(finalCustomer.toString());
+				System.out.println(order.toString());
+				EmailService.sendConfirmation(finalCustomer, order);
+				System.out.println(EmailService.getContent());
+				System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
+				order.setCustomer(finalCustomer);
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
+						"Order created successfully!", order));
+				return true;
+			} else {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+						Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
+				return false;
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+					Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
+			return false;
+		}
 	}
-	
-	
-	
+
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
@@ -293,16 +288,17 @@ public class OrderController {
 
 	private void handelUpdateCheckOut(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order order = (Order) req.getPayload();
-		boolean updateOrder = orderdao.updateOrderCheckOut(order.getOrderNumber(),order.getTotalPrice(),Order.OrderStatus.PAID);
+		boolean updateOrder = orderdao.updateOrderCheckOut(order.getOrderNumber(), order.getTotalPrice(),
+				Order.OrderStatus.PAID);
 		if (!updateOrder) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
 					"Error: CANOT update order.", null));
 			/// need to get email from customer table
-			
+
 			return;
 		}
-		boolean updateTable =  tabledao.updateTableStatus(order.getTableNumber(),0);
-		if(!updateTable) {
+		boolean updateTable = tabledao.updateTableStatus(order.getTableNumber(), 0);
+		if (!updateTable) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
 					"Error: CANOT update table.", null));
 			/// need to get email from customer table
@@ -311,11 +307,9 @@ public class OrderController {
 		client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 				"Order updated.", order));
 		sendOrdersToAllClients();
-		
-	   
-	
-	
+
 	}
+
 	private void handleDelete(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null)
 			return;
@@ -374,7 +368,7 @@ public class OrderController {
 			}
 
 		} catch (SQLException e) {
-//			e.printStackTrace();
+			// e.printStackTrace();
 			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 					Response.ResponseStatus.DATABASE_ERROR, "Database error checking availability.", null));
 			return false;
@@ -392,7 +386,7 @@ public class OrderController {
 
 		if (dayHours == null || dayHours.isClosed()) {
 			System.out.println("Restaurant is closed.");
-//	        client.sendToClient(new Message(MessageType.SHOW_AVAILABILITY, options));
+			// client.sendToClient(new Message(MessageType.SHOW_AVAILABILITY, options));
 			return null;
 		}
 
@@ -414,8 +408,9 @@ public class OrderController {
 		}
 		System.out.println(options);
 		return options;
-//	    client.sendToClient(new Response(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME,
-//				Response.ResponseStatus.SUCCESS, "list of time", options));
+		// client.sendToClient(new Response(ResourceType.ORDER,
+		// ActionType.GET_AVAILABLE_TIME,
+		// Response.ResponseStatus.SUCCESS, "list of time", options));
 	}
 
 	public List<TimeSlotStatus> checkAvailability(Date date, int guests) throws SQLException, IOException {
@@ -564,7 +559,8 @@ public class OrderController {
 
 			// Construct a temporary Customer object for EmailService
 			// We can use the data fetched by the join in OrderDAO
-			Customer tempCustomer = new Customer(order.getCustomer().getCustomerId(), order.getCustomer().getName(), order.getCustomer().getPhoneNumber(),
+			Customer tempCustomer = new Customer(order.getCustomer().getCustomerId(), order.getCustomer().getName(),
+					order.getCustomer().getPhoneNumber(),
 					order.getCustomer().getEmail());
 
 			// Send Email with NEW code
@@ -579,13 +575,9 @@ public class OrderController {
 	}
 
 	private void sendOrdersToAllClients() {
-		try {
-			List<Order> orders = orderdao.getAllOrders();
-			Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
-					Response.ResponseStatus.SUCCESS, null, orders));
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
+		List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();
+		Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
+				Response.ResponseStatus.SUCCESS, null, orders));
 	}
 
 	/**

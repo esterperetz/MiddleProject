@@ -88,6 +88,11 @@
 									prefWidth="198.0" styleClass="dashboard-tile-button"
 									text="Register Subscriber" wrapText="true" />
 
+								<Button maxWidth="Infinity"
+									onAction="#goToTableManagementBtn" prefHeight="5.0"
+									prefWidth="198.0" styleClass="dashboard-tile-button"
+									text="Manage Tables" wrapText="true" />
+
 								<Button fx:id="btnViewReports" managed="false"
 									maxWidth="Infinity" onAction="#goToReportsBtn" prefHeight="5.0"
 									prefWidth="198.0"
