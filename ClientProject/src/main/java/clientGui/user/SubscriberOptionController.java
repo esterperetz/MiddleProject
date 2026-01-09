@@ -9,6 +9,7 @@ import clientGui.navigation.MainNavigator;
 import clientGui.reservation.CheckOutController;
 import clientGui.reservation.GetTableController;
 import clientGui.reservation.ReservationController;
+import entities.Customer;
 import entities.CustomerType;
 import javafx.fxml.FXML;
 import javafx.application.Platform;
@@ -28,8 +29,11 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	// Link to the special button in the FXML file
 	@FXML
     private Button btnSubscriberSpecial;
-	private Integer customerId;
+	private Integer subId;
+//	private Integer customerId;
 	private int tableId; //check how to initialize it
+
+	private Customer customer;
 	
 	
 	/**
@@ -61,11 +65,12 @@ public class SubscriberOptionController extends MainNavigator implements Initial
             btnSubscriberSpecial.setManaged(true);
         }
     }
-    public void initData(ClientUi clientUi, CustomerType CustomerStatus, Integer cusId) {
+    public void initData(ClientUi clientUi, CustomerType CustomerStatus, Integer subId,Customer customer) {
     	this.clientUi = clientUi;
         this.isSubscriber = CustomerStatus;
-        this.customerId = cusId;
-        System.out.println("Loaded options for subscriber: " + cusId);
+        this.subId = subId;
+        this.customer = customer;
+        System.out.println("Loaded options for subscriber: " + subId);
         // 1. רישום לקבלת הודעות (אם צריך בדף זה)
         /*
         if (this.client_ui != null) {
@@ -111,7 +116,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 	    //if (isSubscriber) {
 //	        controller.setData(isSubscriber, "", "", ""); 
 	    	if(controller!= null)	
-	    		controller.initData(clientUi, this.isSubscriber, customerId);
+	    		controller.initData(clientUi, this.isSubscriber, subId,customer);
 	    	else
 	    		System.out.println("Error: moving screen ReservationController");
 	    		
@@ -124,7 +129,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		GetTableController getTableController =super.loadScreen("reservation/RecieveTable",event,clientUi);
 		//if(isSubscriber)	
 		if(getTableController!=null)
-			getTableController.initData(clientUi, this.isSubscriber, customerId);
+			getTableController.initData(clientUi, this.isSubscriber,subId,customer);
 		else
 			System.out.println("Error: moving to GetTableController");
     	//else
@@ -143,7 +148,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         
         SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory",event,clientUi);
         //if(isSubscriber)	
-        	subHistoryController.initData(customerId,this.isSubscriber);
+        	subHistoryController.initData(subId,this.isSubscriber,customer);
     	//else
     		//subHistoryController.initData(subscriberId,false);
         //subHistoryController.initData(subscriberId);
@@ -154,7 +159,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     void CheckOutActionBtn(ActionEvent event) {
     	CheckOutController checkOutController = super.loadScreen("reservation/CheckOutScreen",event,clientUi);
     	 //if(isSubscriber)	
-    		 checkOutController.initData(customerId,this.isSubscriber, tableId);
+    		 checkOutController.initData(subId,this.isSubscriber, tableId,customer);
      	//else
      		//checkOutController.initData(subscriberId,false, tableId);
     	//checkOutController.initData(subscriberId, tableId);

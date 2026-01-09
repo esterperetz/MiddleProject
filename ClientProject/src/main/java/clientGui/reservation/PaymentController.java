@@ -8,6 +8,7 @@ import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
 import entities.Alarm;
+import entities.Customer;
 import entities.CustomerType;
 import entities.Order;
 import entities.Order.OrderStatus;
@@ -43,6 +44,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	private Order order;
 	private double totalPrice;
 	private OrderLogic orderLogic;
+	private Customer customer;
 	
 	
 	@Override
@@ -62,7 +64,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		this.tableId = tableId;
 	}
 
-	public void initData(Order order,double originalTotal, int subId, CustomerType isSubscriber, int tableId) {
+	public void initData(Order order,double originalTotal, int subId, CustomerType isSubscriber, int tableId,Customer customer) {
 		this.tableId = tableId;
 		this.subscriberId = subId;
 		// itemsList.setItems(items);
@@ -70,6 +72,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		this.order = order;
 		this.totalPrice = originalTotal;
 		this.orderLogic = new OrderLogic(clientUi);
+		this.customer = customer;
 	}
 
 	@FXML
@@ -111,7 +114,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 
 		// if(isSub)
-		controller.initData(clientUi, isSubscriber, subscriberId);
+		controller.initData(clientUi, isSubscriber, subscriberId,customer);
 		// else
 		// controller.initData(clientUi, false, subscriberId);
 
@@ -124,7 +127,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill", event, clientUi);
 		// if(isSub) String orderId, Integer subscriberId, CustomerType customerType, int tableId
-		billController.initData(order, subscriberId, isSubscriber, tableId);
+		billController.initData(order, subscriberId, isSubscriber, tableId,customer);
 		// else
 		// billController.initData(amountToPay, subscriberId ,false, tableId);
 

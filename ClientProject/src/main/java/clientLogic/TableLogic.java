@@ -13,9 +13,9 @@ public class TableLogic {
 		this.client = client;
 	}
 
-	public void getTable(int confomationCode,int subscriberCode) {
+	public void getTable(int confomationCode,int subId ) {
 		
-		Request req = new Request(ResourceType.TABLE, ActionType.GET, subscriberCode, confomationCode);
+		Request req = new Request(ResourceType.TABLE, ActionType.GET, subId, confomationCode);
 		client.sendRequest(req);
 	}
 }

@@ -67,8 +67,13 @@ public class TableController {
 
 	private void handleGetTable(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int conformationCode = (int) req.getPayload();
+
+
 		int subscriberCode = (int) req.getId();
+
 		System.out.println("the code is: ------ " + conformationCode);
+
+
 		Customer customer = new Customer();
 		if (subscriberCode != 0) {
 			customer = customerDAO.getCustomerBySubscriberCode(subscriberCode);
@@ -77,15 +82,10 @@ public class TableController {
 						"CANOT find coustomerId by subscriber code ", null));
 				return;
 			}
+
 		}
 
-		Order order = orderDAO.getOrderByConfirmationCode(conformationCode);
-		if (order == null) {
-			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
-					"CANOT find order with this conformation code", null));
-			return;
-		}
-		 order = orderDAO.getOrderByConfirmationCodeApproved(conformationCode, customer.getCustomerId());
+		Order order = orderDAO.getOrderByConfirmationCodeApproved(conformationCode, customer.getCustomerId());
 		if (order == null) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
 					"You arrived too early", null));
@@ -110,8 +110,9 @@ public class TableController {
 		}
 		client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.SUCCESS,
 				"get tableNumber", tableNumber));
+		}
 
-	}
+	
 
 	private void handleCreate(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Table newTable = (Table) req.getPayload();

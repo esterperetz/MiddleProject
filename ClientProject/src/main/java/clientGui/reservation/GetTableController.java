@@ -8,6 +8,7 @@ import clientGui.user.SubscriberOptionController;
 import clientLogic.TableLogic;
 import entities.ActionType;
 import entities.Alarm;
+import entities.Customer;
 import entities.CustomerType;
 import entities.Response;
 import entities.Response.ResponseStatus;
@@ -31,11 +32,17 @@ public class GetTableController extends MainNavigator implements MessageListener
 	private TableLogic tableLogic;
 	private CustomerType isSubscriber;
 
-	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subCode) {
+	private Customer customer;
+
+//	private Integer cusId;
+
+	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subCode,Customer customer) {
 		this.clientUi = clientUi;
 		this.isSubscriber = isSubscriberStatus;
 		this.subscriberCode = subCode;
 		this.tableLogic = new TableLogic(clientUi);
+		this.customer = customer;
+//		this.cusId = cusId;
 		System.out.println("Loaded options for subscriber: " + subCode);
 	}
 
@@ -53,8 +60,13 @@ public class GetTableController extends MainNavigator implements MessageListener
 			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
 			return;
 		}
-
-		tableLogic.getTable(Integer.parseInt(conformationCode),subscriberCode);
+		try {
+			
+			tableLogic.getTable(Integer.parseInt(conformationCode),subscriberCode);
+			System.out.println(" GOOD From check table : " + customer.getCustomerId());
+		}catch(Exception e) {
+			System.out.println(" ERROR From check table : " + customer);
+		}
 	}
 	
 
@@ -81,7 +93,7 @@ public class GetTableController extends MainNavigator implements MessageListener
 		// MainNavigator.loadScene("user/SubscriberOption");
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 		if (controller != null) {
-			controller.initData(clientUi, isSubscriber, subscriberCode);
+			controller.initData(clientUi, isSubscriber, subscriberCode,customer);
 		} else {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}

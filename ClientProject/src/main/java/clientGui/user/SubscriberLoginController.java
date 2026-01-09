@@ -5,6 +5,7 @@ import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientLogic.UserLogic;
 import entities.Alarm;
+import entities.Customer;
 import entities.CustomerType;
 import entities.Response;
 import javafx.application.Platform;
@@ -21,6 +22,9 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	private TextField SubscriberCode;
 	private ActionEvent currentEvent;
 	private int lastEnteredSubCode;
+	private CustomerType isSubscriber;
+	private Integer subId;
+	private Customer customer;
 
 	@FXML
 	public void initialize() {
@@ -72,7 +76,7 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
 									currentEvent, clientUi);
 							if (controller != null) {
-								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode);
+								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode,customer);
 
 							}
 						} else {
@@ -97,6 +101,13 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 		// וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
 		super.loadScreen("navigation/SelectionScreen", event, clientUi);
+	}
+
+	public void initData(ClientUi clientUi, CustomerType isSubscriber, Integer subId,Customer customer) {
+		this.isSubscriber =  isSubscriber;
+		this.subId = subId;
+		this.customer = customer;
+		
 	}
 
 }

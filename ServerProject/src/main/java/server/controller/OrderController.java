@@ -112,13 +112,18 @@ public class OrderController {
 					"Error: ID missing.", null));
 			return;
 		}
-		Customer customer = customerDao.getCustomerBySubscriberCode((int) req.getId());
-		if(customer == null) {
-			client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
-					"CANOT find coustomerId by subscriber code ", null));
-			return;
+		Customer customer = new Customer();
+		customer.setCustomerId(0);
+		if((int) req.getId() != 0) {
+			customer = customerDao.getCustomerBySubscriberCode((int) req.getId());
+			if(customer == null) {
+				client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET, Response.ResponseStatus.ERROR,
+						"ERROR CHECKOUT :CANOT find coustomerId by subscriber code ", null));
+				return;
+			}
 		}
-		Order order = orderdao.getOrderByConfirmationCodeSeated((int) req.getPayload(),customer.getCustomerId());
+	
+		Order order = orderdao.getOrderByConfirmationCodeSeated((int) req.getPayload() ,customer.getCustomerId());
 		if (order == null)
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_CODE, Response.ResponseStatus.ERROR,
 					"Error: order have not found.", null));
@@ -251,6 +256,8 @@ public class OrderController {
 	        	System.out.println(order.toString());
 	        	EmailService.sendConfirmation(finalCustomer, order);
 	        	System.out.println(EmailService.getContent());
+	        	System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
+	        	order.setCustomer(finalCustomer);
 	            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 	                    "Order created successfully!", order));
 	            return true;
