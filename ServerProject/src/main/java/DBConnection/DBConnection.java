@@ -8,7 +8,8 @@ import java.sql.Statement;
 public class DBConnection {
 
 	private static DBConnection instance;
-	private Connection connection;
+	private java.util.concurrent.BlockingQueue<Connection> connectionPool;
+	private static final int POOL_SIZE = 10;
 
 	private static String dbUrl;
 	private static String dbUser;
@@ -16,12 +17,13 @@ public class DBConnection {
 	private static boolean conn_established = false;
 
 	private DBConnection() {
+		connectionPool = new java.util.concurrent.LinkedBlockingQueue<>(POOL_SIZE);
 	}
 
 	public static synchronized void initializeConnection(String host, String schema, String user, String pass)
 			throws SQLException, ClassNotFoundException {
-		if (instance != null && conn_established == true) {
-			System.out.println("DBConnection already initialized. Re-initialization ignored.");
+		if (instance != null && conn_established) {
+			System.out.println("DBConnection already initialized.");
 			return;
 		}
 
@@ -29,19 +31,37 @@ public class DBConnection {
 		dbUrl = url;
 		dbUser = user;
 		dbPass = pass;
-		instance = getInstance();
 
-		// Class.forName("com.mysql.cj.jdbc.Driver");
-		instance.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
-		createTableSubscriber(instance.connection);
-		createTableEmployee(instance.connection);
-		createTableTables(instance.connection);
-		createTableOrder(instance.connection);
-		createTableWaitingList(instance.connection);
-		createTableOpeningHours(instance.connection); 
-		insertIntoTableOpeningHours(instance.connection);
-		conn_established = true;
-		System.out.println("Single persistent DB Connection established successfully.");
+		if (instance == null) {
+			instance = new DBConnection();
+		}
+
+		// Initialize pool with connections
+		try {
+			for (int i = 0; i < POOL_SIZE; i++) {
+				Connection con = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+				if (!instance.connectionPool.offer(con)) {
+					con.close();
+				}
+			}
+
+			// Use a temporary connection for table creation to avoid draining the pool
+			// immediately
+			try (Connection setupCon = DriverManager.getConnection(dbUrl, dbUser, dbPass)) {
+				createTableSubscriber(setupCon);
+				createTableEmployee(setupCon);
+				createTableTables(setupCon);
+				createTableOrder(setupCon);
+				createTableWaitingList(setupCon);
+				createTableOpeningHours(setupCon);
+				insertIntoTableOpeningHours(setupCon);
+			}
+
+			conn_established = true;
+			System.out.println("DB Connection Pool initialized with " + POOL_SIZE + " connections.");
+		} catch (SQLException e) {
+			throw new SQLException("Failed to initialize connection pool", e);
+		}
 	}
 
 	public static synchronized DBConnection getInstance() {
@@ -51,29 +71,55 @@ public class DBConnection {
 		return instance;
 	}
 
-	public synchronized Connection getConnection() throws SQLException {
-		if (connection == null || connection.isClosed() || !connection.isValid(10)) {
-			System.out.println("Connection is stale or closed. Re-establishing connection.");
+	public Connection getConnection() throws SQLException {
+		try {
+			Connection con = connectionPool.poll(5, java.util.concurrent.TimeUnit.SECONDS);
+			if (con == null) {
+				throw new SQLException("Database connection timeout - pool is exhausted.");
+			}
+
+			if (!con.isValid(2)) {
+				System.out.println("Connection INVALID. Replacing...");
+				try {
+					con.close();
+				} catch (Exception ignored) {
+				}
+				con = DriverManager.getConnection(dbUrl, dbUser, dbPass);
+			}
+			return con;
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new SQLException("Interrupted while waiting for connection", e);
+		}
+	}
+
+	public void releaseConnection(Connection con) {
+		if (con != null) {
 			try {
-				this.connection = DriverManager.getConnection(dbUrl, dbUser, dbPass);
-				System.out.println("Connection re-established successfully.");
+				if (!con.isClosed()) {
+					boolean returned = connectionPool.offer(con);
+					if (!returned) {
+						// Pool is full (shouldn't happen if logic is correct), close it
+						con.close();
+					}
+				}
 			} catch (SQLException e) {
-				System.err.println("Could not re-establish DB connection.");
-				throw e;
+				e.printStackTrace();
 			}
 		}
-		return connection;
 	}
 
 	public void closeConnection() {
-		if (connection != null) {
+		// Shutdown pool
+		Connection con;
+		while ((con = connectionPool.poll()) != null) {
 			try {
-				connection.close();
-				System.out.println("Single persistent DB connection closed.");
+				con.close();
 			} catch (SQLException e) {
-				System.err.println("Error closing DB connection: " + e.getMessage());
+				e.printStackTrace();
 			}
 		}
+		System.out.println("DB Connection pool closed.");
 	}
 
 	public static void createTableSubscriber(Connection con1) {
@@ -195,27 +241,26 @@ public class DBConnection {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public static void insertIntoTableOpeningHours(Connection con) {
 		Statement stmt;
 		try {
 			stmt = con.createStatement();
 
-	
 			String checkSql = "SELECT COUNT(*) FROM opening_hours";
 			var rs = stmt.executeQuery(checkSql);
-			
+
 			if (rs.next()) {
 				int rowCount = rs.getInt(1);
 				if (rowCount > 0) {
 					// אם יש כבר שורות, אנחנו לא עושים כלום ויוצאים
 					System.out.println("Opening hours data already exists. Skipping insert.");
-					return; 
+					return;
 				}
 			}
 
-			
-			String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES " +
+			String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES "
+					+
 					"(DAYOFWEEK(NOW()), CURDATE(), CURTIME(), '17:00:00', 0), " +
 					"(DAYOFWEEK(NOW()), CURDATE(), '17:00:00', '23:59:59', 0)";
 

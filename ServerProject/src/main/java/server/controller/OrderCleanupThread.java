@@ -44,7 +44,7 @@ public class OrderCleanupThread extends Thread {
 
             for (Order order : activeOrders) {
                 long orderTime = order.getOrderDate().getTime();
-                long diffInMinutes = (orderTime - now) / 60000; 
+                long diffInMinutes = (now - orderTime) / 60000; 
                 
                 System.out.println("DEBUG: Checking Order #" + order.getOrderNumber() + 
                         " | OrderTime: " + order.getOrderDate() + 

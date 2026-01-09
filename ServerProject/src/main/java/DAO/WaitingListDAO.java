@@ -29,145 +29,174 @@ public class WaitingListDAO {
             return list;
         } finally {
             closeResources(rs, stmt);
+            DBConnection.getInstance().releaseConnection(con);
         }
     }
+
     public List<Map<String, Object>> getAllWaitingListWithCustomers() {
-		List<Map<String, Object>> resultList = new ArrayList<>();
+        List<Map<String, Object>> resultList = new ArrayList<>();
 
-		String sql = "SELECT " + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
-				+ " w.waiting_id, w.customer_id, w.enter_time, " + " w.number_of_guests, w.confirmation_code "
-				+ "FROM Customer c " + "JOIN waiting_list w ON c.customer_id = w.customer_id";
+        String sql = "SELECT " + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
+                + " w.waiting_id, w.customer_id, w.enter_time, " + " w.number_of_guests, w.confirmation_code "
+                + "FROM Customer c " + "JOIN waiting_list w ON c.customer_id = w.customer_id";
 
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql);
-				ResultSet rs = stmt.executeQuery()) {
+        Connection con = null;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()) {
 
-			while (rs.next()) {
-				Map<String, Object> row = new HashMap<>();
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
 
-				row.put("customer_name", rs.getString("customer_name"));
-				row.put("email", rs.getString("email"));
-				row.put("phone_number", rs.getString("phone_number"));
-				row.put("subscriber_code", rs.getObject("subscriber_code"));
+                    row.put("customer_name", rs.getString("customer_name"));
+                    row.put("email", rs.getString("email"));
+                    row.put("phone_number", rs.getString("phone_number"));
+                    row.put("subscriber_code", rs.getObject("subscriber_code"));
 
-				row.put("waiting_id", rs.getInt("waiting_id"));
-				row.put("customer_id", rs.getInt("customer_id"));
-				row.put("number_of_guests", rs.getInt("number_of_guests"));
-				row.put("confirmation_code", rs.getInt("confirmation_code"));
+                    row.put("waiting_id", rs.getInt("waiting_id"));
+                    row.put("customer_id", rs.getInt("customer_id"));
+                    row.put("number_of_guests", rs.getInt("number_of_guests"));
+                    row.put("confirmation_code", rs.getInt("confirmation_code"));
 
-				row.put("enter_time", rs.getTimestamp("enter_time"));
+                    row.put("enter_time", rs.getTimestamp("enter_time"));
 
-				resultList.add(row);
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-
-		return resultList;
-	}
-    public WaitingList getByWaitingId(int waitingId) {
-        String sql = "SELECT * FROM waiting_list WHERE waiting_id = ?";
-
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-
-            stmt.setInt(1, waitingId);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToWaitingList(rs);
+                    resultList.add(row);
                 }
             }
-            
         } catch (SQLException e) {
             e.printStackTrace();
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+
+        return resultList;
+    }
+
+    public WaitingList getByWaitingId(int waitingId) {
+        String sql = "SELECT * FROM waiting_list WHERE waiting_id = ?";
+        Connection con = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setInt(1, waitingId);
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return mapResultSetToWaitingList(rs);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
         }
         return null;
     }
+
     public WaitingList getByCode(int code) throws SQLException {
         String sql = "SELECT * FROM waiting_list WHERE confirmation_code = ?";
+        Connection con = null;
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setInt(1, code);
 
-            stmt.setInt(1, code);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return mapResultSetToWaitingList(rs);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return mapResultSetToWaitingList(rs);
+                    }
+                    return null;
                 }
-                return null;
             }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
         }
     }
 
     public int getPosition(Timestamp enterTime) throws SQLException {
         String sql = "SELECT COUNT(*) + 1 FROM waiting_list WHERE enter_time < ?";
+        Connection con = null;
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setTimestamp(1, enterTime);
 
-            stmt.setTimestamp(1, enterTime);
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt(1);
+                    }
+                    return 1;
                 }
-                return 1;
             }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
         }
     }
 
     public boolean enterWaitingList(WaitingList item) throws SQLException {
         String sql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?)";
+        Connection con = null;
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
-            if (item.getCustomerId() == null) {
-                stmt.setNull(1, java.sql.Types.INTEGER);
-            } else {
-                stmt.setInt(1, item.getCustomer().getCustomerId());
+                if (item.getCustomerId() == null) {
+                    stmt.setNull(1, java.sql.Types.INTEGER);
+                } else {
+                    stmt.setInt(1, item.getCustomer().getCustomerId());
+                }
+
+                stmt.setInt(2, item.getNumberOfGuests());
+                stmt.setTimestamp(3, new java.sql.Timestamp(item.getEnterTime().getTime()));
+                stmt.setInt(4, item.getConfirmationCode());
+
+                return stmt.executeUpdate() > 0;
             }
-
-            stmt.setInt(2, item.getNumberOfGuests());
-            stmt.setTimestamp(3, new java.sql.Timestamp(item.getEnterTime().getTime()));
-            stmt.setInt(4, item.getConfirmationCode());
-
-            return stmt.executeUpdate() > 0;
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
         }
     }
 
     public boolean exitWaitingList(int waitingId) throws SQLException {
         String sql = "DELETE FROM waiting_list WHERE waiting_id = ?";
+        Connection con = null;
 
-        try (Connection con = DBConnection.getInstance().getConnection();
-             PreparedStatement stmt = con.prepareStatement(sql)) {
-
-            stmt.setInt(1, waitingId);
-            return stmt.executeUpdate() > 0;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                stmt.setInt(1, waitingId);
+                return stmt.executeUpdate() > 0;
+            }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
         }
     }
 
-    //creates waiting list from rs
+    // creates waiting list from rs
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
-    	int subIdTemp = rs.getInt("customer_id");
-    	Integer subId = rs.wasNull() ? null : subIdTemp;
+        int subIdTemp = rs.getInt("customer_id");
+        Integer subId = rs.wasNull() ? null : subIdTemp;
 
         return new WaitingList(
                 rs.getInt("waiting_id"),
                 subId,
                 rs.getInt("number_of_guests"),
                 rs.getTimestamp("enter_time"),
-                rs.getInt("confirmation_code"), null
-        );
+                rs.getInt("confirmation_code"), null);
     }
-   
 
     private void closeResources(ResultSet rs, Statement stmt) {
         try {
-            if (rs != null) rs.close();
-            if (stmt != null) stmt.close();
+            if (rs != null)
+                rs.close();
+            if (stmt != null)
+                stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
