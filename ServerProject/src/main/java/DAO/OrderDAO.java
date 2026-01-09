@@ -257,27 +257,11 @@ public class OrderDAO {
 
 	public Order getOrderByConfirmationCode(int code) throws SQLException {
 		String sql = "SELECT * FROM `order` " + "WHERE confirmation_code = ? " + "AND order_status = 'APPROVED' ";
-				
+
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {
-			
-				stmt.setInt(1, code);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					return mapResultSetToOrder(rs);
-				}
-				return null;
-			}
-		}
-	}
-	public Order getOrderByConfirmationCodeApproved(int code,int customerId) throws SQLException {
-		String sql = "SELECT * FROM `order` " + "WHERE (customer_id = ? OR confirmation_code = ?) " + "AND order_status = 'APPROVED' "
-				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
-		try (Connection con = DBConnection.getInstance().getConnection();
-				PreparedStatement stmt = con.prepareStatement(sql)) {
-			
-				stmt.setInt(1, customerId);
-				stmt.setInt(2, code);
+
+			stmt.setInt(1, code);
 			try (ResultSet rs = stmt.executeQuery()) {
 				if (rs.next()) {
 					return mapResultSetToOrder(rs);
@@ -287,8 +271,35 @@ public class OrderDAO {
 		}
 	}
 
-	public Order getOrderByConfirmationCodeSeated(int code,int customerId) throws SQLException {
-		String sql = "SELECT * FROM `order` " + "WHERE(customer_id =? OR confirmation_code = ?) " + "AND order_status = 'SEATED' ";
+	public Order getOrderByConfirmationCodeApproved(int code, Integer customerId) throws SQLException {
+	    String sql = "SELECT * FROM `order` " 
+	               + "WHERE (customer_id = ? OR confirmation_code = ?) " 
+	               + "AND order_status = 'APPROVED' "
+	               + "AND DATE(order_date) = CURDATE() "
+	               + "AND TIME(order_date) >= SUBTIME(CURTIME(), '00:15:00') "
+	               + "AND TIME(order_date) <= CURTIME()";
+
+	    try (Connection con = DBConnection.getInstance().getConnection();
+	         PreparedStatement stmt = con.prepareStatement(sql)) {
+	        
+	        if (customerId != null) {
+	            stmt.setInt(1, customerId);
+	        } else {
+	            stmt.setNull(1, java.sql.Types.INTEGER);
+	        }
+	        stmt.setInt(2, code);
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                return mapResultSetToOrder(rs);
+	            }
+	            return null;
+	        }
+	    }
+	}
+	
+	public Order getOrderByConfirmationCodeSeated(int code, int customerId) throws SQLException {
+		String sql = "SELECT * FROM `order` " + "WHERE(customer_id =? OR confirmation_code = ?) "
+				+ "AND order_status = 'SEATED' ";
 		try (Connection con = DBConnection.getInstance().getConnection();
 				PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setInt(1, customerId);
