@@ -14,14 +14,23 @@ import entities.Order.OrderStatus;
 public class OrderDAO {
 
 	public List<Order> getAllOrders() throws SQLException {
-		String sql = "SELECT * FROM `order`";
+		// הוספת JOIN כדי להביא את שם הלקוח ופרטיו
+		String sql = "SELECT o.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
+				"FROM `order` o " +
+				"LEFT JOIN Customer c ON o.customer_id = c.customer_id";
+
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql);
 				ResultSet rs = stmt.executeQuery()) {
-
 			List<Order> list = new ArrayList<>();
 			while (rs.next()) {
-				list.add(mapResultSetToOrder(rs));
+				Order order = mapResultSetToOrder(rs);
+				// מילוי ידני של פרטי הלקוח כדי שה-UI לא יתרוקן
+				order.getCustomer().setName(rs.getString("customer_name"));
+				order.getCustomer().setEmail(rs.getString("email"));
+				order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
+				// ... וכן הלאה
+				list.add(order);
 			}
 			return list;
 		} finally {
@@ -253,7 +262,7 @@ public class OrderDAO {
 		String sql = "SELECT * FROM `order` WHERE (customer_id = ? OR confirmation_code = ?) "
 				+ "AND order_status = 'APPROVED' "
 				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
-		
+
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			if (customerId != null) {
@@ -276,7 +285,7 @@ public class OrderDAO {
 	public Order getOrderByConfirmationCodeSeated(int code, Integer customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE (customer_id = ? OR confirmation_code = ?) "
 				+ "AND order_status = 'SEATED' ";
-		
+
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			if (customerId != null && customerId != 0) {
@@ -447,7 +456,8 @@ public class OrderDAO {
 
 		try {
 			order.setReminderSent(rs.getBoolean("reminder_sent"));
-		} catch (SQLException e) {}
+		} catch (SQLException e) {
+		}
 		return order;
 	}
 

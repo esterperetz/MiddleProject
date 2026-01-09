@@ -84,7 +84,7 @@ public class Router {
 		clients.remove(client);
 	}
 
-	public static void sendToAllClients(Object message) {
+	public static synchronized void sendToAllClients(Object message) {
 		if (clients != null) {
 			for (ConnectionToClient c : clients) {
 				try {

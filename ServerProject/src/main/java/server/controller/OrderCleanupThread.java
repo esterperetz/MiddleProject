@@ -26,7 +26,6 @@ public class OrderCleanupThread extends Thread {
                 Thread.sleep(60000);
 
                 // Perform the check
-                System.out.println("DEBUG: OrderCleanupThread is now RUNNING");
                 checkAndCancelLateOrders();
 
             } catch (InterruptedException e) {
@@ -46,9 +45,7 @@ public class OrderCleanupThread extends Thread {
                 long orderTime = order.getOrderDate().getTime();
                 long diffInMinutes = (now - orderTime) / 60000; 
                 
-                System.out.println("DEBUG: Checking Order #" + order.getOrderNumber() + 
-                        " | OrderTime: " + order.getOrderDate() + 
-                        " | Diff: " + diffInMinutes + " min");
+
 
                 // 15-minute late rule enforcement [cite: 32]
                 if (diffInMinutes > 15) {
