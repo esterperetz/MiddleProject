@@ -198,17 +198,33 @@ public class DBConnection {
 	
 	public static void insertIntoTableOpeningHours(Connection con) {
 		Statement stmt;
-	    String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES " +
-	                 "(DAYOFWEEK(NOW()), CURDATE(), CURTIME(), '17:00:00', 0), " +
-	                 "(DAYOFWEEK(NOW()), CURDATE(), '17:00:00', '23:59:59', 0)";
+		try {
+			stmt = con.createStatement();
 
-	    try{
-	    	stmt = con.createStatement();
-	        int rowsAffected = stmt.executeUpdate(sql);
-	        
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	        System.out.println("Error inserting into opening_hours: " + e.getMessage());
-	    }
+	
+			String checkSql = "SELECT COUNT(*) FROM opening_hours";
+			var rs = stmt.executeQuery(checkSql);
+			
+			if (rs.next()) {
+				int rowCount = rs.getInt(1);
+				if (rowCount > 0) {
+					// אם יש כבר שורות, אנחנו לא עושים כלום ויוצאים
+					System.out.println("Opening hours data already exists. Skipping insert.");
+					return; 
+				}
+			}
+
+			
+			String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES " +
+					"(DAYOFWEEK(NOW()), CURDATE(), CURTIME(), '17:00:00', 0), " +
+					"(DAYOFWEEK(NOW()), CURDATE(), '17:00:00', '23:59:59', 0)";
+
+			int rowsAffected = stmt.executeUpdate(sql);
+			System.out.println("Default opening hours inserted successfully.");
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Error inserting into opening_hours: " + e.getMessage());
+		}
 	}
 }
