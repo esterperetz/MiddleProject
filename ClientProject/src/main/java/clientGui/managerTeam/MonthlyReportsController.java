@@ -150,10 +150,19 @@ public class MonthlyReportsController extends MainNavigator implements Initializ
 
     private void saveAndOpenFile(MyFile myFile) {
         try {
+            // 1. משיגת נתיב הבית של המשתמש
             String userHome = System.getProperty("user.home");
-            String filePath = userHome + "/Downloads/" + myFile.getFileName();
+            
+            // 2. שליפת החודש והשנה שנבחרו ב-ComboBox (כדי להשתמש בהם בשם הקובץ)
+            String month = cmbMonth.getValue();
+            Integer year = cmbYear.getValue();
+
+            // 3. בניית הנתיב המלא לתיקיית ההורדות (זו השורה שרצית)
+            String filePath = userHome + "/Downloads/Report_" + year + "_" + month + ".html";
+            
             File file = new File(filePath);
 
+            // 4. כתיבת הקובץ (נשאר אותו דבר)
             FileOutputStream fos = new FileOutputStream(file);
             BufferedOutputStream bos = new BufferedOutputStream(fos);
             bos.write(myFile.getMybytearray(), 0, myFile.getSize());
@@ -161,6 +170,7 @@ public class MonthlyReportsController extends MainNavigator implements Initializ
             bos.close();
             fos.close();
 
+            // 5. עדכון סטטוס ופתיחת הקובץ
             lblStatus.setText("Report saved to Downloads!");
             lblStatus.setStyle("-fx-text-fill: green;");
 
@@ -172,7 +182,7 @@ public class MonthlyReportsController extends MainNavigator implements Initializ
             e.printStackTrace();
             lblStatus.setText("Error saving file: " + e.getMessage());
             lblStatus.setStyle("-fx-text-fill: red;");
-            Alarm.showAlert("System Error", "Could not save the file locally.",AlertType.ERROR);
+            Alarm.showAlert("System Error", "Could not save the file locally.", AlertType.ERROR);
         }
     }
 
