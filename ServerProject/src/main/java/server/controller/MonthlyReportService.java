@@ -19,7 +19,7 @@ public class MonthlyReportService {
 
     /**
      * Generates the HTML report file for a specific month.
-     * * @param month       The month number (1-12).
+     * @param month       The month number (1-12).
      * @param year        The year (e.g., 2025).
      * @param orders      List of finished orders for that month.
      * @param waitingList List of waiting list entries for that month.
@@ -121,6 +121,9 @@ public class MonthlyReportService {
         sb.append("h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 50px; margin-bottom: 20px; }");
         sb.append("h3 { color: #7f8c8d; margin-top: 30px; font-size: 16px; text-transform: uppercase; }");
         
+        // CSS עבור ההסברים (Chart Descriptions)
+        sb.append(".chart-desc { color: #555; font-size: 13px; margin-bottom: 15px; line-height: 1.5; background-color: #fdfdfd; padding: 10px; border-left: 4px solid #3498db; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }");
+
         sb.append(".cards { display: flex; justify-content: space-between; margin-bottom: 40px; gap: 20px; }");
         sb.append(".card { flex: 1; background: #fff; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }");
         sb.append(".card h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #95a5a6; letter-spacing: 1px; }");
@@ -162,17 +165,42 @@ public class MonthlyReportService {
         // --- Charts Section 1 ---
         sb.append("<h2>1. General Overview</h2>");
         sb.append("<div class='charts-row'>");
-        sb.append("<div class='chart-box-half'><div class='chart-title'>Customer Segmentation</div><div style='height: 300px'><canvas id='pieChart'></canvas></div></div>");
-        sb.append("<div class='chart-box-half'><div class='chart-title'>Peak Activity Hours</div><div style='height: 300px'><canvas id='barChart'></canvas></div></div>");
+        
+        // גרף 1: פילוח לקוחות
+        sb.append("<div class='chart-box-half'>");
+        sb.append("<div class='chart-title'>Customer Segmentation</div>");
+        sb.append("<div class='chart-desc'>Displays the ratio between Subscribers and Regular customers. Use this to analyze membership program effectiveness.</div>");
+        sb.append("<div style='height: 300px'><canvas id='pieChart'></canvas></div>");
+        sb.append("</div>");
+
+        // גרף 2: שעות שיא
+        sb.append("<div class='chart-box-half'>");
+        sb.append("<div class='chart-title'>Peak Activity Hours</div>");
+        sb.append("<div class='chart-desc'>Shows the busiest hours based on actual arrival times. Essential for staff scheduling and kitchen preparation.</div>");
+        sb.append("<div style='height: 300px'><canvas id='barChart'></canvas></div>");
+        sb.append("</div>");
+        
         sb.append("</div>");
 
         // --- Charts Section 2 ---
         sb.append("<h2>2. Performance & Punctuality Analysis</h2>");
-        sb.append("<div class='chart-box-full'><div class='chart-title'>Customer Arrival Delays</div><div style='height: 400px'><canvas id='delayChart'></canvas></div></div>");
+        
+        // גרף 3: איחורים
+        sb.append("<div class='chart-box-full'>");
+        sb.append("<div class='chart-title'>Customer Arrival Delays</div>");
+        sb.append("<div class='chart-desc'>Red bars indicate late arrivals (bottlenecks), while green bars indicate early arrivals. Helps in managing table turnover efficiency.</div>");
+        sb.append("<div style='height: 400px'><canvas id='delayChart'></canvas></div>");
+        sb.append("</div>");
 
         // --- Charts Section 3 ---
         sb.append("<h2>3. Daily Demand Trends</h2>");
-        sb.append("<div class='chart-box-full'><div class='chart-title'>Orders vs. Waiting List Load</div><div style='height: 400px'><canvas id='trendChart'></canvas></div></div>");
+        
+        // גרף 4: מגמות
+        sb.append("<div class='chart-box-full'>");
+        sb.append("<div class='chart-title'>Orders vs. Waiting List Load</div>");
+        sb.append("<div class='chart-desc'>Compares daily successful orders against waiting list volume. Identifies days where demand exceeded capacity.</div>");
+        sb.append("<div style='height: 400px'><canvas id='trendChart'></canvas></div>");
+        sb.append("</div>");
 
         // --- Detailed Logs ---
         sb.append("<h2>4. Detailed Data Logs</h2>");
