@@ -562,6 +562,7 @@ public class OrderController {
 			Customer tempCustomer = new Customer(order.getCustomer().getCustomerId(), order.getCustomer().getName(),
 					order.getCustomer().getPhoneNumber(),
 					order.getCustomer().getEmail());
+			System.out.println(order.getCustomer().getEmail());
 
 			// Send Email with NEW code
 			EmailService.sendConfirmation(tempCustomer, order);

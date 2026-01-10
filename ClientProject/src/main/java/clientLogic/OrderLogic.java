@@ -15,6 +15,11 @@ public class OrderLogic {
 	public OrderLogic(ClientUi client) {
 		this.client = client;
 	}
+	
+	public void getConfirmationCodeByContact(String contact) {
+		Request req = new Request(ResourceType.ORDER, ActionType.RESEND_CONFIRMATION,null, contact);
+		client.sendRequest(req);
+	}
 
 	public void getAllOrders() {
 		Request req = new Request(ResourceType.ORDER, ActionType.GET_ALL, null, null);
