@@ -88,7 +88,11 @@ public class ClientUi {
     	this.listeners.add(listener);
     }
    
-  
+    @SuppressWarnings("rawtypes")
+	public void removeListener(MessageListener listener) {
+    	this.listeners.remove(listener);
+    	
+    }
     
     public void removeAllListeners() {
         listeners.clear(); // מרוקן את כל רשימת המאזינים
@@ -117,5 +121,7 @@ public class ClientUi {
    public ClientUi getInstance() {
         return instance;
     }
+
+
         
 }

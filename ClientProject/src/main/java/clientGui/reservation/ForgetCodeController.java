@@ -22,7 +22,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class ForgetCodeController extends MainNavigator implements MessageListener<Object>,Initializable {
+public class ForgetCodeController extends MainNavigator implements MessageListener<Object> {
 
     @FXML
     private TextField txtEmail;
@@ -43,18 +43,7 @@ public class ForgetCodeController extends MainNavigator implements MessageListen
 
     
     
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		Platform.runLater(() -> {
-			if (txtEmail.getScene() != null && txtEmail.getScene().getWindow() != null) {
-				Stage stage = (Stage) txtEmail.getScene().getWindow();
-				stage.setOnCloseRequest(event -> {
-					clientUi.disconnectClient();
 
-				});
-			}
-		});
-	}
     public void initData(ClientUi clientUi,CustomerType isSubscriberStatus, Integer subCode,Customer customer) {
     	this.clientUi = clientUi;
 		this.isSubscriber = isSubscriberStatus;
