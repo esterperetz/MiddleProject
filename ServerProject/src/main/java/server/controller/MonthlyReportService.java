@@ -13,15 +13,15 @@ import entities.CustomerType;
 
 /**
  * Service that creates monthly HTML reports.
- * It calculates statistics, creates charts, and saves the file to the server.
+ * It calculates statistics, creates charts based on actual data, and saves the file.
  */
 public class MonthlyReportService {
 
     /**
      * Generates the HTML report file for a specific month.
-     * * @param month The month number (1-12).
-     * @param year The year (e.g., 2025).
-     * @param orders List of finished orders for that month.
+     * * @param month       The month number (1-12).
+     * @param year        The year (e.g., 2025).
+     * @param orders      List of finished orders for that month.
      * @param waitingList List of waiting list entries for that month.
      * @return The created HTML file, or null if there was an error.
      */
@@ -29,54 +29,63 @@ public class MonthlyReportService {
         StringBuilder sb = new StringBuilder();
         SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-        // --- Statistics Variables ---
+        // --- 1. Statistics Variables ---
         double totalRevenue = 0;
         int subscribers = 0;
         int regulars = 0;
         int lateOrders = 0;
         
+        // Array for hourly activity (0-23)
         int[] hourlyActivity = new int[24];
         Arrays.fill(hourlyActivity, 0);
 
+        // Arrays for daily trends (1-31)
         int[] dailyOrdersCount = new int[32]; 
         int[] dailyWaitingCount = new int[32];
         Arrays.fill(dailyOrdersCount, 0);
         Arrays.fill(dailyWaitingCount, 0);
 
+        // Data for delay chart
         StringBuilder delayLabels = new StringBuilder(); 
         StringBuilder delayData = new StringBuilder();   
         
         Calendar cal = Calendar.getInstance();
 
-        // --- Process Orders ---
+        // --- 2. Process Orders Data ---
         for (Order o : orders) {
             if (o.getOrderStatus() != Order.OrderStatus.CANCELLED) {
                 totalRevenue += o.getTotalPrice();
                 
+                // Check customer type
                 if (o.getCustomer() != null && o.getCustomer().getType() == CustomerType.SUBSCRIBER) {
                     subscribers++;
                 } else {
                     regulars++;
                 }
 
+                // Daily count
                 if (o.getOrderDate() != null) {
                     cal.setTime(o.getOrderDate());
                     int day = cal.get(Calendar.DAY_OF_MONTH);
                     dailyOrdersCount[day]++;
                 }
 
+                // Time analysis (Peak hours & Delays)
                 if (o.getArrivalTime() != null && o.getOrderDate() != null) {
+                    // Hourly activity
                     cal.setTime(o.getArrivalTime());
                     int hour = cal.get(Calendar.HOUR_OF_DAY);
                     if (hour >= 0 && hour < 24) {
                         hourlyActivity[hour]++;
                     }
 
+                    // Calculate delay
                     long diff = o.getArrivalTime().getTime() - o.getOrderDate().getTime();
                     long diffMinutes = diff / (60 * 1000);
                     
                     if (diffMinutes > 15) lateOrders++;
                     
+                    // Add to delay chart
                     String name = (o.getCustomer() != null) ? o.getCustomer().getName() : "Guest";
                     delayLabels.append("'").append(name).append(" (#").append(o.getOrderNumber()).append(")',");
                     delayData.append(diffMinutes).append(",");
@@ -84,7 +93,7 @@ public class MonthlyReportService {
             }
         }
 
-        // --- Process Waiting List ---
+        // --- 3. Process Waiting List Data ---
         int totalWaiting = 0;
         if (waitingList != null) {
             totalWaiting = waitingList.size();
@@ -97,13 +106,13 @@ public class MonthlyReportService {
             }
         }
 
-        // === HTML Construction ===
+        // === 4. Build HTML ===
         sb.append("<!DOCTYPE html>");
         sb.append("<html lang='en'><head><meta charset='UTF-8'>");
         sb.append("<title>Monthly Report</title>");
         sb.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
 
-        // === CSS Styles ===
+        // === CSS ===
         sb.append("<style>");
         sb.append("body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }");
         sb.append(".container { max-width: 1400px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }");
@@ -124,7 +133,6 @@ public class MonthlyReportService {
         sb.append(".charts-row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 30px; margin-bottom: 40px; }");
         sb.append(".chart-box-half { flex: 1; min-width: 450px; background: #fff; padding: 25px; border-radius: 10px; border: 1px solid #e1e4e8; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }");
         sb.append(".chart-box-full { width: 100%; background: #fff; padding: 30px; border-radius: 10px; border: 1px solid #e1e4e8; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 40px; }");
-        sb.append(".chart-desc { color: #666; font-size: 14px; margin-bottom: 15px; line-height: 1.6; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #3498db; border-radius: 4px; }");
         sb.append(".chart-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #2c3e50; }");
 
         sb.append("table { width: 100%; border-collapse: collapse; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; }");
@@ -138,7 +146,7 @@ public class MonthlyReportService {
         sb.append("</style>");
         sb.append("</head><body>");
 
-        // === Body Content ===
+        // === Body ===
         sb.append("<div class='container'>");
         sb.append("<h1>Monthly Operations Report</h1>");
         sb.append("<p class='subtitle'>Report Period: ").append(month).append("/").append(year).append("</p>");
@@ -158,9 +166,11 @@ public class MonthlyReportService {
         sb.append("<div class='chart-box-half'><div class='chart-title'>Peak Activity Hours</div><div style='height: 300px'><canvas id='barChart'></canvas></div></div>");
         sb.append("</div>");
 
+        // --- Charts Section 2 ---
         sb.append("<h2>2. Performance & Punctuality Analysis</h2>");
         sb.append("<div class='chart-box-full'><div class='chart-title'>Customer Arrival Delays</div><div style='height: 400px'><canvas id='delayChart'></canvas></div></div>");
 
+        // --- Charts Section 3 ---
         sb.append("<h2>3. Daily Demand Trends</h2>");
         sb.append("<div class='chart-box-full'><div class='chart-title'>Orders vs. Waiting List Load</div><div style='height: 400px'><canvas id='trendChart'></canvas></div></div>");
 
@@ -172,15 +182,16 @@ public class MonthlyReportService {
         sb.append("<table><thead><tr><th>ID</th><th>Table</th><th>Guests</th><th>Customer</th><th>Ordered For</th><th>Actual Arrival</th><th>Left At</th><th>Booked On</th><th>Delay</th><th>Total</th><th>Status</th></tr></thead><tbody>");
         
         for (Order o : orders) {
+            // Prepare data (check for nulls)
             String name = (o.getCustomer() != null) ? o.getCustomer().getName() : "Guest";
-            String orderedFor = fmt.format(o.getOrderDate());
+            String orderedFor = (o.getOrderDate() != null) ? fmt.format(o.getOrderDate()) : "-";
             String arrivalTime = (o.getArrivalTime() != null) ? fmt.format(o.getArrivalTime()) : "-";
             String leavingTime = (o.getLeavingTime() != null) ? fmt.format(o.getLeavingTime()) : "-";
             String bookedOn = (o.getDateOfPlacingOrder() != null) ? fmt.format(o.getDateOfPlacingOrder()) : "-";
-
             String tableNum = (o.getTableNumber() != null) ? String.valueOf(o.getTableNumber()) : "-";
             String guests = String.valueOf(o.getNumberOfGuests());
 
+            // Calculate delay text
             String delayStr = "0 min";
             String rowClass = "";
             if (o.getArrivalTime() != null && o.getOrderDate() != null) {
@@ -200,7 +211,7 @@ public class MonthlyReportService {
 
             sb.append("<tr>");
             sb.append("<td>").append(o.getOrderNumber()).append("</td>");
-            sb.append("<td>#").append(tableNum).append("</td>");
+            sb.append("<td>#").append(tableNum).append("</td>"); 
             sb.append("<td>").append(guests).append("</td>");
             sb.append("<td>").append(name).append("</td>");
             sb.append("<td>").append(orderedFor).append("</td>");
@@ -220,9 +231,11 @@ public class MonthlyReportService {
             sb.append("<table><thead><tr><th>ID</th><th>Entered At</th><th>Customer</th><th>Guests (Places Needed)</th><th>Code</th></tr></thead><tbody>");
             for (WaitingList w : waitingList) {
                 String wName = (w.getCustomer() != null) ? w.getCustomer().getName() : "Anonymous";
+                String enterTime = (w.getEnterTime() != null) ? fmt.format(w.getEnterTime()) : "-";
+
                 sb.append("<tr>");
                 sb.append("<td>").append(w.getWaitingId()).append("</td>");
-                sb.append("<td>").append(fmt.format(w.getEnterTime())).append("</td>");
+                sb.append("<td>").append(enterTime).append("</td>");
                 sb.append("<td>").append(wName).append("</td>");
                 sb.append("<td>").append(w.getNumberOfGuests()).append("</td>");
                 sb.append("<td>").append(w.getConfirmationCode()).append("</td>");
@@ -235,7 +248,7 @@ public class MonthlyReportService {
 
         sb.append("</div>"); // Close Container
 
-        // === JavaScript: Chart.js Rendering ===
+        // === JavaScript: Charts ===
         sb.append("<script>");
         
         sb.append("new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Subscribers', 'Regular Customers'], datasets: [{ data: [").append(subscribers).append(", ").append(regulars).append("], backgroundColor: ['#2ecc71', '#95a5a6'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });");
@@ -261,6 +274,10 @@ public class MonthlyReportService {
 
         String fileName = "Report_" + year + "_" + String.format("%02d", month) + ".html";
         File file = new File("server_files/reports/" + fileName);
+        
+        // Create directory if it doesn't exist
+        file.getParentFile().mkdirs();
+
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(sb.toString().getBytes("UTF-8"));
             return file;
