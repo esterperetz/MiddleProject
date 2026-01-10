@@ -41,10 +41,10 @@ public class MonthlyReportService {
                     regulars++;
                 }
 
-                // בדיקת איחור
+                // בדיקת איחור ואיסוף שעות
                 if (o.getArrivalTime() != null && o.getOrderDate() != null) {
                     long diff = o.getArrivalTime().getTime() - o.getOrderDate().getTime();
-                    if (diff > 15 * 60 * 1000) lateOrders++;
+                    if (diff > 15 * 60 * 1000) lateOrders++; // איחור מעל 15 דקות
                     
                     // חישוב שעת הגעה (לגרף עמודות)
                     cal.setTime(o.getArrivalTime());
@@ -82,7 +82,7 @@ public class MonthlyReportService {
         sb.append(".card.orange { border-top: 4px solid #e67e22; }");
         sb.append(".card.red { border-top: 4px solid #e74c3c; }");
         
-        // --- עיצוב אזור הגרפים (חדש) ---
+        // --- עיצוב אזור הגרפים ---
         sb.append(".charts-section { display: flex; justify-content: space-between; gap: 20px; margin-bottom: 40px; }");
         sb.append(".chart-container { width: 48%; background: #fff; border: 1px solid #eee; padding: 15px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }");
 
@@ -90,6 +90,8 @@ public class MonthlyReportService {
         sb.append("table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 40px; }");
         sb.append("th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #ddd; }");
         sb.append("th { background-color: #34495e; color: white; }");
+        sb.append(".late { color: #e74c3c; font-weight: bold; }"); // עיצוב לאיחורים
+        
         sb.append(".bar-container { background-color: #ecf0f1; width: 100%; border-radius: 4px; height: 20px; }");
         sb.append(".bar-sub { background-color: #3498db; height: 100%; border-radius: 4px; text-align: center; color: white; font-size: 12px; }");
         
@@ -109,34 +111,54 @@ public class MonthlyReportService {
         sb.append("<div class='card red'><h3>Late Arrivals</h3><div class='value'>").append(lateOrders).append("</div></div>");
         sb.append("</div>");
 
-        // --- 2. אזור הגרפים (התוספת החדשה) ---
+        // --- 2. אזור הגרפים ---
         sb.append("<h2>Visual Analysis</h2>");
         sb.append("<div class='charts-section'>");
-        
-        // קנבס לגרף עוגה
         sb.append("<div class='chart-container'><canvas id='pieChart'></canvas></div>");
-        
-        // קנבס לגרף עמודות
         sb.append("<div class='chart-container'><canvas id='barChart'></canvas></div>");
-        
-        sb.append("</div>"); // סגירת charts-section
+        sb.append("</div>"); 
 
-        // --- 3. טבלאות הנתונים (הישן נשמר) ---
+        // --- 3. טבלאות הנתונים ---
         
-        // טבלת הזמנות
-        sb.append("<h2>1. Order Performance (Detailed)</h2>");
-        sb.append("<table><thead><tr><th>ID</th><th>Customer</th><th>Date</th><th>Total</th><th>Status</th></tr></thead><tbody>");
+        // === שינוי כאן: טבלת הזמנות מפורטת עם זמנים ועיכובים ===
+        sb.append("<h2>1. Order Performance (Arrivals & Delays)</h2>");
+        sb.append("<table><thead><tr><th>ID</th><th>Customer</th><th>Ordered For</th><th>Actual Arrival</th><th>Delay</th><th>Total</th><th>Status</th></tr></thead><tbody>");
+        
         for (Order o : orders) {
             String name = (o.getCustomer() != null) ? o.getCustomer().getName() : "Guest";
-            sb.append("<tr><td>").append(o.getOrderNumber()).append("</td>")
-              .append("<td>").append(name).append("</td>")
-              .append("<td>").append(fmt.format(o.getOrderDate())).append("</td>")
-              .append("<td>₪").append(o.getTotalPrice()).append("</td>")
-              .append("<td>").append(o.getOrderStatus()).append("</td></tr>");
+            
+            String orderedFor = fmt.format(o.getOrderDate());
+            String arrivalTime = (o.getArrivalTime() != null) ? fmt.format(o.getArrivalTime()) : "-";
+            
+            // חישוב עיכוב להצגה בטבלה
+            String delayStr = "0 min";
+            String rowClass = "";
+            
+            if (o.getArrivalTime() != null && o.getOrderDate() != null) {
+                long diffMillis = o.getArrivalTime().getTime() - o.getOrderDate().getTime();
+                long diffMinutes = diffMillis / (60 * 1000);
+                
+                if (diffMinutes > 0) {
+                    delayStr = "+" + diffMinutes + " min";
+                    if (diffMinutes > 15) rowClass = "class='late'"; // צביעה באדום אם איחור גדול
+                } else if (diffMinutes < 0) {
+                    delayStr = diffMinutes + " min (Early)";
+                }
+            }
+
+            sb.append("<tr>");
+            sb.append("<td>").append(o.getOrderNumber()).append("</td>");
+            sb.append("<td>").append(name).append("</td>");
+            sb.append("<td>").append(orderedFor).append("</td>");
+            sb.append("<td>").append(arrivalTime).append("</td>");
+            sb.append("<td ").append(rowClass).append(">").append(delayStr).append("</td>"); // עמודת העיכוב
+            sb.append("<td>₪").append(o.getTotalPrice()).append("</td>");
+            sb.append("<td>").append(o.getOrderStatus()).append("</td>");
+            sb.append("</tr>");
         }
         sb.append("</tbody></table>");
 
-        // טבלת רשימת המתנה
+        // טבלת רשימת המתנה (נשאר ללא שינוי)
         sb.append("<h2>2. Waiting List Log</h2>");
         if (waitingList != null && !waitingList.isEmpty()) {
             sb.append("<table><thead><tr><th>Entered At</th><th>Customer</th><th>Guests</th><th>Group Size</th></tr></thead><tbody>");
