@@ -204,11 +204,12 @@ public class WaitingListDAO {
  // בתוך WaitingListDAO.java
 //for manager reports
     public List<WaitingList> getWaitingListForReport(int month, int year) throws SQLException {
-        // השאילתה עושה JOIN כדי לקבל את השם של הלקוח לפי ה-ID
+        // עדכנתי את השאילתה: הוספתי תנאי ש-customer_id לא יהיה NULL
         String sql = "SELECT w.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
                      "FROM waiting_list w " +
                      "LEFT JOIN Customer c ON w.customer_id = c.customer_id " +
                      "WHERE MONTH(w.enter_time) = ? AND YEAR(w.enter_time) = ? " +
+                     "AND w.customer_id IS NOT NULL " + // <--- השינוי כאן: מסנן שורות ללא מזהה לקוח
                      "ORDER BY w.enter_time ASC";
 
         Connection con = DBConnection.getInstance().getConnection();
@@ -219,26 +220,28 @@ public class WaitingListDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 List<WaitingList> list = new ArrayList<>();
                 while (rs.next()) {
-                    // 1. יצירת אובייקט WaitingList בסיסי
+                    // אין צורך לבדוק כאן אם ה-ID הוא null כי הסינון נעשה ב-SQL
+
+                    // 1. יצירת אובייקט WaitingList
                     WaitingList wl = new WaitingList(
                             rs.getInt("waiting_id"),
-                            rs.getInt("customer_id"), // יכול להיות 0/null אם זה אורח מזדמן
+                            rs.getInt("customer_id"),
                             rs.getInt("number_of_guests"),
                             rs.getTimestamp("enter_time"),
                             rs.getInt("confirmation_code"),
-                            null // נמלא את הלקוח מיד
+                            null
                     );
 
                     // 2. יצירת אובייקט Customer ומילוי הפרטים
                     entities.Customer cust = new entities.Customer();
                     String name = rs.getString("customer_name");
                     
+                    // כעת בטוח שיהיה שם (אלא אם יש בעיה ב-DB שלקוח נמחק), אבל נשאיר את הבדיקה ליתר ביטחון
                     if (name != null) {
                         cust.setName(name);
                         cust.setPhoneNumber(rs.getString("phone_number"));
-                        // אפשר להוסיף עוד שדות אם צריך
                     } else {
-                        cust.setName("Guest"); // אם אין ID או ה-JOIN לא הצליח
+                        cust.setName("Unknown Registered Customer"); 
                     }
                     
                     wl.setCustomer(cust);
