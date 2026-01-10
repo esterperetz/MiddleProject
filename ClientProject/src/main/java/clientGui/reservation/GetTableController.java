@@ -1,6 +1,9 @@
 package clientGui.reservation;
 
 import javafx.scene.control.Button;
+
+import java.io.IOException;
+
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
@@ -15,9 +18,13 @@ import entities.Response.ResponseStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.stage.Stage;
 
 public class GetTableController extends MainNavigator implements MessageListener<Object> {
 	@FXML
@@ -72,16 +79,9 @@ public class GetTableController extends MainNavigator implements MessageListener
 
 	@FXML
 	void openLostCodePopup(ActionEvent event) {
-		try {
-			ForgetCodeController controller = super.loadScreen("reservation/ForgetCode", event, clientUi);
-			if (controller != null) 
-				controller.initData();
-			
-
-		} catch (Exception e) {
-			System.err.println("Error: Could not load ForgetCodeController.");
-
-		}
+		
+		ForgetCodeController control = super.openPopup("reservation/ForgetCode", "Retrieve Code", clientUi);
+		control.initData(clientUi, isSubscriber, subscriberCode, customer);
 	}
 
 	/**

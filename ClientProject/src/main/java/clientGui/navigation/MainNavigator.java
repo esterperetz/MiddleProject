@@ -96,18 +96,52 @@ public class MainNavigator implements BaseController {
 		}
 		
 	}
-//	
-//	public static <E extends Enum<E>> boolean isEquals(E enumValue, String toCompare) {
-//	    if (enumValue == null || toCompare == null) return false;
-//	    
-//	 
-//	    return enumValue.name().equals(toCompare); 
-//	}
-
 	
-//	// ask liel about this function(ido)
-//	public static void showAlert(String header_text, String context_text, Alert.AlertType type) {
-//		
-//		Alarm.showAlert(header_text, context_text, type);
-//	}
+	public <T> T openPopup(String fxmlPath, String title, ClientUi c) {
+	    try {
+	        // 1. טעינת ה-FXML (הנתיב מותאם למבנה שבתמונה)
+	        FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
+	        Parent root = loader.load();
+
+	        T controller = loader.getController();
+
+	        // 2. אתחול התלויות (כמו ב-loadScreen)
+	        if (controller instanceof MainNavigator) {
+	            BaseController base = (BaseController) controller;
+	            base.setClientUi(c);
+	            base.setMainNavigator(this); 
+	        }
+
+	        // 3. טיפול במאזינים - קריטי לפופאפ!
+	        // אנחנו לא עושים removeAllListeners כי אנחנו רוצים שהחלון הראשי ימשיך לעבוד
+	        if (controller instanceof MessageListener) {
+	            c.addListener((MessageListener<Object>) controller);
+	            System.out.println("DEBUG: Added Popup listener: " + controller.getClass().getSimpleName());
+	        }
+
+	        // 4. יצירת Stage חדש ונפרד
+	        Stage popupStage = new Stage();
+	        popupStage.setTitle(title);
+	        popupStage.setScene(new Scene(root));
+
+	        // 5. ניקוי המאזין כשהחלון נסגר (כדי שלא נשלח הודעות לחלון סגור)
+	        popupStage.setOnHidden(e -> {
+	            if (controller instanceof MessageListener) {
+	                // הערה: וודא שיש לך מתודה removeListener ב-ClientUi שמקבלת מאזין ספציפי
+	                // c.removeListener((MessageListener<Object>) controller); 
+	                // אם אין לך, אתה יכול להשאיר את זה, או להוסיף פונקציה כזו.
+	                System.out.println("Popup closed");
+	            }
+	        });
+
+	        popupStage.show(); // מציג את החלון במקביל
+
+	        return controller;
+
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        System.err.println("Error loading popup: " + fxmlPath);
+	        return null;
+	    }
+	}
 }
