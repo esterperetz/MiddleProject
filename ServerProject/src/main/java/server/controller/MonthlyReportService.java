@@ -50,7 +50,6 @@ public class MonthlyReportService {
         StringBuilder delayData = new StringBuilder();   
         
         Calendar cal = Calendar.getInstance();
-
         // --- 2. Process Orders Data ---
         for (Order o : orders) {
             if (o.getOrderStatus() != Order.OrderStatus.CANCELLED) {
