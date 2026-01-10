@@ -201,4 +201,53 @@ public class WaitingListDAO {
             e.printStackTrace();
         }
     }
+ // בתוך WaitingListDAO.java
+//for manager reports
+    public List<WaitingList> getWaitingListForReport(int month, int year) throws SQLException {
+        // השאילתה עושה JOIN כדי לקבל את השם של הלקוח לפי ה-ID
+        String sql = "SELECT w.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
+                     "FROM waiting_list w " +
+                     "LEFT JOIN Customer c ON w.customer_id = c.customer_id " +
+                     "WHERE MONTH(w.enter_time) = ? AND YEAR(w.enter_time) = ? " +
+                     "ORDER BY w.enter_time ASC";
+
+        Connection con = DBConnection.getInstance().getConnection();
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, month);
+            stmt.setInt(2, year);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                List<WaitingList> list = new ArrayList<>();
+                while (rs.next()) {
+                    // 1. יצירת אובייקט WaitingList בסיסי
+                    WaitingList wl = new WaitingList(
+                            rs.getInt("waiting_id"),
+                            rs.getInt("customer_id"), // יכול להיות 0/null אם זה אורח מזדמן
+                            rs.getInt("number_of_guests"),
+                            rs.getTimestamp("enter_time"),
+                            rs.getInt("confirmation_code"),
+                            null // נמלא את הלקוח מיד
+                    );
+
+                    // 2. יצירת אובייקט Customer ומילוי הפרטים
+                    entities.Customer cust = new entities.Customer();
+                    String name = rs.getString("customer_name");
+                    
+                    if (name != null) {
+                        cust.setName(name);
+                        cust.setPhoneNumber(rs.getString("phone_number"));
+                        // אפשר להוסיף עוד שדות אם צריך
+                    } else {
+                        cust.setName("Guest"); // אם אין ID או ה-JOIN לא הצליח
+                    }
+                    
+                    wl.setCustomer(cust);
+                    list.add(wl);
+                }
+                return list;
+            }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+    }
 }

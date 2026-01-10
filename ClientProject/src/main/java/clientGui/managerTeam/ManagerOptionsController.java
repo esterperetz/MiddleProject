@@ -44,6 +44,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 	@FXML
 	private Button btnViewReports;
 	@FXML
+    private Button btnMonthlyReports;
+	@FXML
 	private Label lblDashboardTitle;
 
 	@FXML
@@ -143,6 +145,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			btnViewReports.setManaged(true);
 			btnSignUp.setVisible(true);
 			btnSignUp.setManaged(true);
+			btnMonthlyReports.setVisible(true);
+            btnMonthlyReports.setManaged(true);
 			lblDashboardTitle.setText("Hello Manager, " + emp.getUserName());
 			lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
 		} else {
@@ -152,6 +156,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			btnViewReports.setManaged(false);
 			btnSignUp.setVisible(false);
 			btnSignUp.setManaged(false);
+			btnMonthlyReports.setVisible(false);
+            btnMonthlyReports.setManaged(false);
 			lblDashboardTitle.setText("Hello, " + emp.getUserName());
 			lblDashboardSubtitle.setText("Employee Dashboard");
 		}
@@ -315,7 +321,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 			System.err.println("Failed to load WaitingList. Check FXML path name.");
 		}
 	}
-
+	@FXML
+    void goToMonthlyReportsBtn(ActionEvent event) {
+        
+         MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
+         if (m == null) { 
+        	 System.out.println("error: MonthlyReportsController is null ");
+        	 }
+    }
 	/**
 	 * Navigates to the Order Details / Table management screen.
 	 */

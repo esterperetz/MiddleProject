@@ -20,6 +20,7 @@ public enum ActionType implements Serializable {
     REGISTER_EMPLOYEE,
     REGISTER_SUBSCRIBER,
     GET_MONTHLY_REPORT,
+    DOWNLOAD_REPORT,//manager ask monthly reports
 
     // Subscriber specific
     GET_USER_ORDERS,

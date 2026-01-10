@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="500.0" prefWidth="700.0" styleClass="main-background" stylesheets="@EmployeeOption.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.managerTeam.MonthlyReportsController">
+   <children>
+      <VBox alignment="TOP_CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <padding>
+            <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+         </padding>
+         <children>
+            <Label style="-fx-font-size: 28px; -fx-font-weight: bold; -fx-text-fill: #0008f7;" text="Monthly Reports Archive" />
+            <Label style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;" text="Select a month and year to download the operations report" />
+            
+            <Separator prefWidth="200.0" />
+            
+            <VBox alignment="CENTER" maxWidth="500.0" spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0); -fx-padding: 30;">
+               <children>
+                  <HBox alignment="CENTER" spacing="15.0">
+                     <children>
+                        <VBox spacing="5.0">
+                           <children>
+                              <Label style="-fx-font-weight: bold;" text="Select Month:" />
+                              <ComboBox fx:id="cmbMonth" prefWidth="150.0" promptText="Month" />
+                           </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                           <children>
+                              <Label style="-fx-font-weight: bold;" text="Select Year:" />
+                              <ComboBox fx:id="cmbYear" prefWidth="120.0" promptText="Year" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+                  
+                  <Button fx:id="btnDownload" maxWidth="200.0" mnemonicParsing="false" onAction="#downloadReportBtn" prefHeight="40.0" style="-fx-background-color: #0008f7; -fx-text-fill: white; -fx-font-weight: bold; -fx-cursor: hand;" text="Download Report" />
+                  
+                  <Label fx:id="lblStatus" alignment="CENTER" text="" textFill="#e74c3c" wrapText="true" />
+               </children>
+            </VBox>
+            
+            <Button mnemonicParsing="false" onAction="#backBtn" styleClass="back-button" text="Back to Dashboard" />
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

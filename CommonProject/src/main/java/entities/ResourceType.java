@@ -13,5 +13,6 @@ public enum ResourceType implements Serializable {
     TABLE,
     EMPLOYEE,
     BUSINESS_HOUR,
-    REPORT
+    REPORT,
+    REPORT_MONTHLY
 }

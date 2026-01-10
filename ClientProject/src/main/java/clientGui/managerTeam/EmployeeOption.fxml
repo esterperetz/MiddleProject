@@ -99,6 +99,12 @@
 									styleClass="dashboard-tile-button, report-button"
 									text="View Reports" visible="false" wrapText="true" />
 
+                                <Button fx:id="btnMonthlyReports" managed="false"
+									maxWidth="Infinity" onAction="#goToMonthlyReportsBtn" prefHeight="5.0"
+									prefWidth="198.0"
+									styleClass="dashboard-tile-button, report-button"
+									text="Monthly Reports" visible="false" wrapText="true" />
+
 								<Button fx:id="btnSignUp" managed="false"
 									maxWidth="Infinity" onAction="#goToSignUpEmployee"
 									prefHeight="5.0" prefWidth="198.0"
