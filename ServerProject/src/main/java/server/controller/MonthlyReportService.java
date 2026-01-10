@@ -11,13 +11,25 @@ import entities.Order;
 import entities.WaitingList;
 import entities.CustomerType;
 
+/**
+ * Service that creates monthly HTML reports.
+ * It calculates statistics, creates charts, and saves the file to the server.
+ */
 public class MonthlyReportService {
 
+    /**
+     * Generates the HTML report file for a specific month.
+     * * @param month The month number (1-12).
+     * @param year The year (e.g., 2025).
+     * @param orders List of finished orders for that month.
+     * @param waitingList List of waiting list entries for that month.
+     * @return The created HTML file, or null if there was an error.
+     */
     public File generateHtmlReport(int month, int year, List<Order> orders, List<WaitingList> waitingList) {
         StringBuilder sb = new StringBuilder();
         SimpleDateFormat fmt = new SimpleDateFormat("dd/MM/yyyy HH:mm");
 
-        // --- חישוב סטטיסטיקות ---
+        // --- Statistics Variables ---
         double totalRevenue = 0;
         int subscribers = 0;
         int regulars = 0;
@@ -36,6 +48,7 @@ public class MonthlyReportService {
         
         Calendar cal = Calendar.getInstance();
 
+        // --- Process Orders ---
         for (Order o : orders) {
             if (o.getOrderStatus() != Order.OrderStatus.CANCELLED) {
                 totalRevenue += o.getTotalPrice();
@@ -71,6 +84,7 @@ public class MonthlyReportService {
             }
         }
 
+        // --- Process Waiting List ---
         int totalWaiting = 0;
         if (waitingList != null) {
             totalWaiting = waitingList.size();
@@ -83,13 +97,13 @@ public class MonthlyReportService {
             }
         }
 
-        // === HTML START ===
+        // === HTML Construction ===
         sb.append("<!DOCTYPE html>");
         sb.append("<html lang='en'><head><meta charset='UTF-8'>");
         sb.append("<title>Monthly Report</title>");
         sb.append("<script src='https://cdn.jsdelivr.net/npm/chart.js'></script>");
 
-        // === CSS ===
+        // === CSS Styles ===
         sb.append("<style>");
         sb.append("body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 20px; }");
         sb.append(".container { max-width: 1400px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.08); }");
@@ -98,7 +112,6 @@ public class MonthlyReportService {
         sb.append("h2 { color: #34495e; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; margin-top: 50px; margin-bottom: 20px; }");
         sb.append("h3 { color: #7f8c8d; margin-top: 30px; font-size: 16px; text-transform: uppercase; }");
         
-        // Cards & Charts CSS (ללא שינוי)
         sb.append(".cards { display: flex; justify-content: space-between; margin-bottom: 40px; gap: 20px; }");
         sb.append(".card { flex: 1; background: #fff; padding: 25px; border-radius: 10px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border: 1px solid #eee; }");
         sb.append(".card h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #95a5a6; letter-spacing: 1px; }");
@@ -114,7 +127,6 @@ public class MonthlyReportService {
         sb.append(".chart-desc { color: #666; font-size: 14px; margin-bottom: 15px; line-height: 1.6; background-color: #f9f9f9; padding: 10px; border-left: 4px solid #3498db; border-radius: 4px; }");
         sb.append(".chart-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: #2c3e50; }");
 
-        // Table CSS
         sb.append("table { width: 100%; border-collapse: collapse; margin-top: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 13px; }");
         sb.append("th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eee; }");
         sb.append("th { background-color: #34495e; color: white; font-weight: 600; white-space: nowrap; }");
@@ -126,12 +138,12 @@ public class MonthlyReportService {
         sb.append("</style>");
         sb.append("</head><body>");
 
-        // === BODY CONTENT ===
+        // === Body Content ===
         sb.append("<div class='container'>");
         sb.append("<h1>Monthly Operations Report</h1>");
         sb.append("<p class='subtitle'>Report Period: ").append(month).append("/").append(year).append("</p>");
 
-        // Cards
+        // --- Summary Cards ---
         sb.append("<div class='cards'>");
         sb.append("<div class='card green'><h3>Total Revenue</h3><div class='value'>₪").append(String.format("%.2f", totalRevenue)).append("</div></div>");
         sb.append("<div class='card blue'><h3>Total Orders</h3><div class='value'>").append(orders.size()).append("</div></div>");
@@ -139,7 +151,7 @@ public class MonthlyReportService {
         sb.append("<div class='card red'><h3>Late Arrivals</h3><div class='value'>").append(lateOrders).append("</div></div>");
         sb.append("</div>");
 
-        // --- PART 1, 2, 3: CHARTS (ללא שינוי) ---
+        // --- Charts Section 1 ---
         sb.append("<h2>1. General Overview</h2>");
         sb.append("<div class='charts-row'>");
         sb.append("<div class='chart-box-half'><div class='chart-title'>Customer Segmentation</div><div style='height: 300px'><canvas id='pieChart'></canvas></div></div>");
@@ -152,12 +164,11 @@ public class MonthlyReportService {
         sb.append("<h2>3. Daily Demand Trends</h2>");
         sb.append("<div class='chart-box-full'><div class='chart-title'>Orders vs. Waiting List Load</div><div style='height: 400px'><canvas id='trendChart'></canvas></div></div>");
 
-        // --- PART 4: DETAILED DATA LOGS ---
+        // --- Detailed Logs ---
         sb.append("<h2>4. Detailed Data Logs</h2>");
         
-        // --- טבלה 1: הזמנות (Order Log) - תוקן לפי בקשתך ---
+        // --- Table 1: Order Log ---
         sb.append("<h3>Order Log</h3>");
-        // הורדתי את Table Info המורכב, והשארתי Table ו-Guests בנפרד
         sb.append("<table><thead><tr><th>ID</th><th>Table</th><th>Guests</th><th>Customer</th><th>Ordered For</th><th>Actual Arrival</th><th>Left At</th><th>Booked On</th><th>Delay</th><th>Total</th><th>Status</th></tr></thead><tbody>");
         
         for (Order o : orders) {
@@ -167,7 +178,6 @@ public class MonthlyReportService {
             String leavingTime = (o.getLeavingTime() != null) ? fmt.format(o.getLeavingTime()) : "-";
             String bookedOn = (o.getDateOfPlacingOrder() != null) ? fmt.format(o.getDateOfPlacingOrder()) : "-";
 
-            // --- כאן השינוי: הצגת מספר שולחן בלבד ---
             String tableNum = (o.getTableNumber() != null) ? String.valueOf(o.getTableNumber()) : "-";
             String guests = String.valueOf(o.getNumberOfGuests());
 
@@ -190,8 +200,8 @@ public class MonthlyReportService {
 
             sb.append("<tr>");
             sb.append("<td>").append(o.getOrderNumber()).append("</td>");
-            sb.append("<td>#").append(tableNum).append("</td>"); // רק המספר
-            sb.append("<td>").append(guests).append("</td>");    // כמות הסועדים
+            sb.append("<td>#").append(tableNum).append("</td>");
+            sb.append("<td>").append(guests).append("</td>");
             sb.append("<td>").append(name).append("</td>");
             sb.append("<td>").append(orderedFor).append("</td>");
             sb.append("<td>").append(arrivalTime).append("</td>");
@@ -204,7 +214,7 @@ public class MonthlyReportService {
         }
         sb.append("</tbody></table>");
 
-        // --- טבלה 2: רשימת המתנה (Waiting List Log) ---
+        // --- Table 2: Waiting List Log ---
         sb.append("<h3>Waiting List Log</h3>");
         if (waitingList != null && !waitingList.isEmpty()) {
             sb.append("<table><thead><tr><th>ID</th><th>Entered At</th><th>Customer</th><th>Guests (Places Needed)</th><th>Code</th></tr></thead><tbody>");
@@ -214,7 +224,6 @@ public class MonthlyReportService {
                 sb.append("<td>").append(w.getWaitingId()).append("</td>");
                 sb.append("<td>").append(fmt.format(w.getEnterTime())).append("</td>");
                 sb.append("<td>").append(wName).append("</td>");
-                // Guests מייצג את "כמות המקומות" שהם צריכים
                 sb.append("<td>").append(w.getNumberOfGuests()).append("</td>");
                 sb.append("<td>").append(w.getConfirmationCode()).append("</td>");
                 sb.append("</tr>");
@@ -226,19 +235,19 @@ public class MonthlyReportService {
 
         sb.append("</div>"); // Close Container
 
-        // === SCRIPTS ===
+        // === JavaScript: Chart.js Rendering ===
         sb.append("<script>");
-        // Pie
+        
         sb.append("new Chart(document.getElementById('pieChart'), { type: 'doughnut', data: { labels: ['Subscribers', 'Regular Customers'], datasets: [{ data: [").append(subscribers).append(", ").append(regulars).append("], backgroundColor: ['#2ecc71', '#95a5a6'] }] }, options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });");
-        // Bar
+        
         sb.append("new Chart(document.getElementById('barChart'), { type: 'bar', data: { labels: [");
         for(int i=0; i<24; i++) sb.append("'").append(String.format("%02d:00", i)).append("',");
         sb.append("], datasets: [{ label: 'Arrivals', data: [");
         for(int i=0; i<24; i++) sb.append(hourlyActivity[i]).append(",");
         sb.append("], backgroundColor: '#3498db', borderRadius: 4 }] }, options: { maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });");
-        // Delay
+        
         sb.append("new Chart(document.getElementById('delayChart'), { type: 'bar', data: { labels: [").append(delayLabels).append("], datasets: [{ label: 'Minutes (Positive=Late, Negative=Early)', data: [").append(delayData).append("], backgroundColor: (ctx) => { const v = ctx.raw; return v > 0 ? '#e74c3c' : '#27ae60'; }, borderRadius: 4 }] }, options: { maintainAspectRatio: false, indexAxis: 'y', scales: { x: { title: { display: true, text: 'Minutes' } } } } });");
-        // Trend
+        
         sb.append("new Chart(document.getElementById('trendChart'), { type: 'line', data: { labels: ["); 
         for(int i=1; i<=31; i++) sb.append("'Day ").append(i).append("',");
         sb.append("], datasets: [{ label: 'Orders', data: [");
