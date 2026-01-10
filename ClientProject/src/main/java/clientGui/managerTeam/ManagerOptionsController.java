@@ -325,9 +325,13 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     void goToMonthlyReportsBtn(ActionEvent event) {
         
          MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
-         if (m == null) { 
-        	 System.out.println("error: MonthlyReportsController is null ");
-        	 }
+         if (m != null) {
+             // 2. חובה לשלוח את המידע למסך הבא!
+             // זה מה שהיה חסר:
+             m.initData(this.emp, this.clientUi, this.isManager); 
+         } else {
+             System.out.println("error: MonthlyReportsController is null");
+         }
     }
 	/**
 	 * Navigates to the Order Details / Table management screen.
