@@ -45,6 +45,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	private double totalPrice;
 	private OrderLogic orderLogic;
 	private Customer customer;
+	private ActionEvent currentEvent;
 	
 	
 	@Override
@@ -102,19 +103,15 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		System.out.println("Processing Credit Card Payment...");
 		System.out.println("Card: " + cardNum + " | Amount: " + totalPrice);
 
-		System.out.println("Payment Approved! Table " + tableId + " released.");
 		
 //		order.setOrderStatus(OrderStatus.PAID);
 		orderLogic.updateOrderCheckOut(order);
+		this.currentEvent = event;
 		
-		Alarm.showAlert("Payment Sucssesfully!","You paid "+totalPrice + " to Bistro, Thank you!", AlertType.INFORMATION);
 //		System.out.println("Order closed at: " + order.getLeavingTime());
-		
-		// Alert pay good
-		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 
-		// if(isSub)
-		controller.initData(clientUi, isSubscriber, subscriberId,customer);
+		// Alert pay good
+	
 		// else
 		// controller.initData(clientUi, false, subscriberId);
 
@@ -145,11 +142,36 @@ public class PaymentController extends MainNavigator implements MessageListener<
 
 	@Override
 	public void onMessageReceive(Object msg) {
-		// TODO Auto-generated method stub
-		Response res = (Response)msg;
-		Order o = (Order)res.getData();
-		o.setTableNumber(null);
-		this.order = o;
+		
+	
+		if (msg instanceof Response) {
+            Response res = (Response) msg;
+            
+            // בדיקה האם העדכון הצליח (תלוי איך השרת שלך מחזיר תשובה)
+            // נניח שחזרה הזמנה תקינה או אישור
+            
+            // עדכון ה-UI ומעבר מסך חייב להתבצע ב-Platform.runLater
+            Platform.runLater(() -> {
+            	if(res.getData() instanceof Order) {
+	                Order o = (Order) res.getData();
+	                o.setTableNumber(null);
+	                this.order = o;
+            	}
+
+                // 1. הצגת הודעת הצלחה
+                Alarm.showAlert("Payment Successfully!", "You paid " + totalPrice + " to Bistro, Thank you!", AlertType.INFORMATION);
+                System.out.println("Payment Approved! Table " + tableId + " released.");
+                try {
+                	SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
+	
+                	controller.initData(clientUi, isSubscriber, subscriberId,customer);
+                }catch(Exception e) {
+                	e.printStackTrace();
+                    System.out.println("Error navigating after payment");
+                }
+		
+            });
+		}
 	}
 	
 }
