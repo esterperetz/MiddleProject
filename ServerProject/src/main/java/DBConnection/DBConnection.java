@@ -206,15 +206,16 @@ public class DBConnection {
 	public static void createTableWaitingList(Connection con) {
 		Statement stmt;
 		String sql = "CREATE TABLE IF NOT EXISTS waiting_list (" +
-				"waiting_id INT NOT NULL AUTO_INCREMENT, " +
-				"customer_id INT , " +
-				"number_of_guests INT NOT NULL, " +
-				"enter_time DATETIME NOT NULL, " +
-				"confirmation_code INT NOT NULL, " +
-				"PRIMARY KEY (waiting_id), " +
-				"CONSTRAINT fk_waiting_customer FOREIGN KEY (customer_id) " +
-				"REFERENCES Customer(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE" +
-				");";
+		        "waiting_id INT NOT NULL AUTO_INCREMENT, " +
+		        "customer_id INT , " +
+		        "number_of_guests INT NOT NULL, " +
+		        "enter_time DATETIME NOT NULL, " +
+		        "confirmation_code INT NOT NULL, " +
+		        "in_waiting_list TINYINT(1) DEFAULT 1, " +
+		        "PRIMARY KEY (waiting_id), " +
+		        "CONSTRAINT fk_waiting_customer FOREIGN KEY (customer_id) " +
+		        "REFERENCES Customer(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE" +
+		        ");";
 		try {
 			stmt = con.createStatement();
 			stmt.executeUpdate(sql);
