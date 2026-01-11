@@ -116,44 +116,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 		loadHours();
 	}
 
-//	private void setupDateConstraints() {
-//		Callback<DatePicker, DateCell> dayCellFactory = picker -> new DateCell() {
-//			@Override
-//			public void updateItem(LocalDate item, boolean empty) {
-//				super.updateItem(item, empty);
-//				LocalDate today = LocalDate.now();
-//				LocalDate nextMonth = today.plusMonths(1);
-//				if (item.isBefore(today) || item.isAfter(nextMonth)) {
-//					setDisable(true);
-//					setStyle("-fx-background-color: #ffc0cb;");
-//				}
-//			}
-//		};
-//		datePicker.setDayCellFactory(dayCellFactory);
-//		datePicker.setValue(LocalDate.now());
-//	}
-
-//	private void updateTimeSlots(LocalDate selectedDate) {
-//		List<String> validSlots = new ArrayList<>();
-//		LocalTime openTime = LocalTime.of(12, 0);
-//		LocalTime closeTime = LocalTime.of(22, 0);
-//		LocalTime minOrderTime = LocalTime.now().plusHours(1);
-//
-//		LocalTime slot = openTime;
-//		while (slot.isBefore(closeTime)) {
-//			if (selectedDate.isEqual(LocalDate.now())) {
-//				if (slot.isAfter(minOrderTime)) {
-//					validSlots.add(slot.toString());
-//				}
-//			} else {
-//				validSlots.add(slot.toString());
-//			}
-//			slot = slot.plusMinutes(30);
-//		}
-//		timeComboBox.setItems(FXCollections.observableArrayList(validSlots));
-//	}
-
-
 
 	@FXML
 	void submitReservation(ActionEvent event) {
@@ -214,7 +176,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 			
 			WaitingList waitingList = new WaitingList(0,0,guests,finalReservationTime,0,customer);
 			if (isWaitlist) {
-			    // 1. שומרים את התוצאה שחזרה מה-Alarm
 				Optional<ButtonType> result = Alarm.showAlertAndConformation(
 				        "Fully Booked", 
 			        "This slot is full. Join waiting list for " + finalReservationTime + "?",
