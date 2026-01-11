@@ -12,7 +12,7 @@ import entities.WaitingList;
 public class WaitingListDAO {
 
     public List<WaitingList> getAllWaitingList() throws SQLException {
-        String sql = "SELECT * FROM waiting_list ORDER BY enter_time ASC";
+        String sql = "SELECT * FROM waiting_list WHERE in_waiting_list = ? ORDER BY enter_time ASC";
         Connection con = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -20,6 +20,7 @@ public class WaitingListDAO {
         try {
             con = DBConnection.getInstance().getConnection();
             stmt = con.prepareStatement(sql);
+            stmt.setInt(1, 1);
             rs = stmt.executeQuery();
 
             List<WaitingList> list = new ArrayList<>();
@@ -164,13 +165,14 @@ public class WaitingListDAO {
     }
 
     public boolean exitWaitingList(int waitingId) throws SQLException {
-        String sql = "DELETE FROM waiting_list WHERE waiting_id = ?";
+        String sql = "UPDATE waiting_list SET in_waiting_list = ? WHERE waiting_id = ?";
         Connection con = null;
 
         try {
             con = DBConnection.getInstance().getConnection();
             try (PreparedStatement stmt = con.prepareStatement(sql)) {
-                stmt.setInt(1, waitingId);
+            	stmt.setInt(1, 0);
+                stmt.setInt(2, waitingId);
                 return stmt.executeUpdate() > 0;
             }
         } finally {

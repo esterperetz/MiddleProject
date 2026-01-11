@@ -161,12 +161,13 @@ public class WaitingListController {
 		Order promotedOrder = new Order(0, new Date(), entry.getNumberOfGuests(), entry.getConfirmationCode(),
 				customer, null, new Date(), null, null, 0.0, OrderStatus.APPROVED);
 
-		// 3. Save to database and remove from waiting list
+		// 3. Save to database and change status in waiting list
 		if (orderDAO.createOrder(promotedOrder)) {
 			waitingListDAO.exitWaitingList(waitingId);
 
 			// 4. Sync all clients with updated lists
 			List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
+			EmailService.sendConfirmation(promotedOrder.getCustomer(),promotedOrder);
 			Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
 					Response.ResponseStatus.SUCCESS, null, updatedList));
 			Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
