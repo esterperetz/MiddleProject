@@ -9,7 +9,6 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
 
-import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import entities.ActionType;
@@ -23,174 +22,196 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType; // ייבוא חשוב
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 
-public class MonthlyReportsController extends MainNavigator implements Initializable, MessageListener<Object> {
+/**
+ * Controller for the Monthly Reports screen.
+ * Allows managers to select a specific month and year, download the corresponding
+ * statistical report as a ZIP file from the server, and automatically open it.
+ */
+public class MonthlyReportsController extends MainNavigator implements Initializable, client.MessageListener<Object> {
 
-    @FXML
-    private ComboBox<String> cmbMonth;
-
-    @FXML
-    private ComboBox<Integer> cmbYear;
-
-    @FXML
-    private Button btnDownload;
-
-    @FXML
-    private Label lblStatus;
+    @FXML private ComboBox<String> cmbMonth;
+    @FXML private ComboBox<Integer> cmbYear;
+    @FXML private Button btnDownload;
+    @FXML private Label lblStatus;
 
     private Employee emp;
     private Employee.Role role;
-
+    
     public static MonthlyReportsController instance;
 
+    /**
+     * Initializes the controller class.
+     * Populates the month and year combo boxes immediately after the FXML is loaded.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         instance = this;
         initComboBoxes();
     }
 
+    /**
+     * Sets up the session data and registers the message listener.
+     * Clears old listeners to ensure this controller receives the server's response.
+     *
+     * @param emp      The logged-in employee.
+     * @param clientUi The client interface for server communication.
+     * @param role     The role of the employee.
+     */
     public void initData(Employee emp, ClientUi clientUi, Employee.Role role) {
         this.clientUi = clientUi;
         this.emp = emp;
         this.role = role;
-        // חשוב להירשם להאזנה להודעות כדי ש-onMessageReceive יפעל
-        // client.ChatClient.client.addMessageListener(this); (תלוי במימוש שלך)
+
+        if (this.clientUi != null) {
+            this.clientUi.removeAllListeners();
+            this.clientUi.addListener(this);
+        }
     }
 
+    /**
+     * Populates the combo boxes with months (01-12) and years.
+     * Sets the default selection to the previous month.
+     */
     private void initComboBoxes() {
+        // Fill months 01-12
         for (int i = 1; i <= 12; i++) {
             cmbMonth.getItems().add(String.format("%02d", i));
         }
+
+        // Fill years from 2024 to current
         int currentYear = LocalDate.now().getYear();
         for (int i = 2024; i <= currentYear; i++) {
             cmbYear.getItems().add(i);
         }
+        
+        // Set default to previous month
         LocalDate prevMonth = LocalDate.now().minusMonths(1);
         cmbMonth.setValue(String.format("%02d", prevMonth.getMonthValue()));
         cmbYear.setValue(prevMonth.getYear());
     }
 
+    /**
+     * Handles the "Download" button click.
+     * Validates the date selection and sends a request to the server to download the report.
+     *
+     * @param event The action event.
+     */
     @FXML
     void downloadReportBtn(ActionEvent event) {
         String month = cmbMonth.getValue();
         Integer year = cmbYear.getValue();
 
+        // Validation
         if (month == null || year == null) {
-            Alarm.showAlert("Selection Error", "Please select both month and year.",AlertType.ERROR);
+            Alarm.showAlert("Selection Error", "Please select both month and year.", AlertType.WARNING);
             return;
         }
 
-        lblStatus.setText("Downloading report...");
-        lblStatus.setStyle("-fx-text-fill: blue;");
-
+        // User Feedback
+        lblStatus.setText("Downloading ZIP...");
+        lblStatus.setStyle("-fx-text-fill: blue; -fx-font-weight: bold;");
+        
+        // Send Request
         String datePayload = month + "/" + year;
         Request req = new Request(ResourceType.REPORT_MONTHLY, ActionType.DOWNLOAD_REPORT, null, datePayload);
-        this.clientUi.sendRequest(req);
+        
+        if(clientUi != null) {
+            clientUi.sendRequest(req);
+        }
     }
-
+    
+    /**
+     * Handles messages received from the server.
+     * If the report is found, it triggers the file save. Otherwise, it shows an error.
+     *
+     * @param msg The message object from the server.
+     */
     @Override
     public void onMessageReceive(Object msg) {
         if (msg instanceof Response) {
             Response response = (Response) msg;
-
-            // בדיקה אם זו התשובה לבקשה שלנו
+            
             if (response.getAction() == ActionType.DOWNLOAD_REPORT) {
-
                 Platform.runLater(() -> {
-                    // מקרה הצלחה: השרת החזיר SUCCESS
                     if (response.getStatus() == Response.ResponseStatus.SUCCESS) {
-                        Object payload = response.getData();
-                        if (payload instanceof MyFile) {
-                            saveAndOpenFile((MyFile) payload);
+                        // Success
+                        if (response.getData() instanceof MyFile) {
+                            saveAndOpenZip((MyFile) response.getData());
                         }
-                    } 
-                    // מקרה כישלון: השרת החזיר ERROR (אין קובץ או בעיה אחרת)
-                    else {
-                        String errorDetails = response.getMessage_from_server();
-                        if (errorDetails == null && response.getData() instanceof String) {
-                            errorDetails = (String) response.getData();
-                        }
-                        if (errorDetails == null) errorDetails = "Report not found on server.";
-                        
-                        // עדכון לייבל
-                        lblStatus.setText("Failed: " + errorDetails);
+                    } else {
+                        // Failure
+                        String err = response.getMessage_from_server();
+                        lblStatus.setText("Report Not Found");
                         lblStatus.setStyle("-fx-text-fill: red;");
-                        
-                        // הקפצת הודעה למשתמש
-                        Alarm.showAlert("Report Not Found", "No report exists for the selected date.\nDetails: " + errorDetails,AlertType.ERROR);
+                        Alarm.showAlert("Not Found", "No report exists for " + cmbMonth.getValue() + "/" + cmbYear.getValue() + "\n(" + err + ")", AlertType.ERROR);
                     }
                 });
             }
         }
     }
 
-   
-
-    // פונקציה זו נשארה לשימוש פנימי או קריאות אחרות
-    public void receiveReportFile(Object msg) {
-        Platform.runLater(() -> {
-            if (msg instanceof String) {
-                lblStatus.setText((String) msg);
-                lblStatus.setStyle("-fx-text-fill: red;");
-                Alarm.showAlert("Error", (String) msg,AlertType.ERROR); // הוספתי גם כאן
+    /**
+     * Saves the received byte array as a ZIP file in the user's Downloads folder and opens it.
+     *
+     * @param myFile The file object received from the server.
+     */
+    private void saveAndOpenZip(MyFile myFile) {
+        try {
+            if (myFile == null || myFile.getSize() == 0) {
+                lblStatus.setText("Error: Empty File");
                 return;
             }
 
-            if (msg instanceof MyFile) {
-                MyFile myFile = (MyFile) msg;
-                saveAndOpenFile(myFile);
-            }
-        });
-    }
-
-    private void saveAndOpenFile(MyFile myFile) {
-        try {
-            // 1. משיגת נתיב הבית של המשתמש
             String userHome = System.getProperty("user.home");
+            String fileName = "Report_" + cmbYear.getValue() + "_" + cmbMonth.getValue() + ".zip";
             
-            // 2. שליפת החודש והשנה שנבחרו ב-ComboBox (כדי להשתמש בהם בשם הקובץ)
-            String month = cmbMonth.getValue();
-            Integer year = cmbYear.getValue();
-
-            // 3. בניית הנתיב המלא לתיקיית ההורדות (זו השורה שרצית)
-            String filePath = userHome + "/Downloads/Report_" + year + "_" + month + ".html";
+            // Construct safe path
+            String downloadsPath = userHome + File.separator + "Downloads";
+            String filePath = downloadsPath + File.separator + fileName;
             
             File file = new File(filePath);
 
-            // 4. כתיבת הקובץ (נשאר אותו דבר)
-            FileOutputStream fos = new FileOutputStream(file);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            bos.write(myFile.getMybytearray(), 0, myFile.getSize());
-            bos.flush();
-            bos.close();
-            fos.close();
+            try (FileOutputStream fos = new FileOutputStream(file);
+                 BufferedOutputStream bos = new BufferedOutputStream(fos)) {
+                bos.write(myFile.getMybytearray(), 0, myFile.getSize());
+                bos.flush();
+            }
 
-            // 5. עדכון סטטוס ופתיחת הקובץ
-            lblStatus.setText("Report saved to Downloads!");
-            lblStatus.setStyle("-fx-text-fill: green;");
+            // Update UI
+            lblStatus.setText("Saved to Downloads!");
+            lblStatus.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
 
-            if (Desktop.isDesktopSupported()) {
+            // Open File
+            if (Desktop.isDesktopSupported() && file.exists()) {
                 Desktop.getDesktop().open(file);
+            } else {
+                Alarm.showAlert("Success", "File saved successfully at:\n" + filePath, AlertType.INFORMATION);
             }
 
         } catch (IOException e) {
             e.printStackTrace();
-            lblStatus.setText("Error saving file: " + e.getMessage());
+            lblStatus.setText("Save Error");
             lblStatus.setStyle("-fx-text-fill: red;");
-            Alarm.showAlert("System Error", "Could not save the file locally.", AlertType.ERROR);
+            Alarm.showAlert("Save Error", "Could not save file to Downloads folder.", AlertType.ERROR);
         }
-    }
+    } 
 
+    /**
+     * Navigates back to the Employee Options screen.
+     *
+     * @param event The action event.
+     */
     @FXML
     void backBtn(ActionEvent event) {
-        ManagerOptionsController managerOptions = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
-        if (managerOptions != null) {
-            managerOptions.initData(emp, clientUi, role);
-        }
+        ManagerOptionsController manager = super.loadScreen("managerTeam/EmployeeOption", event, clientUi); 
+        if(manager != null)
+            manager.initData(emp, clientUi, role);
+        else
+            System.out.println("Error move scree to ManagerOptionsController from MonthlyReportsController is null");
     }
 }
