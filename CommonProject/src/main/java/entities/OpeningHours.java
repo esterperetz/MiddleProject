@@ -15,14 +15,16 @@ public class OpeningHours implements Serializable {
 	private Time closeTime;
 	private boolean isClosed;
 	private Integer dayOfWeek;
+	private String description;
 	
 	public OpeningHours(Date dateOfWeek, Date specialDate, Time openTime, Time closeTime) {
-
+		
 		this.dateOfWeek = dateOfWeek;
 		this.specialDate = specialDate;
 		this.openTime = openTime;
 		this.closeTime = closeTime;
 		this.dayOfWeek = getDayOfWeek(dateOfWeek);
+		
 
 	}
 
@@ -38,6 +40,10 @@ public class OpeningHours implements Serializable {
 	// Getters and Setters
 	public int getId() {
 		return id;
+	}
+	
+	public void setDescription(String data) {
+		this.description = data;
 	}
 
 	public void setId(int id) {

@@ -55,6 +55,7 @@ public class DBConnection {
 				createTableWaitingList(setupCon);
 				createTableOpeningHours(setupCon);
 				insertIntoTableOpeningHours(setupCon);
+//				createOpeningHoursTables(setupCon);
 			}
 
 			conn_established = true;
@@ -241,6 +242,51 @@ public class DBConnection {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void createOpeningHoursTables(Connection con) {
+	    Statement stmt;
+	    try {
+	        stmt = con.createStatement();
+
+	        // --- 1. טבלת השגרה (Weekly Schedule) ---
+	        String sqlWeekly = "CREATE TABLE IF NOT EXISTS opening_hours (" +
+	                "day_of_week INT NOT NULL, " +
+	                "open_time TIME, " +
+	                "close_time TIME, " +
+	                "is_closed TINYINT(1) DEFAULT 0, " +
+	                "PRIMARY KEY (day_of_week)" +
+	                ");";
+	        stmt.executeUpdate(sqlWeekly);
+
+	        // --- 2. טבלת החריגים (Special Events) ---
+	        String sqlSpecial = "CREATE TABLE IF NOT EXISTS special_events (" +
+	                "event_date DATE NOT NULL, " +
+	                "open_time TIME, " +
+	                "close_time TIME, " +
+	                "is_closed TINYINT(1) DEFAULT 0, " +
+	                "description VARCHAR(255), " +
+	                "PRIMARY KEY (event_date)" +
+	                ");";
+	        stmt.executeUpdate(sqlSpecial);
+
+	      
+	        String initData = "INSERT IGNORE INTO weekly_schedule (day_of_week, open_time, close_time, is_closed) VALUES " +
+	                "(1, '08:00:00', '23:00:00', 0), " + // Sunday
+	                "(2, '08:00:00', '23:00:00', 0), " + // Monday
+	                "(3, '08:00:00', '23:00:00', 0), " + // Tuesday
+	                "(4, '08:00:00', '23:00:00', 0), " + // Wednesday
+	                "(5, '08:00:00', '23:00:00', 0), " + // Thursday
+	                "(6, '08:00:00', '14:00:00', 0) ";   // Friday
+
+	        
+	        stmt.executeUpdate(initData);
+	        
+	        System.out.println("Tables 'weekly_schedule' and 'special_events' created/verified successfully.");
+
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
 
 	public static void insertIntoTableOpeningHours(Connection con) {
