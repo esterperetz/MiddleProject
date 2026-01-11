@@ -1,5 +1,6 @@
 package clientGui.managerTeam;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -14,6 +15,8 @@ import clientGui.user.RegisterSubscriberController;
 import clientLogic.EmployeeLogic;
 import entities.Employee;
 import entities.OpeningHours;
+import entities.Response;
+import entities.Table;
 import entities.WaitingList;
 
 import java.net.URL;
@@ -22,6 +25,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
@@ -40,16 +45,21 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     @FXML private Label lblDashboardTitle;
     @FXML private Label lblDashboardSubtitle;
     @FXML private Button btnSignUp;
+    
 
     // --- Schedule Management UI (Right Side - UPDATED) ---
     
-    @FXML private DatePicker dpManageDate;      // בוחר התאריך
-    @FXML private TextField txtManageOpen;      // שעת פתיחה
-    @FXML private TextField txtManageClose;     // שעת סגירה
-    @FXML private CheckBox cbIsSpecial;         // האם זה יום מיוחד?
-    @FXML private ListView<String> listSpecialDates; // רשימת תצוגה
-    @FXML private Label lblHoursStatus;         // לייבל סטטוס
+    @FXML private DatePicker dpManageDate;     
+    @FXML private TextField txtManageOpen;      
+    @FXML private TextField txtManageClose;     
+    @FXML private CheckBox cbIsSpecial;         
+    @FXML private ListView<String> listSpecialDates; 
+    @FXML private Label lblHoursStatus;     
+    @FXML private CheckBox cbIsClosed;
 	private EmployeeLogic employeeLogic;
+	private String specialDate;
+	private String listEntry;
+	
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -60,6 +70,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
         this.clientUi = clientUi;
         this.emp = emp;
+       
         employeeLogic = new EmployeeLogic(this.clientUi);
         if (isManager == Employee.Role.MANAGER) {
             this.isManager = Employee.Role.MANAGER;
@@ -96,84 +107,88 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
      */
     @FXML
     void updateScheduleBtn(ActionEvent event) {
-    	try {
         LocalDate date = dpManageDate.getValue();
-        String openTime = txtManageOpen.getText();
-        String closeTime = txtManageClose.getText();
+        String openTimeStr = txtManageOpen.getText();
+        String closeTimeStr = txtManageClose.getText();
         boolean isSpecial = cbIsSpecial.isSelected();
-        
-      
-            // 1. הגדרת הפורמט שהמשתמש מקליד (שעות:דקות)
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        boolean isClosed = cbIsClosed.isSelected();
 
-            // 2. המרה ל-LocalTime (זה יודע להתמודד עם "08:00")
-            LocalTime localOpen = LocalTime.parse(openTime, formatter);
-            LocalTime localClose = LocalTime.parse(closeTime, formatter);
-
-            // 3. המרה ל-java.sql.Time (בשביל ה-DB)
-            Time sqlOpenTime = Time.valueOf(localOpen);
-            Time sqlCloseTime = Time.valueOf(localClose);
-
-            System.out.println("Converted: " + sqlOpenTime + " - " + sqlCloseTime);
-            
-            // כאן אתה שולח לשרת...
-            // updateBusinessHours(date, sqlOpenTime, sqlCloseTime, ...);
-
-      
-        // 1. Validation
         if (date == null) {
             setStatus("Please select a date first.", true);
             return;
         }
-        if (openTime.isEmpty() || closeTime.isEmpty()) {
+
+        if (!isClosed && (openTimeStr == null || openTimeStr.trim().isEmpty() ||
+                          closeTimeStr == null || closeTimeStr.trim().isEmpty())) {
             setStatus("Please enter both opening and closing times.", true);
             return;
         }
 
-        // 2. Logic processing
-        String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String typeStr = isSpecial ? "(Special Event)" : "(Updated Hours)";
-        
-        // יצירת מחרוזת לתצוגה ברשימה למטה (רק בשביל הפידבק ב-GUI)
-        String listEntry = String.format("%s: %s - %s %s", dateStr, openTime, closeTime, typeStr);
+        try {
+            Time sqlOpenTime = null;
+            Time sqlCloseTime = null;
 
-       
-        System.out.println("Updating schedule: " + listEntry);
-        if (date != null) {
-            // המרה ישירה ופשוטה
-            java.sql.Date sqlDate = java.sql.Date.valueOf(date);
-            
-            if(typeStr.equals("(Updated Hours)")) {
+            if (!isClosed) {
             	
-           	 employeeLogic.createOpeningHours(new OpeningHours(sqlDate,null,sqlOpenTime,sqlCloseTime));
-           }
-           else {
-        	   LocalDate localDate = LocalDate.now();
-        	   employeeLogic.createOpeningHours(new OpeningHours(java.sql.Date.valueOf(localDate.now()),sqlDate,sqlOpenTime,sqlCloseTime));
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
+                LocalTime localOpen = LocalTime.parse(openTimeStr, formatter);
+                LocalTime localClose = LocalTime.parse(closeTimeStr, formatter);
+                sqlOpenTime = Time.valueOf(localOpen);
+                sqlCloseTime = Time.valueOf(localClose);
             }
+
+            String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            String typeStr = isSpecial ? "(Special Event)" : "(Updated Hours)";
+            String timeDisplay = isClosed ? "[CLOSED]" : sqlOpenTime + " - " + sqlCloseTime;
+            
+            this.listEntry = String.format("%s: %s %s", dateStr, timeDisplay, typeStr);
+
+            java.sql.Date sqlDate = java.sql.Date.valueOf(date);
+            OpeningHours oh;
+
+            if (!isSpecial) {
+            	
+                oh = new OpeningHours(sqlDate, null, sqlOpenTime, sqlCloseTime, isClosed);
+            } else {
+                oh = new OpeningHours(sqlDate, sqlDate, sqlOpenTime, sqlCloseTime, isClosed);
+            }
+
+            employeeLogic.createOpeningHours(oh);
+
+        } catch (DateTimeParseException e) {
+            e.printStackTrace();
+            setStatus("Invalid time format! Use HH:mm (e.g., 08:00 or 8:00)", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            setStatus("An error occurred during update.", true);
         }
-        
-       
-        // 4. Update UI
-        specialDatesModel.add(0, listEntry); // Add to top of list
-        setStatus("Schedule updated successfully!", false);
-    	} catch (DateTimeParseException e) {
-              setStatus("Invalid time format! Use HH:mm (e.g., 08:00)", true);
-              return;
-          }
-        
-        // Clear fields? Optional.
-        // dpManageDate.setValue(null);
-        // cbIsSpecial.setSelected(false);
     }
+        
+     
 
     @FXML
     void removeSpecialDateBtn(ActionEvent event) {
         String selectedItem = listSpecialDates.getSelectionModel().getSelectedItem();
+        
         if (selectedItem != null) {
-            specialDatesModel.remove(selectedItem);
-            // TODO: Notify server to revert hours for this date
-            setStatus("Entry removed", false);
+        
+        	if(selectedItem.contains("(Special Event)")) {
+        		String[] parts = selectedItem.split(":");
+                String dateString = parts[0].trim(); 
+
+                // המרה לתאריך SQL
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                LocalDate localDate = LocalDate.parse(dateString, formatter);
+                java.sql.Date dateToDelete = java.sql.Date.valueOf(localDate);
+
+                this.specialDate = selectedItem;
+                employeeLogic.cancelOpeningHours(dateToDelete);
+        	 	
+        	}
+        	else {
+        		setStatus("could remove please select special date!", true);
+        	}
+  
         } else {
             setStatus("Select an item to remove", true);
         }
@@ -264,6 +279,56 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
     @Override
     public void onMessageReceive(Object msg) {
-        System.out.println("Manager Controller received: " + msg.toString());
+        Platform.runLater(() -> {
+            if (msg instanceof Response) {
+                Response res = (Response) msg;
+                if (res.getResource() == entities.ResourceType.BUSINESS_HOUR) {
+                    switch (res.getAction()) {
+                        case CREATE:
+                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                                OpeningHours data = (OpeningHours) res.getData();
+                                if(listEntry != null) {
+                                	specialDatesModel.add(0, listEntry); 
+	                                setStatus("Schedule updated successfully!", false);
+	                                txtManageOpen.clear();
+	                                txtManageClose.clear();
+                                }
+                                else
+                                	 setStatus("Schedule update failed!", true);
+                              
+                            }
+                            else
+                            	setStatus("Could not remove from DB", true);
+                            break;
+                      
+                        case UPDATE:
+                        	   if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                        		   
+                                   setStatus(" date has been updated! ", false);
+                               }
+                               else {
+                                   setStatus("Could not remove from DB", true);
+                               }
+                               break;
+                        case DELETE:
+                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                            	if(this.specialDate != null) {
+                            		specialDatesModel.remove(this.specialDate);
+                                    setStatus("Special date removed. Reverted to standard hours.", false);
+                                    
+                            	}else
+                            		setStatus("Special date could not be removed.", true);
+                            }
+                            else {
+                                setStatus("Could not remove from DB", true);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
     }
+
 }

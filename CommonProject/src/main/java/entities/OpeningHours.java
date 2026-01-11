@@ -6,6 +6,8 @@ import java.util.Calendar;
 import java.util.Date;
 
 public class OpeningHours implements Serializable {
+	
+
 	private static final long serialVersionUID = 1L;
 
 	private int id;
@@ -17,13 +19,13 @@ public class OpeningHours implements Serializable {
 	private Integer dayOfWeek;
 	private String description;
 	
-	public OpeningHours(Date dateOfWeek, Date specialDate, Time openTime, Time closeTime) {
-		
+	public OpeningHours(Date dateOfWeek, Date specialDate, Time openTime, Time closeTime, boolean isClosed) {
+		this.isClosed = isClosed;
 		this.dateOfWeek = dateOfWeek;
 		this.specialDate = specialDate;
 		this.openTime = openTime;
 		this.closeTime = closeTime;
-		this.dayOfWeek = getDayOfWeek(dateOfWeek);
+		this.dayOfWeek = specialDate == null ? getDayOfWeek(dateOfWeek) : getDayOfWeek(specialDate);
 		
 
 	}
@@ -83,5 +85,12 @@ public class OpeningHours implements Serializable {
 
 	public boolean isClosed() {
 		return isClosed;
+	}
+	
+	@Override
+	public String toString() {
+		return "OpeningHours [id=" + id + ", dateOfWeek=" + dateOfWeek + ", specialDate=" + specialDate + ", openTime="
+				+ openTime + ", closeTime=" + closeTime + ", isClosed=" + isClosed + ", dayOfWeek=" + dayOfWeek
+				+ ", description=" + description + "]";
 	}
 }

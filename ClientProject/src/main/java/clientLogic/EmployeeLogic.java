@@ -1,5 +1,7 @@
 package clientLogic;
 
+import java.sql.Date;
+
 import clientGui.ClientUi;
 import entities.ActionType;
 import entities.Customer;
@@ -35,6 +37,10 @@ public class EmployeeLogic {
 		client.sendRequest(req);
 	}
 	
+	public void cancelOpeningHours(Date date) {
+		Request req = new Request(ResourceType.BUSINESS_HOUR, ActionType.DELETE, null, date);
+		client.sendRequest(req);
+	}
 	public void createSubscriber(Customer customer) {
 		System.out.println("in create client");
 		Request req = new Request(ResourceType.EMPLOYEE, ActionType.REGISTER_SUBSCRIBER, null, customer);
