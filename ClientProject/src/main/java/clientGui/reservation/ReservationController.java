@@ -62,6 +62,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 	private Button selectedButton = null;
 	private boolean isWaitlist = false;
 	private Customer customer;
+	private final int TABLE_CAPACITY = 20;
 
 	@FXML
 	public void initialize() {
@@ -177,7 +178,10 @@ public class ReservationController extends MainNavigator implements MessageListe
 				return;
 			}
 			int guests = Integer.parseInt(dinersField.getText().trim());
-
+			if(guests > TABLE_CAPACITY) {
+				Alarm.showAlert("Table Error", "There are not tables with " + guests + " capacity.", Alert.AlertType.ERROR);
+				return;
+			}
 			LocalDate localDate = datePicker.getValue();
 			LocalTime localTime = LocalTime.parse(selectedTime);
 			LocalDateTime ldt = LocalDateTime.of(localDate, localTime);
