@@ -13,32 +13,15 @@ public class BusinessHourDAO {
      * Finds the relevant operating hours for a specific date.
      * Priority: 1. Special Date, 2. Regular Day of Week.
      */
-	public OpeningHours getHoursForDate(int dayOfWeek) throws SQLException {
-	    // 1. חישוב התאריך המדויק
+	
+	public OpeningHours getHoursForDate(java.util.Date date) throws SQLException {
+	    
+	    java.sql.Date sqlDate = new java.sql.Date(date.getTime());
+
 	    Calendar cal = Calendar.getInstance();
-	    
-	    // שומרים את היום הנוכחי לבדיקה
-	    int currentDay = cal.get(Calendar.DAY_OF_WEEK);
-	    
-	    // מגדירים את היום המבוקש
-	    cal.set(Calendar.DAY_OF_WEEK, dayOfWeek);
-	    
-	    // תיקון חשוב: אם היום המבוקש הוא לפני היום הנוכחי (למשל היום שלישי וביקשת ראשון),
-	    // אנחנו רוצים את יום ראשון של שבוע הבא, ולא של העבר.
-	    if (dayOfWeek < currentDay) {
-	        cal.add(Calendar.WEEK_OF_YEAR, 1);
-	    }
+	    cal.setTime(date);
+	    int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
 
-	    // איפוס שעות לקבלת תאריך נקי
-	    cal.set(Calendar.HOUR_OF_DAY, 0);
-	    cal.set(Calendar.MINUTE, 0);
-	    cal.set(Calendar.SECOND, 0);
-	    cal.set(Calendar.MILLISECOND, 0);
-
-	    java.sql.Date calculatedDate = new java.sql.Date(cal.getTimeInMillis());
-
-	    // 2. השאילתה המתוקנת
-	    // שיניתי את NOW() לסימן שאלה (?) כדי שיתייחס לתאריך שחישבנו
 	    String sql = "SELECT * FROM opening_hours " +
 	                 "WHERE special_date = ? " + 
 	                 "OR (day_of_week = ? AND special_date IS NULL) " +
@@ -47,8 +30,8 @@ public class BusinessHourDAO {
 	    Connection con = DBConnection.getInstance().getConnection();
 	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
 	        
-	        stmt.setDate(1, calculatedDate); // כאן נכנס התאריך המחושב (למשל 14/01)
-	        stmt.setInt(2, dayOfWeek);       // כאן נכנס היום הכללי (למשל יום 1)
+	        stmt.setDate(1, sqlDate); 
+	        stmt.setInt(2, dayOfWeek);       
 
 	        try (ResultSet rs = stmt.executeQuery()) {
 	            if (rs.next()) {
@@ -60,6 +43,7 @@ public class BusinessHourDAO {
 	    }
 	    return null;
 	}
+	
 	//we need to change to this method
 //	public OpeningHours getHoursForDate(java.sql.Date requestedDate) throws SQLException {
 //	    

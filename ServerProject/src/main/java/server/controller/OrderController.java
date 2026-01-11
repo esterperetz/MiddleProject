@@ -388,8 +388,8 @@ public class OrderController {
 	    if (date.isBefore(today)) {
 	        return new ArrayList<>(); 
 	    }
-
-	    OpeningHours dayHours = businessHourDao.getHoursForDate(dayOfWeek);
+        System.out.println(dateOrder);
+	    OpeningHours dayHours = businessHourDao.getHoursForDate(dateOrder);
 	    List<String> options = new ArrayList<>();
 
 	    
