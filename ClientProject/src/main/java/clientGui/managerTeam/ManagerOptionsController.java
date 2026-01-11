@@ -11,412 +11,259 @@ import clientGui.navigation.MainNavigator;
 import clientGui.reservation.OrderUi_controller;
 import clientGui.reservation.WaitingListController;
 import clientGui.user.RegisterSubscriberController;
+import clientLogic.EmployeeLogic;
 import entities.Employee;
+import entities.OpeningHours;
+import entities.WaitingList;
 
 import java.net.URL;
+import java.sql.Time;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
 
-/**
- * Controller for the Manager's Dashboard (Options Screen).
- * <p>
- * This class handles: 1. Navigation to various manager sub-screens (Waiting
- * List, Orders, Registration). 2. Configuration of Standard Opening Hours. 3.
- * Management of Special Dates/Holidays (view, add, remove). 4. Permission-based
- * visibility of sensitive buttons (e.g., Reports).
- */
 public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
 
-	// --- Internal Fields ---
-	/** Flag to store the user's permission level. */
-	private Employee.Role isManager;
-	private boolean isManagerFlag;
+    // --- Internal Fields ---
+    private Employee.Role isManager;
+    private boolean isManagerFlag;
+    private ObservableList<String> specialDatesModel;
+    private Employee emp;
 
-	/** Data model for the special dates list view. */
-	private ObservableList<String> specialDatesModel;
+    // --- FXML UI Components (Left Side - Navigation) ---
+    @FXML private Button btnViewReports;
+    @FXML private Button btnMonthlyReports;
+    @FXML private Label lblDashboardTitle;
+    @FXML private Label lblDashboardSubtitle;
+    @FXML private Button btnSignUp;
 
-	// --- FXML UI Components ---
+    // --- Schedule Management UI (Right Side - UPDATED) ---
+    
+    @FXML private DatePicker dpManageDate;      // בוחר התאריך
+    @FXML private TextField txtManageOpen;      // שעת פתיחה
+    @FXML private TextField txtManageClose;     // שעת סגירה
+    @FXML private CheckBox cbIsSpecial;         // האם זה יום מיוחד?
+    @FXML private ListView<String> listSpecialDates; // רשימת תצוגה
+    @FXML private Label lblHoursStatus;         // לייבל סטטוס
+	private EmployeeLogic employeeLogic;
 
-	/** Button to view reports - hidden for non-managers. */
-	@FXML
-	private Button btnViewReports;
-	@FXML
-    private Button btnMonthlyReports;
-	@FXML
-	private Label lblDashboardTitle;
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        specialDatesModel = FXCollections.observableArrayList();
+        listSpecialDates.setItems(specialDatesModel);
+    }
 
-	@FXML
-	private Label lblDashboardSubtitle;
-
-	// --- Standard Opening Hours UI ---
-
-	/** Input field for the standard opening time (e.g., "08:00"). */
-	@FXML
-	private TextField txtOpenTime;
-
-	/** Input field for the standard closing time (e.g., "23:00"). */
-	@FXML
-	private TextField txtCloseTime;
-
-	// --- Special Dates / Holidays UI ---
-
-	/** Date picker for selecting a specific holiday or special event date. */
-	@FXML
-	private DatePicker dpSpecialDate;
-
-	/** Input field for opening time on the special date. */
-	@FXML
-	private TextField txtSpecialOpen;
-
-	/** Input field for closing time on the special date. */
-	@FXML
-	private TextField txtSpecialClose;
-
-	@FXML
-	private Button btnSignUp;
-
-	/** List view to display the added special dates/hours. */
-	@FXML
-	private ListView<String> listSpecialDates;
-
-	/** Label to display success or error messages to the user. */
-	@FXML
-	private Label lblHoursStatus;
-	// private String em;
-	private Employee emp;
-	// add button to register a new Employee by Manager.
-
-	/**
-	 * Called to initialize the controller after the FXML file has been loaded. Sets
-	 * up permissions, loads initial data, and initializes the lists.
-	 *
-	 * @param location  The location used to resolve relative paths for the root
-	 *                  object.
-	 * @param resources The resources used to localize the root object.
-	 */
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-		specialDatesModel = FXCollections.observableArrayList();
-		listSpecialDates.setItems(specialDatesModel);
-
-		// הסתרת כפתורים כברירת מחדל
-		// btnViewReports.setVisible(false);
-		// btnViewReports.setManaged(false);
-		/*
-		 * // --- 1. Permission Check --- // TODO: Replace with real logic (e.g.,
-		 * ClientUI.currentUser.getRole().equals("MANAGER")) isManager = true;
-		 * 
-		 * if (isManager) { // Reveal the Reports button if the user has the correct
-		 * permissions btnViewReports.setVisible(true); btnViewReports.setManaged(true);
-		 * }
-		 * 
-		 * // --- 2. Load Standard Hours --- // Pre-fill the text fields with the
-		 * current hours from the server loadStandardHours();
-		 * 
-		 * // --- 3. Initialize Special Dates List --- // Create the observable list and
-		 * bind it to the ListView specialDatesModel =
-		 * FXCollections.observableArrayList();
-		 * listSpecialDates.setItems(specialDatesModel);
-		 * 
-		 * // Load Mock Data (Simulating existing data from server) // Example: On
-		 * Christmas, the restaurant opens late.
-		 * specialDatesModel.add("25/12/2025: 18:00 - 02:00 (Holiday)");
-		 */
-	}
-
-	/**
-	 * Initializes the controller with the connection to the server.
-	 * 
-	 * @param clientUi The connection instance.
-	 */
-	public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
-		this.clientUi = clientUi;
-		this.emp = emp;
-		// 3. הגדרת הרשאות (כרגע hardcoded, בהמשך תביא מהמשתמש המחובר)
-		// isManager = true; // בהמשך זה יגיע מ-User
-		if (isManager == Employee.Role.MANAGER) {
-			this.isManager = Employee.Role.MANAGER;
-			this.isManagerFlag = true;
-
-			btnViewReports.setVisible(true);
-			btnViewReports.setManaged(true);
-			btnSignUp.setVisible(true);
-			btnSignUp.setManaged(true);
-			btnMonthlyReports.setVisible(true);
+    public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
+        this.clientUi = clientUi;
+        this.emp = emp;
+        employeeLogic = new EmployeeLogic(this.clientUi);
+        if (isManager == Employee.Role.MANAGER) {
+            this.isManager = Employee.Role.MANAGER;
+            this.isManagerFlag = true;
+            btnViewReports.setVisible(true);
+            btnViewReports.setManaged(true);
+            btnSignUp.setVisible(true);
+            btnSignUp.setManaged(true);
+            btnMonthlyReports.setVisible(true);
             btnMonthlyReports.setManaged(true);
-			lblDashboardTitle.setText("Hello Manager, " + emp.getUserName());
-			lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
-		} else {
-			this.isManagerFlag = false;
-			this.isManager = Employee.Role.REPRESENTATIVE;
-			btnViewReports.setVisible(false);
-			btnViewReports.setManaged(false);
-			btnSignUp.setVisible(false);
-			btnSignUp.setManaged(false);
-			btnMonthlyReports.setVisible(false);
+            lblDashboardTitle.setText("Hello Manager, " + emp.getUserName());
+            lblDashboardSubtitle.setText("Manager Dashboard - Full Access");
+        } else {
+            this.isManagerFlag = false;
+            this.isManager = Employee.Role.REPRESENTATIVE;
+            btnViewReports.setVisible(false);
+            btnViewReports.setManaged(false);
+            btnSignUp.setVisible(false);
+            btnSignUp.setManaged(false);
+            btnMonthlyReports.setVisible(false);
             btnMonthlyReports.setManaged(false);
-			lblDashboardTitle.setText("Hello, " + emp.getUserName());
-			lblDashboardSubtitle.setText("Employee Dashboard");
-		}
-		// // הצגת הכפתור אם צריך
-		// //if (this.isManager) {
-		// //btnViewReports.setVisible(true);
-		// //btnViewReports.setManaged(true);
-		// } else {
-		// btnViewReports.setVisible(false);
-		// btnViewReports.setManaged(false);
-		// }
-		if (this.clientUi == null) {
-			System.err.println("Error: ClientUi is null in ManagerOptionsController!");
-			return;
-		}
-		// this.clientUi.addListener(this);
+            lblDashboardTitle.setText("Hello, " + emp.getUserName());
+            lblDashboardSubtitle.setText("Employee Dashboard");
+        }
 
-		// 4. עכשיו בטוח לקרוא לשרת כי clientUi קיים
-		loadStandardHours();
+        if (this.clientUi == null) {
+            System.err.println("Error: ClientUi is null in ManagerOptionsController!");
+            return;
+        }
+    }
 
-		// כאן גם תוסיף בהמשך: loadSpecialDates();
-		// הערה: את בדיקת isManager השארנו כרגע ב-initialize כמו שביקשת
-	}
-
-	// change name
-	// public void AnotherinitData(String em) {
-	// try {
-	// this.em = em;
-	//
-	// } catch (Exception e) {
-	//
-	// }
-	// }
-
-	/**
-	 * Loads the current standard opening hours from the server/database. Currently
-	 * uses mock data.
-	 */
-	private void loadStandardHours() {
-		// TODO: Replace with real server call, e.g., String[] hours =
-		// ClientUI.chat.getStandardHours();
-
-		// Safety check to ensure FXML injection worked
-		if (clientUi != null) {
-			if (txtOpenTime != null && txtCloseTime != null) {
-				txtOpenTime.setText("08:00");
-				txtCloseTime.setText("23:00");
-			}
-		}
-	}
-
-	/**
-	 * Action handler to save the standard weekly opening hours. Triggered by the
-	 * "Save" button in the standard hours section.
-	 *
-	 * @param event The ActionEvent triggered by the button click.
-	 */
-	@FXML
-	void saveStandardHoursBtn(ActionEvent event) {
-		String openTime = txtOpenTime.getText();
-		String closeTime = txtCloseTime.getText();
-
-		// Basic Validation: Ensure fields are not empty
-		if (openTime.isEmpty() || closeTime.isEmpty()) {
-			setStatus("Missing standard hours!", true);
-			return;
-		}
-
-		// TODO: Send update to server
-		// Example: ClientUI.chat.updateRestaurantHours(openTime, closeTime);
-
-		System.out.println("Standard Hours updated -> Open: " + openTime + ", Close: " + closeTime);
-		setStatus("Standard hours saved successfully!", false);
-	}
-
-	/**
-	 * Adds a new special date/holiday to the list. Triggered by the "+" button.
-	 *
-	 * @param event The ActionEvent triggered by the button click.
-	 */
-	@FXML
-	void addSpecialDateBtn(ActionEvent event) {
-		LocalDate date = dpSpecialDate.getValue();
-		String start = txtSpecialOpen.getText();
-		String end = txtSpecialClose.getText();
-
-		// Validation: Ensure all fields (Date, Start Time, End Time) are filled
-		if (date == null || start.isEmpty() || end.isEmpty()) {
-			setStatus("Date and times are required for special entry", true);
-			return;
-		}
-
-		// Format the date for display (e.g., "dd/MM/yyyy")
-		String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-		String listEntry = String.format("%s: %s - %s", dateStr, start, end);
-
-		// Add to the local list model (updates UI automatically)
-		specialDatesModel.add(listEntry);
-
-		// TODO: Send the new special date to the server
-		// ClientUI.chat.addSpecialDate(date, start, end);
-
-		// Clear input fields for the next entry
-		dpSpecialDate.setValue(null);
-		txtSpecialOpen.clear();
-		txtSpecialClose.clear();
-
-		setStatus("Special date added!", false);
-	}
-
-	/**
-	 * Removes the selected special date from the list. Triggered by the "Remove
-	 * Selected" button.
-	 *
-	 * @param event The ActionEvent triggered by the button click.
-	 */
-	@FXML
-	void removeSpecialDateBtn(ActionEvent event) {
-		// Get the item currently selected by the user
-		String selectedItem = listSpecialDates.getSelectionModel().getSelectedItem();
-
-		if (selectedItem != null) {
-			// Remove from the model
-			specialDatesModel.remove(selectedItem);
-
-			// TODO: Notify server to delete this entry
-			// ClientUI.chat.removeSpecialDate(selectedItem);
-
-			setStatus("Entry removed", false);
-		} else {
-			setStatus("Select an item to remove", true);
-		}
-	}
-
-	/**
-	 * Helper method to display status messages to the user. Changes the text color
-	 * based on whether it is an error or success.
-	 *
-	 * @param msg     The message to display.
-	 * @param isError True if it is an error (Red), False if success (Green).
-	 */
-	private void setStatus(String msg, boolean isError) {
-		lblHoursStatus.setText(msg);
-		// Set color: Red for error, Green for success
-		lblHoursStatus.setStyle(isError ? "-fx-text-fill: #e74c3c;" : "-fx-text-fill: #2ecc71;");
-	}
-
-	// --- Navigation Methods ---
-
-	/**
-	 * Navigates to the Waiting List management screen.
-	 */
-	@FXML
-	void goToWaitingListBtn(ActionEvent event) {
-
-		WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
-		if (waiting_list != null) {
-			waiting_list.initData(emp, this.clientUi, this.isManager);
-
-		} else {
-			System.err.println("Failed to load WaitingList. Check FXML path name.");
-		}
-	}
-	@FXML
-    void goToMonthlyReportsBtn(ActionEvent event) {
+    /**
+     * UNIFIED Method: Update hours for a specific date (Standard OR Special).
+     */
+    @FXML
+    void updateScheduleBtn(ActionEvent event) {
+    	try {
+        LocalDate date = dpManageDate.getValue();
+        String openTime = txtManageOpen.getText();
+        String closeTime = txtManageClose.getText();
+        boolean isSpecial = cbIsSpecial.isSelected();
         
+      
+            // 1. הגדרת הפורמט שהמשתמש מקליד (שעות:דקות)
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+            // 2. המרה ל-LocalTime (זה יודע להתמודד עם "08:00")
+            LocalTime localOpen = LocalTime.parse(openTime, formatter);
+            LocalTime localClose = LocalTime.parse(closeTime, formatter);
+
+            // 3. המרה ל-java.sql.Time (בשביל ה-DB)
+            Time sqlOpenTime = Time.valueOf(localOpen);
+            Time sqlCloseTime = Time.valueOf(localClose);
+
+            System.out.println("Converted: " + sqlOpenTime + " - " + sqlCloseTime);
+            
+            // כאן אתה שולח לשרת...
+            // updateBusinessHours(date, sqlOpenTime, sqlCloseTime, ...);
+
+      
+        // 1. Validation
+        if (date == null) {
+            setStatus("Please select a date first.", true);
+            return;
+        }
+        if (openTime.isEmpty() || closeTime.isEmpty()) {
+            setStatus("Please enter both opening and closing times.", true);
+            return;
+        }
+
+        // 2. Logic processing
+        String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String typeStr = isSpecial ? "(Special Event)" : "(Updated Hours)";
+        
+        // יצירת מחרוזת לתצוגה ברשימה למטה (רק בשביל הפידבק ב-GUI)
+        String listEntry = String.format("%s: %s - %s %s", dateStr, openTime, closeTime, typeStr);
+
+       
+        System.out.println("Updating schedule: " + listEntry);
+        if (date != null) {
+            // המרה ישירה ופשוטה
+            java.sql.Date sqlDate = java.sql.Date.valueOf(date);
+            
+            if(typeStr.equals("(Updated Hours)")) {
+            	
+           	 employeeLogic.createOpeningHours(new OpeningHours(sqlDate,null,sqlOpenTime,sqlCloseTime));
+           }
+           else {
+        	   LocalDate localDate = LocalDate.now();
+        	   employeeLogic.createOpeningHours(new OpeningHours(java.sql.Date.valueOf(localDate.now()),sqlDate,sqlOpenTime,sqlCloseTime));
+            }
+        }
+        
+       
+        // 4. Update UI
+        specialDatesModel.add(0, listEntry); // Add to top of list
+        setStatus("Schedule updated successfully!", false);
+    	} catch (DateTimeParseException e) {
+              setStatus("Invalid time format! Use HH:mm (e.g., 08:00)", true);
+              return;
+          }
+        
+        // Clear fields? Optional.
+        // dpManageDate.setValue(null);
+        // cbIsSpecial.setSelected(false);
+    }
+
+    @FXML
+    void removeSpecialDateBtn(ActionEvent event) {
+        String selectedItem = listSpecialDates.getSelectionModel().getSelectedItem();
+        if (selectedItem != null) {
+            specialDatesModel.remove(selectedItem);
+            // TODO: Notify server to revert hours for this date
+            setStatus("Entry removed", false);
+        } else {
+            setStatus("Select an item to remove", true);
+        }
+    }
+
+    private void setStatus(String msg, boolean isError) {
+        lblHoursStatus.setText(msg);
+        lblHoursStatus.setStyle(isError ? "-fx-text-fill: #e74c3c;" : "-fx-text-fill: #2ecc71;");
+    }
+
+    // --- Navigation Methods (No Changes) ---
+
+    @FXML
+    void goToWaitingListBtn(ActionEvent event) {
+        WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
+        if (waiting_list != null) {
+            waiting_list.initData(emp, this.clientUi, this.isManager);
+        } else {
+            System.err.println("Failed to load WaitingList.");
+        }
+    }
+
+    @FXML
+    void goToMonthlyReportsBtn(ActionEvent event) {
          MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
          if (m != null) {
-             // 2. חובה לשלוח את המידע למסך הבא!
-             // זה מה שהיה חסר:
              m.initData(this.emp, this.clientUi, this.isManager); 
          } else {
              System.out.println("error: MonthlyReportsController is null");
          }
     }
-	/**
-	 * Navigates to the Order Details / Table management screen.
-	 */
-	@FXML
-	void goToOrderDetailsBtn(ActionEvent event) {
-		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
-		if (controller != null) {
 
-			controller.initData(emp, this.clientUi, this.isManager);
+    @FXML
+    void goToOrderDetailsBtn(ActionEvent event) {
+        OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
+        if (controller != null) {
+            controller.initData(emp, this.clientUi, this.isManager);
+        } else {
+            System.err.println("Failed to load OrderUi.");
+        }
+    }
 
-		} else {
-			System.err.println("Failed to load OrderUi. Check FXML path name.");
-		}
-	}
+    @FXML
+    public void goToSignUpEmployee(ActionEvent event) {
+        try {
+            RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event, clientUi);
+            registerEmployee.initData(emp, this.clientUi, this.isManager);
+        } catch (NullPointerException e) {
+            System.out.println("Error: the object RegisterEmployeeController is null");
+        }
+    }
 
-	@FXML
-	public void goToSignUpEmployee(ActionEvent event) {
-		System.out.println("Navigating to Sign Up screen...");
-		try {
-			RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event,
-					clientUi);
-			registerEmployee.initData(emp, this.clientUi, this.isManager);
-		} catch (NullPointerException e) {
-			System.out.println("Error: the object RegisterEmployeeController is null");
+    @FXML
+    void goToRegisterSubscriberBtn(ActionEvent event) {
+        RegisterSubscriberController r = super.loadScreen("user/RegisterSubscriber", event, clientUi);
+        try {
+            r.initData(emp, this.clientUi, this.isManager);
+        } catch (NullPointerException e) {
+            System.out.println("Error: RegisterSubscriberController is null");
+        }
+    }
 
-		}
+    @FXML
+    void goToReportsBtn(ActionEvent event) {
+        ReportsController r = super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
+        if (r != null) {
+            r.initData(emp, this.clientUi, this.isManager);
+        } else {
+            System.out.println("Error: ReportsController is null!!");
+        }
+    }
 
-	}
+    @FXML
+    void goToTableManagementBtn(ActionEvent event) {
+        TableManagementController controller = super.loadScreen("managerTeam/TableManagement", event, clientUi);
+        if (controller != null) {
+            controller.initData(emp, clientUi);
+        } else {
+            System.err.println("Failed to load TableManagement.");
+        }
+    }
 
-	/**
-	 * Navigates to the Subscriber Registration screen.
-	 */
-	@FXML
-	void goToRegisterSubscriberBtn(ActionEvent event) {
-		RegisterSubscriberController r = super.loadScreen("user/RegisterSubscriber", event, clientUi);
-		try {
-			r.initData(emp, this.clientUi, this.isManager);
-		} catch (NullPointerException e) {
-			System.out.println("Error: the object RegisterSubscriberController is null");
-		}
+    @FXML
+    void goBackBtn(ActionEvent event) {
+        System.out.println("Going back / Signing out...");
+        super.loadScreen("navigation/SelectionScreen", event, clientUi);
+    }
 
-	}
-
-	/**
-	 * Navigates to the Reports Dashboard. Only accessible if the user has Manager
-	 * permissions.
-	 */
-	@FXML
-	void goToReportsBtn(ActionEvent event) {
-		// MainNavigator.loadScene("manager/ReportsScreen");
-		System.out.println("Navigate to Reports Screen...");
-		ReportsController r = super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
-		if (r != null) {
-			r.initData(emp, this.clientUi, this.isManager);
-		} else {
-			System.out.println("Error: ReportsController is null!!");
-		}
-
-	}
-
-	@FXML
-	void goToTableManagementBtn(ActionEvent event) {
-		TableManagementController controller = super.loadScreen("managerTeam/TableManagement", event, clientUi);
-		if (controller != null) {
-			controller.initData(emp, clientUi);
-		} else {
-			System.err.println("Failed to load TableManagement. Check FXML path name.");
-		}
-	}
-
-	/**
-	 * Logs out or returns to the previous menu.
-	 */
-	@FXML
-	void goBackBtn(ActionEvent event) {
-		// Logic for signing out or returning to the main selection screen
-		System.out.println("Going back / Signing out...");
-		super.loadScreen("navigation/SelectionScreen", event, clientUi);
-
-	}
-
-	@Override
-	public void onMessageReceive(Object msg) {
-		System.out.println("Manager Controller received: " + msg.toString());
-	}
-
+    @Override
+    public void onMessageReceive(Object msg) {
+        System.out.println("Manager Controller received: " + msg.toString());
+    }
 }
