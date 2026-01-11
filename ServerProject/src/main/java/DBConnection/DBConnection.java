@@ -306,10 +306,16 @@ public class DBConnection {
 				}
 			}
 
-			String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES "
-					+
-					"(DAYOFWEEK(NOW()), CURDATE(), CURTIME(), '17:00:00', 0), " +
-					"(DAYOFWEEK(NOW()), CURDATE(), '17:00:00', '23:59:59', 0)";
+			String sql = "INSERT INTO opening_hours (day_of_week, special_date, open_time, close_time, is_closed) VALUES "+
+					"(1, '2026-01-12', '17:00:00', '23:59:59', 0),"+
+					"(1, '2026-01-13', '12:00:00', '17:00:00', 0),"+
+					"(1, NULL, '17:00:00', '00:00:00', 0),"+
+					"(2, NULL, '17:00:00', '00:00:00', 0),"+
+					"(3, NULL, '17:00:00', '00:00:00', 0),"+
+					"(4, NULL, '17:00:00', '00:00:00', 0),"+
+					"(5, NULL, '17:00:00', '00:00:00', 0),"+
+					"(6, NULL, '17:00:00', '00:00:00', 0),"+
+					"(7, NULL, NULL, NULL, 1)";
 
 			int rowsAffected = stmt.executeUpdate(sql);
 			System.out.println("Default opening hours inserted successfully.");
