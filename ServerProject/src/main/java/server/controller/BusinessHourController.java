@@ -21,7 +21,7 @@ public class BusinessHourController {
 				handleGetAll(req, client);
 				break;
 			case GET:
-				getHoursForDay(req, client);
+//				getHoursForDay(req, client);
 			case UPDATE:
 				break;
 			case CREATE:
@@ -42,16 +42,16 @@ public class BusinessHourController {
 				Response.ResponseStatus.SUCCESS, null, hours));
 	}
 
-	private void getHoursForDay(Request req, ConnectionToClient client) throws SQLException, IOException {
-		int requestedDate = (int) req.getPayload();
-		OpeningHours openingHours = businessHourDAO.getHoursForDate(requestedDate);
-		if (openingHours == null) {
-			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, ActionType.GET, Response.ResponseStatus.ERROR,
-					"Error: cant find opening hour for this date", null));
-		} else
-			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, ActionType.GET,
-					Response.ResponseStatus.SUCCESS, null, openingHours));
-	}
+//	private void getHoursForDay(Request req, ConnectionToClient client) throws SQLException, IOException {
+//		int requestedDate = (int) req.getPayload();
+//		OpeningHours openingHours = businessHourDAO.getHoursForDate(requestedDate);
+//		if (openingHours == null) {
+//			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, ActionType.GET, Response.ResponseStatus.ERROR,
+//					"Error: cant find opening hour for this date", null));
+//		} else
+//			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, ActionType.GET,
+//					Response.ResponseStatus.SUCCESS, null, openingHours));
+//	}
 
 	private void handleSave(Request req, ConnectionToClient client) throws SQLException, IOException {
 		OpeningHours oh = (OpeningHours) req.getPayload();
