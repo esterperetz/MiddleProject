@@ -14,14 +14,18 @@ import entities.Response;
 import ocsf.server.ConnectionToClient;
 
 /**
- * Controller for handling file downloads.
- * It finds the requested report on the server and sends it to the client.
+ * Controller responsible for handling file download requests.
+ * It locates report files on the server and sends them to the client.
  */
 public class MyFileController {
 
     /**
-     * Main handler for file requests.
-     * Checks if the action is DOWNLOAD_REPORT and calls the processing method.
+     * Main handler for file-related requests.
+     * Delegates the request to specific methods based on the action type.
+     * Handles any errors by sending an error response to the client.
+     *
+     * @param req    The request received from the client.
+     * @param client The connection to the client.
      */
     public void handle(Request req, ConnectionToClient client) {
         if (req.getAction() != ActionType.DOWNLOAD_REPORT) {
@@ -42,8 +46,18 @@ public class MyFileController {
     }
 
     /**
-     * Locates the HTML report file based on the month/year.
-     * Converts the file to a byte array and sends it to the client.
+     * Processes a request to download a monthly report.
+     * <p>
+     * 1. Parses the date (MM/YYYY) from the request payload.
+     * 2. Locates the corresponding ZIP file on the server.
+     * 3. Reads the file into a byte array.
+     * 4. Sends the file wrapped in a MyFile object to the client.
+     * </p>
+     *
+     * @param req    The request containing the date filter.
+     * @param client The connection to the client.
+     * @throws SQLException If a database error occurs.
+     * @throws IOException  If a file I/O error occurs.
      */
     private void handleGetMonthlyReport(Request req, ConnectionToClient client) throws SQLException, IOException {
         String filter = (String) req.getPayload();
@@ -64,9 +78,9 @@ public class MyFileController {
         }
 
         // Find the file
-        String fileName = "Report_" + year + "_" + String.format("%02d", month) + ".html";
+        String zipFileName = "Report_" + year + "_" + String.format("%02d", month) + ".zip";
         String dirPath = "server_files/reports/";
-        File file = new File(dirPath + fileName);
+        File file = new File(dirPath + zipFileName);
         
         if (!file.exists()) {
             System.out.println("File not found: " + file.getAbsolutePath());
@@ -76,7 +90,7 @@ public class MyFileController {
         }
 
         // Convert file to byte array (MyFile object)
-        MyFile myFile = new MyFile(fileName);
+        MyFile myFile = new MyFile(zipFileName);
         byte[] mybytearray = new byte[(int) file.length()];
 
         try (FileInputStream fis = new FileInputStream(file);
