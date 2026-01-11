@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -61,6 +62,7 @@
 					</rowConstraints>
 
 					<children>
+						
 						<VBox spacing="15.0" styleClass="card-pane"
 							GridPane.columnIndex="0">
 							<padding>
@@ -122,53 +124,54 @@
 							<children>
 								<HBox alignment="CENTER_LEFT" spacing="10">
 									<Label styleClass="section-header"
-										text="Store Configuration" textFill="#1101f7" />
+										text="Manage Opening Hours" textFill="#1101f7" />
 								</HBox>
 
-								<VBox spacing="8.0"
-									style="-fx-background-color: #f8f9fa; -fx-background-radius: 8; -fx-padding: 10;">
-									<Label style="-fx-font-weight: bold;"
-										styleClass="sub-label" text="Standard Weekly Hours" />
-									<HBox alignment="CENTER_LEFT" spacing="10.0">
+								<VBox spacing="15.0" VBox.vgrow="ALWAYS">
+									<Label style="-fx-text-fill: gray;"
+										text="Select a date to update specific opening hours or mark as special."
+										wrapText="true" />
+
+									<VBox spacing="5.0">
+										<Label style="-fx-font-weight: bold;"
+											text="Select Date:" />
+										<DatePicker fx:id="dpManageDate" maxWidth="Infinity"
+											promptText="Pick a date" />
+									</VBox>
+
+									<HBox spacing="15.0" alignment="CENTER_LEFT">
 										<VBox spacing="2">
-											<Label style="-fx-font-size: 10px;" text="Open" />
-											<TextField fx:id="txtOpenTime" prefWidth="80.0"
+											<Label style="-fx-font-size: 11px;"
+												text="Opening Time" />
+											<TextField fx:id="txtManageOpen" prefWidth="90.0"
 												promptText="08:00" styleClass="time-field" />
 										</VBox>
-										<Label style="-fx-padding: 15 0 0 0;" text="-"
+										<Label style="-fx-padding: 18 0 0 0;" text="-"
 											textFill="#7f8c8d" />
 										<VBox spacing="2">
-											<Label style="-fx-font-size: 10px;" text="Close" />
-											<TextField fx:id="txtCloseTime" prefWidth="80.0"
+											<Label style="-fx-font-size: 11px;"
+												text="Closing Time" />
+											<TextField fx:id="txtManageClose" prefWidth="90.0"
 												promptText="23:00" styleClass="time-field" />
 										</VBox>
-										<Button onAction="#saveStandardHoursBtn"
-											prefHeight="30" style="-fx-translate-y: 8;"
-											styleClass="action-icon-button" text="Save" />
-									</HBox>
-								</VBox>
-
-								<VBox spacing="10.0" VBox.vgrow="ALWAYS">
-									<Label style="-fx-font-weight: bold;"
-										styleClass="sub-label" text="Special Dates &amp; Holidays" />
-
-									<HBox alignment="CENTER_LEFT" spacing="8.0">
-										<DatePicker fx:id="dpSpecialDate"
-											promptText="Select Date" HBox.hgrow="ALWAYS" />
 									</HBox>
 
-									<HBox alignment="CENTER_LEFT" spacing="8.0">
-										<TextField fx:id="txtSpecialOpen" prefWidth="70.0"
-											promptText="Start" styleClass="time-field-small" />
-										<Label text="-" />
-										<TextField fx:id="txtSpecialClose" prefWidth="70.0"
-											promptText="End" styleClass="time-field-small" />
-										<Button maxWidth="Infinity"
-											onAction="#addSpecialDateBtn" styleClass="add-button-small"
-											text="Add Date" HBox.hgrow="ALWAYS" />
-									</HBox>
+									<CheckBox fx:id="cbIsSpecial"
+										text="Mark as Special Event / Holiday"
+										style="-fx-font-size: 13px; -fx-text-fill: #2c3e50;" />
 
-									<ListView fx:id="listSpecialDates" prefHeight="120.0"
+									<Button maxWidth="Infinity"
+										onAction="#updateScheduleBtn"
+										styleClass="dashboard-tile-button"
+										style="-fx-background-color: #0008f7; -fx-text-fill: white;"
+										text="Update Hours for Date" />
+
+									<Separator />
+
+									<Label
+										style="-fx-font-weight: bold; -fx-font-size: 12px;"
+										text="Recently Updated:" />
+									<ListView fx:id="listSpecialDates" prefHeight="100.0"
 										styleClass="custom-list-view" />
 
 									<HBox alignment="CENTER_RIGHT">
