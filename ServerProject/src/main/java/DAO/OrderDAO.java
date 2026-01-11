@@ -462,28 +462,32 @@ public class OrderDAO {
 	}
 
 	public Order getOrderByContact(String contactDetail) throws SQLException {
-		String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number " + "FROM `order` o "
-				+ "JOIN Customer c ON o.customer_id = c.customer_id " + "WHERE (c.email = ? OR c.phone_number = ?) "
-				+ "AND o.order_status = 'APPROVED' " + "AND o.order_date > NOW() "
-				+ "ORDER BY o.order_date ASC LIMIT 1";
+	    String sql = "SELECT o.*, c.email, c.customer_name, c.phone_number " 
+	            + "FROM `order` o "
+	            + "JOIN Customer c ON o.customer_id = c.customer_id " 
+	            + "WHERE (c.email = ? OR c.phone_number = ?) "
+	            + "AND o.order_status = 'APPROVED' "          
+	            + "AND o.order_date >= DATE_SUB(NOW(), INTERVAL 15 MINUTE) " 
+	            + "ORDER BY o.order_date ASC " 
+	            + "LIMIT 1";
 
-		Connection con = DBConnection.getInstance().getConnection();
-		try (PreparedStatement stmt = con.prepareStatement(sql)) {
-			stmt.setString(1, contactDetail);
-			stmt.setString(2, contactDetail);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (rs.next()) {
-					Order order = mapResultSetToOrder(rs);
-					order.getCustomer().setEmail(rs.getString("email"));
-					order.getCustomer().setName(rs.getString("customer_name"));
-					order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
-					return order;
-				}
-				return null;
-			}
-		} finally {
-			DBConnection.getInstance().releaseConnection(con);
-		}
+	    Connection con = DBConnection.getInstance().getConnection();
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        stmt.setString(1, contactDetail);
+	        stmt.setString(2, contactDetail);
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                Order order = mapResultSetToOrder(rs);
+	                order.getCustomer().setEmail(rs.getString("email"));
+	                order.getCustomer().setName(rs.getString("customer_name"));
+	                order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
+	                return order;
+	            }
+	            return null;
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
 	}
 	//to manager reports 
 	public List<Order> getFinishedOrdersByMonth(int month, int year) throws SQLException {

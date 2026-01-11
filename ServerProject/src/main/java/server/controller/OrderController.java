@@ -377,40 +377,50 @@ public class OrderController {
 
 	private List<String> getAvailabilityOptions(Date dateOrder) throws SQLException, IOException {
 
-		LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
-		int dayOfWeek = date.getDayOfWeek().getValue();
 
-		OpeningHours dayHours = businessHourDao.getHoursForDate(dayOfWeek);
+	    LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
+	    LocalDate today = LocalDate.now(); 
 
-		List<String> options = new ArrayList<>();
+	    int dayOfWeek = (date.getDayOfWeek().getValue() % 7) + 1;
+	    System.out.println("Day of week: " + dayOfWeek);
 
-		if (dayHours == null || dayHours.isClosed()) {
-			System.out.println("Restaurant is closed.");
-			// client.sendToClient(new Message(MessageType.SHOW_AVAILABILITY, options));
-			return null;
-		}
+	    
+	    if (date.isBefore(today)) {
+	        return new ArrayList<>(); 
+	    }
 
-		LocalTime currentTime = dayHours.getOpenTime().toLocalTime();
-		LocalTime closeTime = dayHours.getCloseTime().toLocalTime();
+	    OpeningHours dayHours = businessHourDao.getHoursForDate(dayOfWeek);
+	    List<String> options = new ArrayList<>();
 
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-		LocalTime lastSeatingTime = dayHours.getCloseTime().toLocalTime().minusHours(2);
-		while (!currentTime.isAfter(lastSeatingTime)) {
+	    
+	    if (dayHours == null || dayHours.isClosed()) {
+	        System.out.println("Restaurant is closed.");
+	        return null;
+	    }
 
-			LocalDateTime ldt = LocalDateTime.of(date, currentTime);
-			Timestamp checkTime = Timestamp.valueOf(ldt);
+	    LocalTime currentTime = dayHours.getOpenTime().toLocalTime();
+	   
+	    LocalTime lastSeatingTime = dayHours.getCloseTime().toLocalTime().minusHours(2);
+	    
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+	    LocalTime nowTime = LocalTime.now(); 
 
-			String timeStr = currentTime.format(formatter);
+	    while (!currentTime.isAfter(lastSeatingTime)) {
+	        
+	       
+	        boolean isPastTimeToday = date.equals(today) && currentTime.isBefore(nowTime);
 
-			options.add(timeStr);
+	        
+	        if (!isPastTimeToday) {
+	            String timeStr = currentTime.format(formatter);
+	            options.add(timeStr);
+	        }
 
-			currentTime = currentTime.plusMinutes(30);
-		}
-		System.out.println(options);
-		return options;
-		// client.sendToClient(new Response(ResourceType.ORDER,
-		// ActionType.GET_AVAILABLE_TIME,
-		// Response.ResponseStatus.SUCCESS, "list of time", options));
+	        currentTime = currentTime.plusMinutes(30);
+	    }
+	    
+	    System.out.println(options);
+	    return options;
 	}
 
 	public List<TimeSlotStatus> checkAvailability(Date date, int guests) throws SQLException, IOException {
