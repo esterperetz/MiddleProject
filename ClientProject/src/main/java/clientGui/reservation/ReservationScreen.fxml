@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
@@ -15,11 +16,11 @@
 <?import javafx.scene.shape.Circle?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" prefHeight="650.0" prefWidth="450.0" spacing="15.0" 
-styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" 
-xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.reservation.ReservationController">
-
-   <padding>
+<VBox alignment="TOP_CENTER" prefHeight="720.0" prefWidth="480.0" spacing="15.0" 
+      styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" 
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="clientGui.reservation.ReservationController"> 
+      <padding>
       <Insets bottom="20.0" left="30.0" right="30.0" top="20.0" />
    </padding>
 
@@ -50,11 +51,11 @@ xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:contr
                      <children>
                         <HBox alignment="CENTER" spacing="4.0">
                            <Circle fill="WHITE" radius="4.0" stroke="#4caf50" />
-                           <Label text="Free" textFill="#777" style="-fx-font-size: 10px;"/>
+                           <Label style="-fx-font-size: 10px;" text="Free" textFill="#777"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="4.0">
                            <Circle fill="#fff3e0" radius="4.0" stroke="#ff9800" />
-                           <Label text="Waiting List" textFill="#777" style="-fx-font-size: 10px;"/>
+                           <Label style="-fx-font-size: 10px;" text="Waiting List" textFill="#777"/>
                         </HBox>
                      </children>
                   </HBox>
@@ -63,7 +64,7 @@ xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:contr
 
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" minHeight="120.0" style="-fx-background-color: transparent; -fx-background: transparent;">
                <content>
-                  <TilePane fx:id="timeContainer" hgap="10.0" prefColumns="4" tileAlignment="CENTER" vgap="10.0">
+                  <TilePane fx:id="timeContainer" hgap="10.0" prefColumns="3" tileAlignment="CENTER" vgap="10.0">
                      <padding>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </padding>
@@ -83,20 +84,25 @@ xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:contr
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
             
-            <Label styleClass="subtitle-label" text="Diners:" GridPane.rowIndex="0" />
-            <TextField fx:id="dinersField" promptText="Number of people" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-            
-            <Label styleClass="subtitle-label" text="Name:" GridPane.rowIndex="1" />
-            <TextField fx:id="nameField" promptText="Your Name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="lblSubCode" styleClass="subtitle-label" text="Sub ID:" GridPane.rowIndex="0" />
+            <TextField fx:id="subscriberIdField" promptText="Subscriber ID" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-            <Label styleClass="subtitle-label" text="Phone:" GridPane.rowIndex="2" />
-            <TextField fx:id="phoneField" promptText="05X-XXXXXXX" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label styleClass="subtitle-label" text="Diners:" GridPane.rowIndex="2" />
+            <TextField fx:id="guestsField" promptText="Number of people" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             
-            <Label styleClass="subtitle-label" text="Email:" GridPane.rowIndex="3" />
-            <TextField fx:id="emailField" promptText="example@mail.com" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+            <Label styleClass="subtitle-label" text="Name:" GridPane.rowIndex="3" />
+            <TextField fx:id="nameField" promptText="Your Name" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+            <Label styleClass="subtitle-label" text="Phone:" GridPane.rowIndex="4" />
+            <TextField fx:id="phoneField" promptText="05X-XXXXXXX" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+            
+            <Label styleClass="subtitle-label" text="Email:" GridPane.rowIndex="5" />
+            <TextField fx:id="emailField" promptText="example@mail.com" styleClass="input-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
          </children>
       </GridPane>
 
