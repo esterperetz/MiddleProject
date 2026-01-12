@@ -53,52 +53,52 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-				case GET_ALL:
-					handleGetAll(req, client);
-					break;
-				case GET_ALL_BY_SUBSCRIBER_ID:
-					handleGetAllBySubscriberId(req, client);
-					break;
-				case GET_BY_ID:
-					handleGetById(req, client);
-					break;
-				case GET_AVAILABLE_TIME:
-					checkAvailability(((Order) req.getPayload()).getDateOfPlacingOrder(),
-							((Order) req.getPayload()).getNumberOfGuests());
-					break;
-				case GET_BY_CODE:
-					handleGetByCode(req, client);
-					break;
-				case CREATE:
-					handleCreate(req, client);
-					break;
-				case UPDATE:
-					handleUpdate(req, client);
-					break;
-				case UPDATE_CHECKOUT:
-					handelUpdateCheckOut(req, client);
-					break;
-				case DELETE:
-					handleDelete(req, client);
-					break;
-				case CHECK_AVAILABILITY:
-					handleCheckAvailability(req, client);
-					break;
-				case IDENTIFY_AT_TERMINAL:
-					handleIdentifyAtTerminal(req, client);
-					break;
-				case PAY_BILL:
-					handlePayBill(req, client);
-					break;
-				case SEND_EMAIL:
-					handleSendEmail(req, client);
-					break;
-				case RESEND_CONFIRMATION:
-					handleResendConfirmation(req, client);
-					break;
-				default:
-					client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
-							"Unsupported action: " + req.getAction(), null));
+			case GET_ALL:
+				handleGetAll(req, client);
+				break;
+			case GET_ALL_BY_SUBSCRIBER_ID:
+				handleGetAllBySubscriberId(req, client);
+				break;
+			case GET_BY_ID:
+				handleGetById(req, client);
+				break;
+			case GET_AVAILABLE_TIME:
+				Order order = (Order) req.getPayload();
+				checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
+				break;
+			case GET_BY_CODE:
+				handleGetByCode(req, client);
+				break;
+			case CREATE:
+				handleCreate(req, client);
+				break;
+			case UPDATE:
+				handleUpdate(req, client);
+				break;
+			case UPDATE_CHECKOUT:
+				handelUpdateCheckOut(req, client);
+				break;
+			case DELETE:
+				handleDelete(req, client);
+				break;
+			case CHECK_AVAILABILITY:
+				handleCheckAvailability(req, client);
+				break;
+			case IDENTIFY_AT_TERMINAL:
+				handleIdentifyAtTerminal(req, client);
+				break;
+			case PAY_BILL:
+				handlePayBill(req, client);
+				break;
+			case SEND_EMAIL:
+				handleSendEmail(req, client);
+				break;
+			case RESEND_CONFIRMATION:
+				handleResendConfirmation(req, client);
+				break;
+			default:
+				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+						"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -140,14 +140,6 @@ public class OrderController {
 		client.sendToClient(
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
-	//
-	// private void handleGetAll(Request req, ConnectionToClient client) throws
-	// SQLException, IOException {
-	// List<Order> orders = orderdao.getAllOrders();
-	// client.sendToClient(
-	// new Response(req.getResource(), ActionType.GET_ALL,
-	// Response.ResponseStatus.SUCCESS, null, orders));
-	// }
 
 	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
@@ -188,7 +180,8 @@ public class OrderController {
 		}
 
 		int guests = order.getNumberOfGuests();
-		int minGuestsThreshold = (guests > 5) ? 6 : 1;
+		int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
+		int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
 		int totalTables = tabledao.countSuitableTables(guests);
 		int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
 
@@ -272,6 +265,107 @@ public class OrderController {
 		}
 	}
 
+	private boolean handleCheckAvailability(Request req, ConnectionToClient client) throws IOException {
+		try {
+			Order requestedOrder = (Order) req.getPayload();
+			java.util.Date orderDate = requestedOrder.getOrderDate();
+			int guests = requestedOrder.getNumberOfGuests();
+
+			int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
+			int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
+
+			int totalSuitableTables = tabledao.countSuitableTables(guests);
+			if (totalSuitableTables == 0) {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
+				return false;
+			}
+
+			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, minGuestsThreshold);
+			int available = totalSuitableTables - conflictingOrders;
+
+			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
+
+			if (available > 0) {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
+				return true;
+			} else {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+						Response.ResponseStatus.ERROR, "The restaurant is full at this time.", timeSlots));
+				return false;
+			}
+
+		} catch (SQLException e) {
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+					Response.ResponseStatus.DATABASE_ERROR, "Database error checking availability.", null));
+			return false;
+		}
+	}
+
+	public List<TimeSlotStatus> checkAvailability(Date date, int guests) throws SQLException, IOException {
+
+		List<TimeSlotStatus> results = new ArrayList<>();
+
+		int minGuestsThreshold = (guests > 5) ? 6 : 1;
+		int totalTables = tabledao.countSuitableTables(guests);
+		List<String> allSlots = getAvailabilityOptions(date);
+
+		if (allSlots == null)
+			return new ArrayList<>();
+
+		LocalDate localDate = new java.sql.Date(date.getTime()).toLocalDate();
+		for (String slotStr : allSlots) {
+
+			LocalTime timeSlot = LocalTime.parse(slotStr);
+			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
+			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
+
+			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, minGuestsThreshold);
+
+			int available = totalTables - conflictingOrders;
+			boolean isFull = (available <= 0);
+			results.add(new TimeSlotStatus(slotStr, isFull));
+		}
+
+		return results;
+	}
+
+	private List<String> getAvailabilityOptions(Date dateOrder) throws SQLException, IOException {
+
+		LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
+		LocalDate today = LocalDate.now();
+
+		if (date.isBefore(today)) {
+			return new ArrayList<>();
+		}
+		OpeningHours dayHours = businessHourDao.getHoursForDate(dateOrder);
+		List<String> options = new ArrayList<>();
+
+		if (dayHours == null || dayHours.isClosed()) {
+			System.out.println("Restaurant is closed.");
+			return null;
+		}
+
+		LocalTime currentTime = dayHours.getOpenTime().toLocalTime();
+		LocalTime lastSeatingTime = dayHours.getCloseTime().toLocalTime().minusHours(2);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+		LocalTime nowTime = LocalTime.now();
+
+		while (!currentTime.isAfter(lastSeatingTime)) {
+
+			boolean isPastTimeToday = date.equals(today) && currentTime.isBefore(nowTime);
+
+			if (!isPastTimeToday) {
+				String timeStr = currentTime.format(formatter);
+				options.add(timeStr);
+			}
+			currentTime = currentTime.plusMinutes(30);
+		}
+
+		return options;
+	}
+
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
 		Order updatedOrder = (Order) req.getPayload();
 		if (orderdao.updateOrder(updatedOrder)) {
@@ -314,7 +408,6 @@ public class OrderController {
 		if (req.getId() == null)
 			return;
 
-		// Safety check is a table needs to be released.
 		Order order = orderdao.getOrder(req.getId());
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			if (order.getTableNumber() != null) {
@@ -333,126 +426,6 @@ public class OrderController {
 					"Order deleted.", order));
 			sendOrdersToAllClients();
 		}
-	}
-
-	private boolean handleCheckAvailability(Request req, ConnectionToClient client) throws IOException {
-		try {
-			Order requestedOrder = (Order) req.getPayload();
-			java.util.Date orderDate = requestedOrder.getOrderDate();
-			int guests = requestedOrder.getNumberOfGuests();
-
-			// 1. חישוב סף אורחים
-			int minGuestsThreshold = (guests > 5) ? 6 : 1;
-
-			// 2. בדיקה ספציפית: האם יש מקום להזמנה הנוכחית?
-			int totalSuitableTables = tabledao.countSuitableTables(guests);
-			if (totalSuitableTables == 0) {
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
-				return false;
-			}
-
-			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, minGuestsThreshold);
-			int available = totalSuitableTables - conflictingOrders;
-
-			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
-
-			if (available > 0) {
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
-				return true;
-			} else {
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.ERROR, "The restaurant is full at this time.", timeSlots));
-				return false;
-			}
-
-		} catch (SQLException e) {
-			// e.printStackTrace();
-			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-					Response.ResponseStatus.DATABASE_ERROR, "Database error checking availability.", null));
-			return false;
-		}
-	}
-
-	private List<String> getAvailabilityOptions(Date dateOrder) throws SQLException, IOException {
-
-
-	    LocalDate date = new java.sql.Date(dateOrder.getTime()).toLocalDate();
-	    LocalDate today = LocalDate.now(); 
-
-	    int dayOfWeek = (date.getDayOfWeek().getValue() % 7) + 1;
-	    System.out.println("Day of week: " + dayOfWeek);
-
-	    
-	    if (date.isBefore(today)) {
-	        return new ArrayList<>(); 
-	    }
-        System.out.println(dateOrder);
-	    OpeningHours dayHours = businessHourDao.getHoursForDate(dateOrder);
-	    List<String> options = new ArrayList<>();
-
-	    
-	    if (dayHours == null || dayHours.isClosed()) {
-	        System.out.println("Restaurant is closed.");
-	        return null;
-	    }
-
-	    LocalTime currentTime = dayHours.getOpenTime().toLocalTime();
-	   
-	    LocalTime lastSeatingTime = dayHours.getCloseTime().toLocalTime().minusHours(2);
-	    
-	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
-	    LocalTime nowTime = LocalTime.now(); 
-
-	    while (!currentTime.isAfter(lastSeatingTime)) {
-	        
-	       
-	        boolean isPastTimeToday = date.equals(today) && currentTime.isBefore(nowTime);
-
-	        
-	        if (!isPastTimeToday) {
-	            String timeStr = currentTime.format(formatter);
-	            options.add(timeStr);
-	        }
-
-	        currentTime = currentTime.plusMinutes(30);
-	    }
-	    
-	    System.out.println(options);
-	    return options;
-	}
-
-	public List<TimeSlotStatus> checkAvailability(Date date, int guests) throws SQLException, IOException {
-
-		List<TimeSlotStatus> results = new ArrayList<>();
-
-		int minGuestsThreshold = (guests > 5) ? 6 : 1;
-
-		int totalTables = tabledao.countSuitableTables(guests);
-		List<String> allSlots = getAvailabilityOptions(date);
-
-		if (allSlots == null)
-			return new ArrayList<>();
-
-		LocalDate localDate = new java.sql.Date(date.getTime()).toLocalDate();
-
-		for (String slotStr : allSlots) {
-
-			LocalTime timeSlot = LocalTime.parse(slotStr);
-			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
-			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
-
-			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, minGuestsThreshold);
-
-			int available = totalTables - conflictingOrders;
-			boolean isFull = (available <= 0); // אם 0 או פחות -> מלא
-
-			results.add(new TimeSlotStatus(slotStr, isFull));
-		}
-
-		System.out.println(results);
-		return results;
 	}
 
 	/**
@@ -570,8 +543,7 @@ public class OrderController {
 			// Construct a temporary Customer object for EmailService
 			// We can use the data fetched by the join in OrderDAO
 			Customer tempCustomer = new Customer(order.getCustomer().getCustomerId(), order.getCustomer().getName(),
-					order.getCustomer().getPhoneNumber(),
-					order.getCustomer().getEmail());
+					order.getCustomer().getPhoneNumber(), order.getCustomer().getEmail());
 			System.out.println(order.getCustomer().getEmail());
 
 			// Send Email with NEW code
@@ -587,8 +559,8 @@ public class OrderController {
 
 	private void sendOrdersToAllClients() {
 		List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();
-		Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
-				Response.ResponseStatus.SUCCESS, null, orders));
+		Router.sendToAllClients(
+				new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
 
 	/**
