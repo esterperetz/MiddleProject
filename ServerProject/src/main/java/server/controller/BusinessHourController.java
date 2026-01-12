@@ -46,14 +46,14 @@ public class BusinessHourController {
 		Integer dayOfWeek = (Integer) req.getId();
 		String toDo = (String)req.getPayload();
 		try {
-		if (toDo.equals("close") && businessHourDAO.setStandardDayClosed(dayOfWeek)) {
+		if (toDo.equals("close") ) {
 			
 				client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, req.getAction(),
 						Response.ResponseStatus.SUCCESS, "Date has been closed.", null));
 				syncAllClients();
 	
 		}
-		else if (toDo.equals("open") && businessHourDAO.setStandardDayClosed(dayOfWeek)) {
+		else if (toDo.equals("open") ) {
 			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, req.getAction(),
 					Response.ResponseStatus.SUCCESS, "Date has been opened.", null));
 			syncAllClients();
