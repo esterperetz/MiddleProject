@@ -65,11 +65,9 @@ public class AddOrderController extends MainNavigator implements MessageListener
 		statusComboBox.getItems().setAll(OrderStatus.values());
 		statusComboBox.setValue(OrderStatus.APPROVED); // Default
 		datePicker.setValue(LocalDate.now());
-		// הגדרת שעה ברירת מחדל
 		timeField.setText("12:00");
 		try {
 			subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
-				// בדיקה 2: האם המאזין עובד?
 
 				if (!isNowFocused) {
 					checkSubscriberId();
@@ -292,7 +290,6 @@ public class AddOrderController extends MainNavigator implements MessageListener
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Success", "Order placed successfully!", Alert.AlertType.INFORMATION);
 
-				// רק כאן - אחרי שהכל הסתיים - עוברים מסך
 				navigateToOrdersList();
 			} else {
 				Alarm.showAlert("Error", "Failed to place order: " + res.getMessage_from_server(),
