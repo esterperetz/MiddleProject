@@ -325,56 +325,25 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			}
 
 		});
-		// checking if the requast equal to action GET_ALL
-		/*
-		 * if (request.getAction() == ActionType.GET_ALL) { // Case 1: GET_ALL response
-		 * if ( request.getPayload() instanceof List) { List<?> list = (List<?>)
-		 * request.getPayload(); if (list.isEmpty() || list.get(0) instanceof Order) {
-		 * List<Order> incomingOrders = (List<Order>) request.getPayload();
-		 * orderData.clear(); orderData.addAll(incomingOrders);
-		 * System.out.println("Updated table with " + incomingOrders.size() +
-		 * " orders."); } else {
-		 * System.out.println("Received a list, but it's not orders."); } }
-		 * 
-		 * // Case 2: Single Order object else if (request.getPayload() instanceof
-		 * Order) { Order o = (Order) request.getPayload();
-		 * System.out.println("Received single order: " + o); }
-		 * 
-		 * // Case 3: String message else if (request.getPayload() instanceof String) {
-		 * String text = (String) request.getPayload();
-		 * System.out.println("Message from server: " + text); if
-		 * (text.contains("Disconnecting")) { clientUi.disconnectClient(); } }
-		 * 
-		 * // Case 4: Boolean (Success/Failure) else if (request.getPayload() instanceof
-		 * Boolean) { boolean success = (Boolean) request.getPayload(); if (success) {
-		 * String header = "Success"; String context =
-		 * "Operation completed successfully!"; Alarm.showAlert(header, context,
-		 * Alert.AlertType.INFORMATION); // showAlert("Success",
-		 * "Operation completed successfully!", // Alert.AlertType.INFORMATION); //
-		 * Refresh table after success orderLogic.getAllOrders(); } else { String header
-		 * = "Failure"; String context = "Operation failed."; Alarm.showAlert(header,
-		 * context, Alert.AlertType.ERROR); // showAlert("Failure", "Operation failed.",
-		 * Alert.AlertType.ERROR); } } }
-		 */
 
 	}
 
 	@FXML
 	private void handleAddOrder(ActionEvent event) {
 		try {
-			//FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/reservation/addOrder.fxml"));
-			//Parent root = loader.load();
-			//Stage stage = new Stage();
-			//stage.setTitle("Add New Order");
-			//stage.setScene(new Scene(root));
-			//stage.show();
-			AddOrderController controller = 
-	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
-			if (controller != null) {
-	            controller.initData(emp,emp.getRole());
-	        } else {
-	            System.err.println("Error: Could not load AddOrderController.");
-	        }
+			ReservationController controller = super.loadScreen("reservation/ReservationScreen", event,clientUi);
+
+	    	if(controller!= null)	
+	    		controller.initData(clientUi, null, 0,emp);
+	    	else
+	    		System.out.println("Error: moving screen ReservationController");
+//			AddOrderController controller = 
+//	        		super.loadScreen("reservation/addOrder", event,this.clientUi);
+//			if (controller != null) {
+//	            controller.initData(emp,emp.getRole());
+//	        } else {
+//	            System.err.println("Error: Could not load AddOrderController.");
+//	        }
 			
 
 		} catch (Exception e) {
@@ -394,8 +363,6 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			String header = "No Selection";
 			String context = "Please select an order to update.";
 			Alarm.showAlert(header, context, Alert.AlertType.WARNING);
-			// showAlert("No Selection", "Please select an order to update.",
-			// Alert.AlertType.WARNING);
 			return;
 		}
 
@@ -413,8 +380,6 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 			String header = "Navigation Error";
 			String context = "Could not load the Update Order screen.";
 			Alarm.showAlertWithException(header, context, Alert.AlertType.ERROR, e);
-			// showAlert("Navigation Error", "Could not load the Update Order screen.",
-			// Alert.AlertType.ERROR);
 		}
 	}
 
