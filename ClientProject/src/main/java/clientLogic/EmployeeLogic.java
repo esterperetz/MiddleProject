@@ -46,4 +46,9 @@ public class EmployeeLogic {
 		Request req = new Request(ResourceType.EMPLOYEE, ActionType.REGISTER_SUBSCRIBER, null, customer);
 		client.sendRequest(req);
 	}
+	public void getAllOpeningHours() {
+		Request req = new Request(ResourceType.BUSINESS_HOUR, ActionType.GET_ALL, null, null);
+		client.sendRequest(req);
+		
+	}
 }

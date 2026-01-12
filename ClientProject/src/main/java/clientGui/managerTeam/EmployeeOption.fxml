@@ -12,9 +12,11 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.TextFlow?>
 
 <ScrollPane fitToWidth="true" styleClass="main-background"
 	stylesheets="@../managerTeam/EmployeeOption.css"
@@ -44,6 +46,23 @@
 				</HBox>
 
 				<Separator opacity="0.5" />
+
+				<HBox alignment="CENTER_LEFT" spacing="5.0" 
+				      style="-fx-background-color: #eef2f3; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;">
+				    <padding>
+				        <Insets top="5" right="5" bottom="5" left="10"/>
+				    </padding>
+				    <children>
+				        <Label text="OPENING HOURS: " style="-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 12px;"/>
+				        
+				        <Pane fx:id="tickerPane" HBox.hgrow="ALWAYS" prefHeight="25.0" 
+				              style="-fx-background-color: transparent;">
+				             <children>
+					             <TextFlow fx:id="tfTicker" layoutY="3" />
+				             </children>
+				        </Pane>
+				    </children>
+				</HBox>
 
 				<GridPane hgap="25.0" vgap="25.0">
 					<columnConstraints>
@@ -96,7 +115,7 @@
 
 								<VBox spacing="15.0" VBox.vgrow="ALWAYS">
 									<Label style="-fx-text-fill: gray;"
-										text="Select a date to update specific opening hours." wrapText="true" />
+										text="Select a date to update opening hours." wrapText="true" />
 
 									<VBox spacing="5.0">
 										<Label style="-fx-font-weight: bold;" text="Select Date:" />

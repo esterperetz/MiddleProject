@@ -1,5 +1,8 @@
 package clientGui.managerTeam;
 
+import javafx.animation.Animation;
+import javafx.animation.Interpolator;
+import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -7,6 +10,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.layout.Pane;
+import javafx.scene.text.Text;
+import javafx.util.Duration;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.reservation.OrderUi_controller;
@@ -33,11 +39,15 @@ import client.MessageListener;
 
 public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
 
-    // --- Internal Fields ---
+    // --- Internal Fields ---\
+	private TranslateTransition currentTransition;
     private Employee.Role isManager;
     private boolean isManagerFlag;
     private ObservableList<String> specialDatesModel;
     private Employee emp;
+    @FXML private Pane tickerPane;
+    @FXML private Label lblTicker;
+    @FXML private javafx.scene.text.TextFlow tfTicker;
 
     // --- FXML UI Components (Left Side - Navigation) ---
     @FXML private Button btnViewReports;
@@ -65,8 +75,71 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     public void initialize(URL location, ResourceBundle resources) {
         specialDatesModel = FXCollections.observableArrayList();
         listSpecialDates.setItems(specialDatesModel);
+     // יצירת מסכה (Clip) כדי שהטקסט ייראה רק בתוך הגבולות של ה-Pane
+        javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
+        // קושרים את גודל המסכה לגודל ה-Pane
+        clip.widthProperty().bind(tickerPane.widthProperty());
+        clip.heightProperty().bind(tickerPane.heightProperty());
+        tickerPane.setClip(clip);
+      
+    }
+    
+    private void initTicker() {
+    	
+       employeeLogic.getAllOpeningHours();
     }
 
+    private void startAnimation(double paneWidth) {
+        // 1. עצירת אנימציה קודמת
+        if (currentTransition != null) {
+            currentTransition.stop();
+        }
+
+        // 2. איפוס מיקום
+        tfTicker.setTranslateX(paneWidth);
+
+        // 3. כפיית חישוב גודל מחדש
+        tfTicker.applyCss();
+        tfTicker.layout();
+
+        // --- התיקון הגדול ---
+        // במקום getWidth() שמושפע מגודל המסך, אנחנו משתמשים ב-prefWidth(-1).
+        // הפרמטר -1 אומר: "תחזיר לי את הרוחב האידיאלי שלך ללא הגבלות".
+        double contentWidth = tfTicker.prefWidth(-1); 
+
+        // הגנה: אם החישוב נכשל והחזיר 0, ננסה לחשב לפי סכום הילדים (Text nodes)
+        if (contentWidth <= 0) {
+            contentWidth = tfTicker.getChildren().stream()
+                    .mapToDouble(node -> node.getLayoutBounds().getWidth())
+                    .sum();
+            // הוספת מרווח ביטחון קטן
+            contentWidth += 20; 
+        }
+
+        // 4. הגדרת האנימציה
+        currentTransition = new TranslateTransition();
+        currentTransition.setNode(tfTicker);
+
+        // חישוב המרחק הכולל: כניסה מצד ימין -> יציאה מלאה מצד שמאל
+        double totalDistance = paneWidth + contentWidth;
+
+        // הגדרת מהירות אחידה (פיקסלים לשנייה)
+        // 100 פיקסלים לשנייה זה קצב קריאה נוח
+        double speedPixelsPerSecond = 80.0; 
+        double durationSeconds = totalDistance / speedPixelsPerSecond;
+
+        currentTransition.setDuration(Duration.seconds(durationSeconds));
+
+        // מאיפה: קצה ימני של המסך
+        currentTransition.setFromX(paneWidth);
+        
+        // לאיפה: שמאלה עד שכל הטקסט נעלם (מינוס הרוחב שלו)
+        currentTransition.setToX(-contentWidth);
+
+        currentTransition.setCycleCount(Animation.INDEFINITE);
+        currentTransition.setInterpolator(Interpolator.LINEAR);
+        currentTransition.play();
+    }
     public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
         this.clientUi = clientUi;
         this.emp = emp;
@@ -100,6 +173,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             System.err.println("Error: ClientUi is null in ManagerOptionsController!");
             return;
         }
+        initTicker();
     }
 
     /**
@@ -276,6 +350,93 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         System.out.println("Going back / Signing out...");
         super.loadScreen("navigation/SelectionScreen", event, clientUi);
     }
+    
+    private void updateTickerFromList(List<OpeningHours> listOp) {
+        if (listOp == null || listOp.isEmpty()) {
+            Platform.runLater(() -> {
+                tfTicker.getChildren().clear();
+                Text t = new Text("No opening hours available.");
+                t.setStyle("-fx-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 14px;");
+                tfTicker.getChildren().add(t);
+            });
+            return;
+        }
+
+        // מיון לפי ימים
+        listOp.sort((o1, o2) -> Integer.compare(o1.getDayOfWeek(), o2.getDayOfWeek()));
+
+        // אנחנו בונים את הרשימה מחדש
+        Platform.runLater(() -> {
+            tfTicker.getChildren().clear(); // ניקוי הטקסט הקודם
+
+            for (OpeningHours oh : listOp) {
+                // 1. בדיקה אם זה חג/תאריך מיוחד
+                boolean isHoliday = (oh.getSpecialDate() != null);
+
+                // 2. בניית המחרוזת ליום הספציפי
+                StringBuilder sb = new StringBuilder();
+                String dayName = getDayShortName(oh.getDayOfWeek());
+                
+                sb.append(dayName).append(": ");
+
+                if (oh.isClosed()) {
+                    sb.append("CLOSED");
+                } else {
+                    String start = oh.getOpenTime().toString();
+                    String end = oh.getCloseTime().toString();
+                    if (start.length() >= 5) start = start.substring(0, 5);
+                    if (end.length() >= 5) end = end.substring(0, 5);
+                    sb.append(start).append("-").append(end);
+                }
+
+                // הוספת כיתוב חג אם צריך
+                if (isHoliday) {
+                    sb.append(" (HOLIDAY)");
+                }
+                
+                sb.append("   •   "); // מרווח
+
+                // 3. יצירת אובייקט Text וצביעה
+                Text textNode = new Text(sb.toString());
+                
+                if (isHoliday) {
+                    // עיצוב לחג: אדום ומודגש
+                    textNode.setStyle("-fx-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 14px;");
+                } else {
+                    // עיצוב רגיל: כחול כהה
+                    textNode.setStyle("-fx-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 14px;");
+                }
+
+                // הוספה ל-TextFlow
+                tfTicker.getChildren().add(textNode);
+            }
+
+            // התחלת אנימציה
+            if (tickerPane.getWidth() > 0) {
+                startAnimation(tickerPane.getWidth());
+            } else {
+                tickerPane.widthProperty().addListener((obs, oldVal, newVal) -> {
+                    if (newVal.doubleValue() > 0) {
+                        startAnimation(newVal.doubleValue());
+                    }
+                });
+            }
+        });
+    }
+
+    // מתודת עזר קטנה להמרת מספר יום לשם
+    private String getDayShortName(int dayOfWeek) {
+        switch (dayOfWeek) {
+            case 1: return "Sun";
+            case 2: return "Mon";
+            case 3: return "Tue";
+            case 4: return "Wed";
+            case 5: return "Thu";
+            case 6: return "Fri";
+            case 7: return "Sat";
+            default: return "Day" + dayOfWeek;
+        }
+    }
 
     @Override
     public void onMessageReceive(Object msg) {
@@ -284,21 +445,18 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 Response res = (Response) msg;
                 if (res.getResource() == entities.ResourceType.BUSINESS_HOUR) {
                     switch (res.getAction()) {
+                    	case GET_ALL:
+                    		if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                    			List<OpeningHours> listOp = (ArrayList<OpeningHours>)res.getData();
+                    			updateTickerFromList(listOp);
+                    			
+                    		}
                         case CREATE:
                             if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-                                OpeningHours data = (OpeningHours) res.getData();
-                                if(listEntry != null) {
-                                	specialDatesModel.add(0, listEntry); 
-	                                setStatus("Schedule updated successfully!", false);
-	                                txtManageOpen.clear();
-	                                txtManageClose.clear();
-                                }
-                                else
-                                	 setStatus("Schedule update failed!", true);
-                              
+                            	handleCreate(res);
                             }
                             else
-                            	setStatus("Could not remove from DB", true);
+                              	setStatus("Could not remove from DB", true);
                             break;
                       
                         case UPDATE:
@@ -331,4 +489,19 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         });
     }
 
+	private void handleCreate(Response res) {
+//		  OpeningHours data = (OpeningHours) res.getData();
+          if(listEntry != null) {
+          	specialDatesModel.add(0, listEntry); 
+              setStatus("Schedule updated successfully!", false);
+              txtManageOpen.clear();
+              txtManageClose.clear();
+          }
+          else
+          	 setStatus("Schedule update failed!", true);
+        
+    }
+     
+		
 }
+

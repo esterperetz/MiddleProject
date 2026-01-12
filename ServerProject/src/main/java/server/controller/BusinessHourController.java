@@ -24,7 +24,7 @@ public class BusinessHourController {
 			case GET:
 //				getHoursForDay(req, client);
 			case UPDATE:
-				handleUpdate(req,client);
+//				handleUpdate(req,client);
 				break;
 			case CREATE:
 				handleSave(req, client);
@@ -118,7 +118,7 @@ public class BusinessHourController {
 		
 		if (businessHourDAO.saveOrUpdate(oh)) {
 			client.sendToClient(new Response(ResourceType.BUSINESS_HOUR, req.getAction(),
-					Response.ResponseStatus.SUCCESS, "Hours updated", null));
+					Response.ResponseStatus.SUCCESS, "Hours updated", oh));
 			syncAllClients();
 		}
 	}
