@@ -51,6 +51,31 @@ public class TableDAO {
         }
         return false;
     }
+    public Table getSmallestCapacityTable() throws SQLException{
+        String query = "SELECT * FROM tables ORDER BY number_of_seats ASC LIMIT 1";
+        Connection con = null;
+        Table smallestTable = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(query);
+                 ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+                    int tableNum = rs.getInt("table_number");
+                    int seats = rs.getInt("number_of_seats");
+                    
+                    smallestTable = new Table(tableNum, seats,false);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting smallest table: " + e.getMessage());
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+        
+        return smallestTable;
+    }
 
     public boolean updateTable(Table t) throws SQLException {
         String query = "UPDATE tables SET number_of_seats = ? WHERE table_number = ?";
