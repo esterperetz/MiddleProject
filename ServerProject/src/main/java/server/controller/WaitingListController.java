@@ -170,9 +170,9 @@ public class WaitingListController {
 
 	    // 2. מציאת ההזמנה ה"רדומה" לפי קוד האישור
 	    // (כאן אנחנו משתמשים בפונקציה שעדכנו קודם שמוצאת גם NULL)
-	    Order existingOrder = orderDAO.getOrderByConfirmationCode(entry.getConfirmationCode());
+	    Order existingOrder = orderDAO.getOrderByConfirmationCodeWithStatusNull(entry.getConfirmationCode());
 	    
-	    if (existingOrder == null) {
+	    if (existingOrder==null) {
 	        System.err.println("Critical Error: Order not found for code " + entry.getConfirmationCode());
 	        return false;
 	    }
