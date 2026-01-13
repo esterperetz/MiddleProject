@@ -179,19 +179,31 @@ public class OrderController {
 			guestData = order.getCustomer();
 		}
 
+//		int guests = order.getNumberOfGuests();
+//		int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
+//		int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
+//
+//		int totalTables = tabledao.countSuitableTables(guests);
+//
+//		int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
+//
+//		if (totalTables - conflictingOrders <= 0) {
+//			List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
+//			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
+//					"The restaurant is full at this time.", alternatives));
+//			return false;
+//		}
+		///////////////////////////////////////////////////////
 		int guests = order.getNumberOfGuests();
-		int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
-		int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
-		int totalTables = tabledao.countSuitableTables(guests);
-		int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
 
-		if (totalTables - conflictingOrders <= 0) {
+		// השינוי: שימוש בפונקציה החדשה
+		if (!isSpaceAvailable(order.getOrderDate(), guests)) {
 			List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
 			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
 					"The restaurant is full at this time.", alternatives));
 			return false;
 		}
-
+////////////////////////////////////////////////////////////////////////
 		Customer finalCustomer = null;
 		Integer subCode = order.getCustomer().getSubscriberCode();
 
@@ -271,22 +283,36 @@ public class OrderController {
 			java.util.Date orderDate = requestedOrder.getOrderDate();
 			int guests = requestedOrder.getNumberOfGuests();
 
-			int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
-			int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
-
-			int totalSuitableTables = tabledao.countSuitableTables(guests);
-			if (totalSuitableTables == 0) {
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
-				return false;
+//			int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
+//			int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
+//
+//			int totalSuitableTables = tabledao.countSuitableTables(guests);
+//			if (totalSuitableTables == 0) {
+//				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+//						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
+//				return false;
+//			}
+//
+//			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, minGuestsThreshold);
+//			int available = totalSuitableTables - conflictingOrders;
+//
+//			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
+//
+//			if (available > 0) {
+			///////////////////////////////////////////////////////
+			if (tabledao.countSuitableTables(guests) == 0) {
+			    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+			            Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
+			    return false;
 			}
 
-			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(orderDate, minGuestsThreshold);
-			int available = totalSuitableTables - conflictingOrders;
+			// השינוי: קריאה לפונקציה החדשה שלנו
+			boolean isAvailable = isSpaceAvailable(orderDate, guests);
 
 			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
 
-			if (available > 0) {
+			if (isAvailable) {
+				///////////////////////////////////////////////////////////////////////////
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
 				return true;
@@ -315,17 +341,29 @@ public class OrderController {
 			return new ArrayList<>();
 
 		LocalDate localDate = new java.sql.Date(date.getTime()).toLocalDate();
+//		for (String slotStr : allSlots) {
+//
+//			LocalTime timeSlot = LocalTime.parse(slotStr);
+//			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
+//			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
+//
+//			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, minGuestsThreshold);
+//
+//			int available = totalTables - conflictingOrders;
+//			boolean isFull = (available <= 0);
+//			results.add(new TimeSlotStatus(slotStr, isFull));
+//		}
 		for (String slotStr : allSlots) {
 
-			LocalTime timeSlot = LocalTime.parse(slotStr);
-			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
-			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
+		    LocalTime timeSlot = LocalTime.parse(slotStr);
+		    LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
+		    java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
 
-			int conflictingOrders = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, minGuestsThreshold);
-
-			int available = totalTables - conflictingOrders;
-			boolean isFull = (available <= 0);
-			results.add(new TimeSlotStatus(slotStr, isFull));
+		    // השינוי: בדיקה פשוטה מול הפונקציה החדשה
+		    // שימו לב לסימן הקריאה (!) בהתחלה - אם אין מקום, אז זה מלא
+		    boolean isFull = !isSpaceAvailable(specificTimeToCheck, guests);
+		    
+		    results.add(new TimeSlotStatus(slotStr, isFull));
 		}
 
 		return results;
@@ -575,6 +613,42 @@ public class OrderController {
 			existingOrder = orderdao.getOrderByConfirmationCode(newCode);
 		} while (existingOrder != null);
 		return newCode;
+	}
+	// פונקציית עזר פרטית שבודקת זמינות בשיטת "המפל"
+	private boolean isSpaceAvailable(java.util.Date date, int guests) throws SQLException {
+	    // 1. בדיקה ראשונית: האם יש בכלל שולחן בגודל הזה?
+	    int totalTablesForMe = tabledao.countSuitableTables(guests);
+	    int activeOrdersForMe = orderdao.countActiveOrdersInTimeRange(date, guests);
+
+	    // אם אין מקום אפילו ברמה הבסיסית - החזר שקר
+	    if (totalTablesForMe - activeOrdersForMe <= 0) {
+	        return false;
+	    }
+
+	    // 2. בדיקת הצפה (Waterfall): האם הכניסה שלי חוסמת שולחנות קטנים?
+	    List<Integer> allSizes = tabledao.getAllTableCapacities();
+	    if (allSizes != null) {
+	        for (int size : allSizes) {
+	            // מדלגים על גדלים שגדולים ממני (הם לא רלוונטיים לחסימה מלמטה)
+	            if (size >= guests) continue;
+
+	            // כמה שולחנות סה"כ יש שמתאימים לגודל 'size'?
+	            int totalAtThisSize = tabledao.countSuitableTables(size);
+	            
+	            // כמה הזמנות קיימות תופסות שולחנות בגודל 'size' ומעלה?
+	            int activeAtThisSize = orderdao.countActiveOrdersInTimeRange(date, size);
+	            
+	            // אנחנו מוסיפים את עצמנו (+1) לביקוש, כי גם אנחנו תופסים שולחן מהמאגר הזה
+	            int demand = activeAtThisSize + 1;
+
+	            // אם הביקוש גדול מההיצע ברמה הזו - אין מקום
+	            if (totalAtThisSize < demand) {
+	                return false;
+	            }
+	        }
+	    }
+	    
+	    return true; // עברנו את כל הבדיקות - יש מקום!
 	}
 
 }
