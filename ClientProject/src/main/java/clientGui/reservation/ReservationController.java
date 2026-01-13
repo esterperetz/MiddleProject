@@ -268,6 +268,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 				Optional<ButtonType> result = Alarm.showAlertAndConformation("Fully Booked",
 						"Slot is full. Join waiting list?", Alert.AlertType.CONFIRMATION);
 				if (result.isPresent() && result.get() == ButtonType.OK) {
+					wlItem.setReservationDate(newOrder.getOrderDate());
 					waitingListLogic.enterToWaitingList(wlItem);
 				}
 				return;
@@ -303,6 +304,8 @@ public class ReservationController extends MainNavigator implements MessageListe
 				case CUSTOMER:
 					handleCustomerResponse(res);
 					break;
+				case WAITING_LIST:
+					handleWaitingListResponse(res);
 				default:
 					break;
 				}
@@ -310,6 +313,15 @@ public class ReservationController extends MainNavigator implements MessageListe
 				e.printStackTrace();
 			}
 		});
+	}
+
+	private void handleWaitingListResponse(Response res) {
+		if(res.getAction() == ActionType.ENTER_WAITING_LIST) {
+			if (res.getStatus() == ResponseStatus.SUCCESS) {
+				Alarm.showAlert("Waiting List", "Added to waiting list successfuly!", Alert.AlertType.INFORMATION);
+			}
+		}
+		
 	}
 
 	// Temp storage for order while waiting for customer creation

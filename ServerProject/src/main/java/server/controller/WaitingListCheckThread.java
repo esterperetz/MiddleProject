@@ -7,6 +7,8 @@ import java.util.Calendar;
 import DAO.WaitingListDAO;
 import DAO.TableDAO;
 import DAO.OrderDAO;
+import entities.Order;
+import entities.Order.OrderStatus;
 import entities.WaitingList;
 
 /**
@@ -35,45 +37,51 @@ public class WaitingListCheckThread extends Thread {
 
 	private void processWaitingList() {
 	    try {
-	        // 1. שליפת כל הממתינים לפי סדר הכניסה (FIFO)
 	        List<WaitingList> entries = waitingListDao.getAllWaitingList();
-
-	        // משתנה עזר למעקב אחרי כמה שולחנות "תפסנו" בריצה הנוכחית כדי לא לעשות Double Booking
-	        // (הערה: זהו פתרון פשוט, במערכת מורכבת עדיף לנהל הקצאת שולחנות ספציפיים)
-	        int promotedThisCycle = 0;
+	        
+	   
+	        int promotedCount = 0; 
 
 	        for (WaitingList entry : entries) {
 	            int guests = entry.getNumberOfGuests();
 
-	            // 2. ספירת סך השולחנות במסעדה שמתאימים לכמות האורחים (>= guests)
-	            int totalSuitableTables = tableDao.countSuitableTables(guests);
+	            // 1. חילוץ התאריך המבוקש
+	            Date desiredTime = new Date(); // ברירת מחדל: עכשיו
+	            
+	            // ניסיון למצוא הזמנה מקושרת (לוגיקה רגישה, עדיף לשמור order_id ב-waiting_list)
+	            if (entry.getCustomer() != null && entry.getCustomer().getCustomerId() != null) {
+	                List<Order> orderList = orderDao.getOrdersByCustomerId(entry.getCustomer().getCustomerId());
+	                for(Order o : orderList) {
+	                    // הנחה: הזמנה שמחכה לאישור היא בסטטוס PENDING או NULL (תלוי במימוש שלך)
+	                    // והיא הקרובה ביותר בזמן
+	                     if(o.getOrderStatus() == null) {
+	                        desiredTime = o.getOrderDate();
+	                        break; // לוקחים את הראשונה שמוצאים
+	                    }
+	                }
+	            }
 
-	            // 3. ספירת שולחנות תפוסים כרגע שיכולים להכיל כמות אורחים כזו
-	            // (חשוב: ה-DAO צריך לספור שולחנות תפוסים שגודלם >= guests)
-	            int occupiedTables = orderDao.countCurrentlySeatedOrders(guests);
-
-	            // 4. הגנה על הזמנות עתידיות בטווח של השעתיים הקרובות
-	            Date now = new Date();
+	            // חישוב טווח זמנים
 	            Calendar cal = Calendar.getInstance();
-	            cal.setTime(now);
-	            cal.add(Calendar.HOUR_OF_DAY, 2); // טווח ביטחון של שעתיים
-	            Date twoHoursFromNow = cal.getTime();
+	            cal.setTime(desiredTime);
+	            cal.add(Calendar.HOUR_OF_DAY, 2); 
+	            Date estimatedEndTime = cal.getTime();
 
-	            int upcomingReservations = orderDao.countApprovedOrdersInRange(now, twoHoursFromNow, guests);
+	            // 2. בדיקת זמינות נכונה
+	            int totalSuitableTables = tableDao.countSuitableTables(guests);
+	            
+	            // המשתנה הזה סופר גם אנשים שיושבים (אם הזמן הוא עכשיו) וגם הזמנות עתידיות (אם הזמן הוא אח"כ)
+	            // הוא עושה את זה באמצעות בדיקת חפיפת זמנים ב-SQL
+	            int conflictingOrders = orderDao.countConflictingOrders(desiredTime, estimatedEndTime, guests);
 
-	            // 5. חישוב זמינות בזמן אמת
-	            // הנוסחה: סך הכל מתאימים - (תפוסים כרגע + מוזמנים בקרוב + אלו שקידמנו הרגע בלולאה זו)
-	            int realAvailability = totalSuitableTables - occupiedTables - upcomingReservations - promotedThisCycle;
+	            // 3. חישוב סופי
+	            int realAvailability = totalSuitableTables - conflictingOrders - promotedCount;
 
 	            if (realAvailability > 0) {
-	                // נמצא פער בטוח - נקדם את הלקוח
 	                boolean success = promoteEntry(entry);
-	                
 	                if (success) {
-	                    // אם הצלחנו לקדם, נסמן שנתפס שולחן אחד באופן וירטואלי בריצה זו
-	                    promotedThisCycle++;
-	                    
-	                   
+	                    promotedCount++;
+	                    // הערה: זה עדיין מוריד מהמלאי הכללי. במערכת מושלמת היינו עוקבים לפי סוג שולחן.
 	                }
 	            }
 	        }

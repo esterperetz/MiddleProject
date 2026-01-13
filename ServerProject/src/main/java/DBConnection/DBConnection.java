@@ -157,7 +157,7 @@ public class DBConnection {
 				"arrival_time DATETIME, " +
 				"leaving_time DATETIME, " +
 				"total_price DECIMAL(10, 2), " +
-				"order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') NOT NULL, " +
+				"order_status ENUM('APPROVED', 'SEATED', 'PAID', 'CANCELLED') DEFAULT NULL, " +
 				"reminder_sent BOOLEAN DEFAULT FALSE, " +
 				"PRIMARY KEY (order_number), " +
 				"CONSTRAINT fk_order_customer FOREIGN KEY (customer_id) REFERENCES Customer(customer_id) ON DELETE RESTRICT ON UPDATE CASCADE, "

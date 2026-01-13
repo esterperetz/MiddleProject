@@ -13,6 +13,7 @@ public class WaitingList implements Serializable {
 	private Date enterTime;
 	private int confirmationCode;
 	private Customer customer;
+	private Date reservationDate;
 
 	public WaitingList() {
 		
@@ -29,6 +30,13 @@ public class WaitingList implements Serializable {
 
 	public Customer getCustomer() {
 		return customer;
+	}
+	
+	public void setReservationDate(Date date) {
+		this.reservationDate = date;
+	}
+	public Date getReservationDate() {
+		return this.reservationDate;
 	}
 
 	public void setCustomer(Customer customer) {

@@ -1,5 +1,7 @@
 package clientLogic;
 
+import java.sql.Date;
+
 import clientGui.ClientUi;
 import entities.ActionType;
 import entities.Request;

@@ -70,57 +70,68 @@ public class WaitingListController {
 	}
 
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
-		WaitingList item = (WaitingList) req.getPayload();
+	    WaitingList item = (WaitingList) req.getPayload();
 
-		int generatedCode = 1000 + (int) (Math.random() * 9000);
-		item.setConfirmationCode(generatedCode);
-		item.setEnterTime(new Date());
+	    // יצירת קוד אישור
+	    int generatedCode = 1000 + (int) (Math.random() * 9000);
+	    item.setConfirmationCode(generatedCode);
+	    item.setEnterTime(new Date());
 
-		Customer finalCustomer = null;
-		Integer subCode = item.getCustomer().getSubscriberCode();
+	    // --- זיהוי הלקוח (לוגיקה קיימת שלך) ---
+	    Customer finalCustomer = null;
+	    Integer subCode = item.getCustomer().getSubscriberCode();
 
-		if (subCode != null && subCode > 0) {
-			finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
+	    if (subCode != null && subCode > 0) {
+	        finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
+	        if (finalCustomer == null) {
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                    Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
+	            return;
+	        }
+	    } else {
+	        String email = item.getCustomer().getEmail();
+	        finalCustomer = customerDAO.getCustomerByEmail(email);
 
-			if (finalCustomer == null) {
-				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-						Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
-				return;
-			}
-		} else {
-			String email = item.getCustomer().getEmail();
-			finalCustomer = customerDAO.getCustomerByEmail(email);
+	        if (finalCustomer == null) {
+	            Customer newGuest = item.getCustomer();
+	            newGuest.setType(CustomerType.REGULAR);
+	            customerDAO.createCustomer(newGuest);
+	            finalCustomer = customerDAO.getCustomerByEmail(email);
+	        }
+	    }
 
-			if (finalCustomer == null) {
-				Customer newGuest = item.getCustomer();
-				newGuest.setType(CustomerType.REGULAR);
-				customerDAO.createCustomer(newGuest);
+	    if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to identify customer.", null));
+	        return;
+	    }
 
-				finalCustomer = customerDAO.getCustomerByEmail(email);
-			}
-		}
+	    // עדכון הפריט עם פרטי הלקוח
+	    item.setCustomerId(finalCustomer.getCustomerId());
+	    item.setCustomer(finalCustomer);
 
-		if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
-			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-					Response.ResponseStatus.DATABASE_ERROR, "Failed to identify customer.", null));
-			return;
-		}
+	    // --- שלב קריטי: יצירת הזמנה "רדומה" (Placeholder) ---
+	    // אנו יוצרים הזמנה עם התאריך שהלקוח ביקש (item.getReservationDate())
+	    // הסטטוס נשלח כ-NULL (הפרמטר האחרון בבנאי)
+	    Order placeholderOrder = new Order(0, item.getReservationDate(), item.getNumberOfGuests(), 
+	                                       item.getConfirmationCode(), finalCustomer, null, 
+	                                       new Date(), null, null, 0.0, null); // Status = null
+	    
+	    // שומרים את ההזמנה במסד הנתונים
+	    orderDAO.createOrder(placeholderOrder);
 
-		// 3. Update the Item with the correct ID
-		item.setCustomerId(finalCustomer.getCustomerId());
-		item.setCustomer(finalCustomer);
-
-		// 4. Save to Waiting List using the DAO
-		if (waitingListDAO.enterWaitingList(item)) {
-			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-					Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
-			sendListToAllClients();
-		} else {
-			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-					Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
-		}
+	    // --- שמירה לרשימת ההמתנה ---
+	    // ההזמנה (id) תקושר בפנים אם עדכנת את DAO כפי שדיברנו, או דרך הקוד אישור
+	    // נשתמש ב-generatedCode כדי למנוע כפילות בתוך enterWaitingList אם מימשת את הלוגיקה הקודמת
+	    if (waitingListDAO.enterWaitingList(item)) {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
+	        sendListToAllClients();
+	    } else {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
+	    }
 	}
-
 	private void handleExitWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
 			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.EXIT_WAITING_LIST,
@@ -128,61 +139,72 @@ public class WaitingListController {
 			return;
 		}
 		if (waitingListDAO.exitWaitingList(req.getId())) {
+//			EmailService.sendConfirmation(null, null);
 			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.EXIT_WAITING_LIST,
 					Response.ResponseStatus.SUCCESS, "Removed", true));
 			sendListToAllClients();
 		}
 	}
-
+	//there is a problem with waiting list , they move to orders as proved with the thread when not needed (ask liel)
 	public boolean handlePromoteToOrder(Integer waitingId, ConnectionToClient client) throws SQLException, IOException {
-		if (waitingId == null) {
-			if (client != null)
-				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
-						Response.ResponseStatus.ERROR, "Missing ID", null));
-			return false;
-		}
+	    if (waitingId == null) {
+	        if (client != null)
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
+	                    Response.ResponseStatus.ERROR, "Missing ID", null));
+	        return false;
+	    }
 
-		// 1. Fetch entry from waiting list
-		WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
-		if (entry == null)
-			return false;
+	    // 1. שליפת הפריט מרשימת ההמתנה
+	    WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
+	    if (entry == null) return false;
 
-		Customer customer = entry.getCustomer();
-		if (customer == null && entry.getCustomerId() != null) {
-			customer = customerDAO.getCustomerByCustomerId(entry.getCustomerId());
-		}
+	    Customer customer = entry.getCustomer();
+	    if (customer == null && entry.getCustomerId() != null) {
+	        customer = customerDAO.getCustomerByCustomerId(entry.getCustomerId());
+	    }
 
-		if (customer == null) {
-			System.err.println("Failed to promote waiting list entry " + waitingId + ": Customer not found.");
-			return false;
-		}
+	    if (customer == null) {
+	        System.err.println("Failed to promote waiting list entry " + waitingId + ": Customer not found.");
+	        return false;
+	    }
 
-		// 2. Create new APPROVED order object
-		Order promotedOrder = new Order(0, new Date(), entry.getNumberOfGuests(), entry.getConfirmationCode(),
-				customer, null, new Date(), null, null, 0.0, OrderStatus.APPROVED);
+	    // 2. מציאת ההזמנה ה"רדומה" לפי קוד האישור
+	    // (כאן אנחנו משתמשים בפונקציה שעדכנו קודם שמוצאת גם NULL)
+	    Order existingOrder = orderDAO.getOrderByConfirmationCode(entry.getConfirmationCode());
+	    
+	    if (existingOrder == null) {
+	        System.err.println("Critical Error: Order not found for code " + entry.getConfirmationCode());
+	        return false;
+	    }
 
-		// 3. Save to database and change status in waiting list
-		if (orderDAO.createOrder(promotedOrder)) {
-			waitingListDAO.exitWaitingList(waitingId);
+	    // 3. עדכון הסטטוס ל-APPROVED
+	    existingOrder.setCustomer(customer);
+	    existingOrder.setOrderStatus(OrderStatus.APPROVED); 
+	    // אם התאריך היה יכול להשתנות, זה הזמן לעדכן אותו ב-existingOrder
 
-			// 4. Sync all clients with updated lists
-			List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
-			EmailService.sendConfirmation(promotedOrder.getCustomer(),promotedOrder);
-			Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
-					Response.ResponseStatus.SUCCESS, null, updatedList));
-			Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
-					Response.ResponseStatus.SUCCESS, null, orderDAO.getAllOrders()));
+	    
+	    if (orderDAO.updateOrder(existingOrder)) {
+	        
+	        // מחיקה מרשימת ההמתנה
+	        waitingListDAO.exitWaitingList(waitingId);
 
-			// 5. Notify the specific requester if exists
-			if (client != null) {
-				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
-						Response.ResponseStatus.SUCCESS, null, true));
-			}
-			return true;
-		}
-		return false;
+	        // שליחת עדכונים
+	        List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
+	        EmailService.sendConfirmation(existingOrder.getCustomer(), existingOrder);
+	        
+	        Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
+	                Response.ResponseStatus.SUCCESS, null, updatedList));
+	        Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
+	                Response.ResponseStatus.SUCCESS, null, orderDAO.getAllOrders()));
+
+	        if (client != null) {
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
+	                    Response.ResponseStatus.SUCCESS, null, true));
+	        }
+	        return true;
+	    }
+	    return false;
 	}
-
 	private void sendListToAllClients() throws SQLException {
 		List<WaitingList> list = waitingListDAO.getAllWaitingList();
 		Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,

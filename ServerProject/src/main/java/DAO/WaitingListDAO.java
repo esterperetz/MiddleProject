@@ -138,27 +138,49 @@ public class WaitingListDAO {
             DBConnection.getInstance().releaseConnection(con);
         }
     }
+    
+
 
     public boolean enterWaitingList(WaitingList item) throws SQLException {
-        String sql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?)";
         Connection con = null;
 
         try {
             con = DBConnection.getInstance().getConnection();
-            try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
-                if (item.getCustomerId() == null) {
+            // --- שלב 1: בדיקת כפילות לפי קוד אישור ---
+            // השינוי: השאילתה בודקת אם קיים *כל* רישום עם קוד האישור הזה
+            String checkSql = "SELECT 1 FROM waiting_list WHERE confirmation_code = ?";
+            
+            try (PreparedStatement checkStmt = con.prepareStatement(checkSql)) {
+                // שמים את קוד האישור בסימן השאלה הראשון
+                checkStmt.setInt(1, item.getConfirmationCode());
+
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println("Duplicate confirmation code found: " + item.getConfirmationCode() + ". Entry denied.");
+                        return false; // הקוד כבר קיים - לא נכניס שוב
+                    }
+                }
+            }
+
+            // --- שלב 2: הוספה לרשימה (אם לא נמצאה כפילות) ---
+            // החלק הזה נשאר זהה ושומר גם את ה-order_id
+            String insertSql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES ( ?, ?, ?, ?)";
+
+            try (PreparedStatement stmt = con.prepareStatement(insertSql)) {
+                if (item.getCustomer() == null || item.getCustomer().getCustomerId() == null) {
                     stmt.setNull(1, java.sql.Types.INTEGER);
                 } else {
                     stmt.setInt(1, item.getCustomer().getCustomerId());
                 }
-
+         
                 stmt.setInt(2, item.getNumberOfGuests());
                 stmt.setTimestamp(3, new java.sql.Timestamp(item.getEnterTime().getTime()));
                 stmt.setInt(4, item.getConfirmationCode());
 
                 return stmt.executeUpdate() > 0;
             }
+
         } finally {
             DBConnection.getInstance().releaseConnection(con);
         }
