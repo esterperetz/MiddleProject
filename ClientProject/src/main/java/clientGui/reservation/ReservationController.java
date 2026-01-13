@@ -320,6 +320,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Waiting List", "Added to waiting list successfuly!", Alert.AlertType.INFORMATION);
 			}
+			else {
+				Alarm.showAlert("Waiting List", res.getMessage_from_server(), Alert.AlertType.ERROR);
+			}
 		}
 		
 	}
