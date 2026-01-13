@@ -181,7 +181,11 @@ public class OrderDAO {
 			}
 
 			stmt.setDouble(8, o.getTotalPrice());
-			stmt.setString(9, o.getOrderStatus().name());
+			if (o.getOrderStatus() != null) {
+				stmt.setString(9, o.getOrderStatus().name());
+			} else {
+				stmt.setNull(9, Types.VARCHAR);
+			}
 
 			return stmt.executeUpdate() > 0;
 		} finally {
@@ -257,7 +261,23 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
-
+	//for waitingList
+	public Order getOrderByConfirmationCodeWithStatusNull(int code) throws SQLException {
+		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status IS NULL";
+	    
+	    Connection con = DBConnection.getInstance().getConnection();
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        stmt.setInt(1, code);
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                return mapResultSetToOrder(rs);
+	            }
+	            return null;
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	}
 	public Order getOrderByConfirmationCodeApproved(int code, Integer customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE (customer_id = ? OR confirmation_code = ?) "
 				+ "AND order_status = 'APPROVED' "
@@ -365,7 +385,28 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
+	public int countDisActiveOrdersInTimeRange(java.util.Date requestedDate, int minGuestsThreshold) throws SQLException {
+		String sql = "SELECT COUNT(*) FROM `order` " + "WHERE order_status IN ('CANCELLED', 'PAID') "
+				+ "AND number_of_guests >= ? " + "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
 
+		Connection con = null;
+		try {
+			con = DBConnection.getInstance().getConnection();
+			try (PreparedStatement stmt = con.prepareStatement(sql)) {
+				Timestamp reqTime = new Timestamp(requestedDate.getTime());
+				stmt.setInt(1, minGuestsThreshold);
+				stmt.setTimestamp(2, reqTime);
+				try (ResultSet rs = stmt.executeQuery()) {
+					return rs.next() ? rs.getInt(1) : 0;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return 0;
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+	}
 	public int countCurrentlySeatedOrders(int guests) throws SQLException {
 		String sql = "SELECT COUNT(*) FROM `order` WHERE order_status = 'SEATED' AND number_of_guests >= ?";
 		Connection con = DBConnection.getInstance().getConnection();
@@ -394,7 +435,7 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
-
+	
 	public int countActiveOrders(java.util.Date timestamp, int guests) {
 		int count = 0;
 		String query = "SELECT COUNT(*) FROM `order` " + "WHERE order_date = ? " + "AND order_status = 'APPROVED' "
