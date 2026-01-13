@@ -214,4 +214,26 @@ public class TableDAO {
         }
         return false;
     }
+ // הוסף בסוף TableDAO.java
+
+    public List<Integer> getAllTableCapacities() {
+        List<Integer> capacities = new ArrayList<>();
+        String sql = "SELECT DISTINCT number_of_seats FROM tables ORDER BY number_of_seats ASC"; 
+        
+        Connection con = null;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    capacities.add(rs.getInt("number_of_seats"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting table capacities: " + e.getMessage());
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+        return capacities;
+    }
 }
