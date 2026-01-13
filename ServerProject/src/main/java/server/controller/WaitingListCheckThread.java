@@ -34,36 +34,106 @@ public class WaitingListCheckThread extends Thread {
         }
     }
 
+//    private void processWaitingList() {
+//        try {
+//            List<WaitingList> waitingEntries = waitingListDao.getAllWaitingList();
+//            if (waitingEntries.isEmpty()) return;
+//
+//            Date now = new Date();
+//            
+//            // מפה למעקב אחרי כמה אנשים קידמנו בסבב הנוכחי
+//            // Key: כמות האורחים, Value: כמה הזמנות כאלו קידמנו הרגע
+//            Map<Integer, Integer> promotedInThisLoop = new HashMap<>();
+//
+//            for (WaitingList entry : waitingEntries) {
+//                int guests = entry.getNumberOfGuests();
+//                
+//                // שימוש בלוגיקה החכמה (המפל) שבודקת חפיפות בין שולחנות קטנים לגדולים
+//                if (isSpaceAvailable(now, guests, promotedInThisLoop)) {
+//                    
+//                    // יש מקום! נקדם להזמנה
+//                    boolean success = promoteEntry(entry);
+//                    
+//                    if (success) {
+//                        // עדכון המונה כדי שהבא בתור לא יתפוס את אותו מקום וירטואלי
+//                        promotedInThisLoop.put(guests, promotedInThisLoop.getOrDefault(guests, 0) + 1);
+//                    }
+//                }
+//            }
+//        } catch (SQLException e) {
+//            System.err.println("WaitingList Thread Error: " + e.getMessage());
+//            e.printStackTrace();
+//        }
+//    }
+    
     private void processWaitingList() {
         try {
-            List<WaitingList> waitingEntries = waitingListDao.getAllWaitingList();
-            if (waitingEntries.isEmpty()) return;
-
-            Date now = new Date();
+            List<WaitingList> entries = waitingListDao.getAllWaitingList();
             
-            // מפה למעקב אחרי כמה אנשים קידמנו בסבב הנוכחי
-            // Key: כמות האורחים, Value: כמה הזמנות כאלו קידמנו הרגע
-            Map<Integer, Integer> promotedInThisLoop = new HashMap<>();
+            // רשימה לשמירת האנשים שקידמנו *בתוך הלולאה הזו*
+            // זה משמש כ-Cache זמני עד שהלולאה מסתיימת והנתונים נשמרים באמת ב-DB
+            List<WaitingList> promotedThisCycle = new ArrayList<>();
 
-            for (WaitingList entry : waitingEntries) {
+            for (WaitingList entry : entries) {
                 int guests = entry.getNumberOfGuests();
                 
-                // שימוש בלוגיקה החכמה (המפל) שבודקת חפיפות בין שולחנות קטנים לגדולים
-                if (isSpaceAvailable(now, guests, promotedInThisLoop)) {
+                // 1. קביעת התאריך המבוקש להזמנה הנוכחית
+                Date requestedDate = entry.getReservationDate();
+                if (requestedDate == null) {
+                    requestedDate = new Date(); // עכשיו
+                }
+
+                // 2. כמה שולחנות מתאימים יש בכלל במסעדה?
+                int totalSuitableTables = tableDao.countSuitableTables(guests);
+
+                // 3. כמה הזמנות מתנגשות יש *במסד הנתונים*?
+                int dbConflicts = orderDao.countConflictingOrders(requestedDate, guests);
+
+                // 4. --- התוספת החדשה: חישוב התנגשויות פנימיות ---
+                // נבדוק כמה אנשים קידמנו *הרגע* (ב-promotedThisCycle) שמתנגשים עם הבקשה הזו
+                int localConflicts = 0;
+                for (WaitingList promoted : promotedThisCycle) {
+                    // נשתמש באותו היגיון כמו ב-SQL:
+                    // אם ההזמנה שקידמנו גדולה/שווה להזמנה הנוכחית + הזמנים חופפים -> זה תופס מקום
                     
-                    // יש מקום! נקדם להזמנה
+                    Date promotedDate = promoted.getReservationDate();
+                    if (promotedDate == null) promotedDate = new Date();
+
+                    if (promoted.getNumberOfGuests() >= guests && isOverlapping(promotedDate, requestedDate)) {
+                        localConflicts++;
+                    }
+                }
+                System.out.println("Date: " + requestedDate+ " totalTables : " + totalSuitableTables + " dbConflicts: " + dbConflicts + " localConflicts: "  + localConflicts );
+                // 5. חישוב סופי: סך הכל - (תפוסים ב-DB + תפוסים וירטואלית בלולאה)
+                if (totalSuitableTables > (dbConflicts + localConflicts)) {
+                    
                     boolean success = promoteEntry(entry);
                     
                     if (success) {
-                        // עדכון המונה כדי שהבא בתור לא יתפוס את אותו מקום וירטואלי
-                        promotedInThisLoop.put(guests, promotedInThisLoop.getOrDefault(guests, 0) + 1);
+                        System.out.println("Promoted waiting list entry " + entry.getWaitingId());
+                        
+                        // חשוב מאוד: מוסיפים את הממתין לרשימה הפנימית
+                        // כדי שהאיטרציה הבאה בלולאה "תדע" שהמקום הזה נתפס
+                        promotedThisCycle.add(entry);
                     }
                 }
             }
         } catch (SQLException e) {
             System.err.println("WaitingList Thread Error: " + e.getMessage());
-            e.printStackTrace();
         }
+    }
+
+    // --- מתודת עזר לבדיקת חפיפת זמנים (אותו היגיון כמו ה-SQL) ---
+    private boolean isOverlapping(Date date1, Date date2) {
+        long time1 = date1.getTime();
+        long time2 = date2.getTime();
+        long twoHours = 2 * 60 * 60 * 1000; // שעתיים במילי-שניות
+
+        // טווח 1: מתחיל ב-time1, נגמר ב-time1 + שעתיים
+        // טווח 2: מתחיל ב-time2, נגמר ב-time2 + שעתיים
+        
+        // חפיפה מתקיימת אם: (Start1 < End2) וגם (End1 > Start2)
+        return (time1 < time2 + twoHours) && (time1 + twoHours > time2);
     }
 
     /**

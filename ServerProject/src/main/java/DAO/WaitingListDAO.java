@@ -5,34 +5,61 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 import DBConnection.DBConnection;
+import entities.Order;
 import entities.WaitingList;
 
 public class WaitingListDAO {
 
-    public List<WaitingList> getAllWaitingList() throws SQLException {
-        String sql = "SELECT * FROM waiting_list WHERE in_waiting_list = ? ORDER BY enter_time ASC";
-        Connection con = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+//    public List<WaitingList> getAllWaitingList() throws SQLException {
+//        String sql = "SELECT * FROM waiting_list WHERE in_waiting_list = ? ORDER BY enter_time ASC";
+//        Connection con = null;
+//        PreparedStatement stmt = null;
+//        ResultSet rs = null;
+//
+//        try {
+//            con = DBConnection.getInstance().getConnection();
+//            stmt = con.prepareStatement(sql);
+//            stmt.setInt(1, 1);
+//            rs = stmt.executeQuery();
+//
+//            List<WaitingList> list = new ArrayList<>();
+//            while (rs.next()) {
+//                list.add(mapResultSetToWaitingList(rs));
+//            }
+//            return list;
+//        } finally {
+//            closeResources(rs, stmt);
+//            DBConnection.getInstance().releaseConnection(con);
+//        }
+//    }
+	private OrderDAO orderDao = new OrderDAO();
+	
+	public List<WaitingList> getAllWaitingList() throws SQLException {
+	    // השאילתה שולפת את כל נתוני הממתין (wl.*)
+	    // ומוסיפה להם את עמודת order_date מטבלת ההזמנות (o.order_date)
+	    // הקישור נעשה לפי confirmation_code
+	    String sql = "SELECT wl.*, o.order_date " +
+	                 "FROM waiting_list wl " +
+	                 "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
+	                 "ORDER BY wl.enter_time ASC";
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            stmt = con.prepareStatement(sql);
-            stmt.setInt(1, 1);
-            rs = stmt.executeQuery();
+	    List<WaitingList> list = new ArrayList<>();
+	    Connection con = DBConnection.getInstance().getConnection();
 
-            List<WaitingList> list = new ArrayList<>();
-            while (rs.next()) {
-                list.add(mapResultSetToWaitingList(rs));
-            }
-            return list;
-        } finally {
-            closeResources(rs, stmt);
-            DBConnection.getInstance().releaseConnection(con);
-        }
-    }
+	    try (PreparedStatement stmt = con.prepareStatement(sql);
+	         ResultSet rs = stmt.executeQuery()) {
+
+	        while (rs.next()) {
+	            list.add(mapResultSetToWaitingList(rs));
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	    return list;
+	}
 
     public List<Map<String, Object>> getAllWaitingListWithCustomers() {
         List<Map<String, Object>> resultList = new ArrayList<>();
@@ -139,6 +166,26 @@ public class WaitingListDAO {
         }
     }
     
+ // בתוך WaitingListDAO.java
+
+    public boolean isCustomerWaitingForDate(Integer customerId, Date requestedDate) throws SQLException {
+        String sql = "SELECT 1 FROM waiting_list wl " +
+                     "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
+                     "WHERE wl.customer_id = ? AND o.order_date = ?";
+
+        Connection con = DBConnection.getInstance().getConnection();
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            
+            stmt.setInt(1, customerId);
+            stmt.setTimestamp(2, new java.sql.Timestamp(requestedDate.getTime()));
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next(); 
+            }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+    }
 
 
     public boolean enterWaitingList(WaitingList item) throws SQLException {
@@ -147,25 +194,45 @@ public class WaitingListDAO {
         try {
             con = DBConnection.getInstance().getConnection();
 
-            // --- שלב 1: בדיקת כפילות לפי קוד אישור ---
-            // השינוי: השאילתה בודקת אם קיים *כל* רישום עם קוד האישור הזה
-            String checkSql = "SELECT 1 FROM waiting_list WHERE confirmation_code = ?";
-            
-            try (PreparedStatement checkStmt = con.prepareStatement(checkSql)) {
-                // שמים את קוד האישור בסימן השאלה הראשון
-                checkStmt.setInt(1, item.getConfirmationCode());
+        
+            if (item.getCustomer() != null && item.getCustomer().getCustomerId() != null) {
+                
+              
+                String duplicateDateSql = 
+                    "SELECT 1 " +
+                    "FROM waiting_list wl " +
+                    "JOIN `order` o_existing ON wl.confirmation_code = o_existing.confirmation_code " +
+                    "JOIN `order` o_new ON o_new.confirmation_code = ? " + // ה-code של ההזמנה החדשה
+                    "WHERE wl.customer_id = ? " +                           // ה-ID של הלקוח
+                    "AND o_existing.order_date = o_new.order_date";         // השוואת התאריכים
 
-                try (ResultSet rs = checkStmt.executeQuery()) {
-                    if (rs.next()) {
-                        System.out.println("Duplicate confirmation code found: " + item.getConfirmationCode() + ". Entry denied.");
-                        return false; // הקוד כבר קיים - לא נכניס שוב
+                try (PreparedStatement checkDateStmt = con.prepareStatement(duplicateDateSql)) {
+                    checkDateStmt.setInt(1, item.getConfirmationCode());
+                    checkDateStmt.setInt(2, item.getCustomer().getCustomerId());
+
+                    try (ResultSet rs = checkDateStmt.executeQuery()) {
+                        if (rs.next()) {
+                            System.out.println("Customer already in waiting list for this date/time. Entry denied.");
+                            return false; 
+                        }
                     }
                 }
             }
 
-            // --- שלב 2: הוספה לרשימה (אם לא נמצאה כפילות) ---
-            // החלק הזה נשאר זהה ושומר גם את ה-order_id
-            String insertSql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES ( ?, ?, ?, ?)";
+       
+            String checkCodeSql = "SELECT 1 FROM waiting_list WHERE confirmation_code = ?";
+            try (PreparedStatement checkStmt = con.prepareStatement(checkCodeSql)) {
+                checkStmt.setInt(1, item.getConfirmationCode());
+                try (ResultSet rs = checkStmt.executeQuery()) {
+                    if (rs.next()) {
+                        System.out.println("Duplicate confirmation code found: " + item.getConfirmationCode());
+                        return false;
+                    }
+                }
+            }
+
+         
+            String insertSql = "INSERT INTO waiting_list (customer_id, number_of_guests, enter_time, confirmation_code) VALUES (?, ?, ?, ?)";
 
             try (PreparedStatement stmt = con.prepareStatement(insertSql)) {
                 if (item.getCustomer() == null || item.getCustomer().getCustomerId() == null) {
@@ -173,11 +240,11 @@ public class WaitingListDAO {
                 } else {
                     stmt.setInt(1, item.getCustomer().getCustomerId());
                 }
-         
+
                 stmt.setInt(2, item.getNumberOfGuests());
                 stmt.setTimestamp(3, new java.sql.Timestamp(item.getEnterTime().getTime()));
                 stmt.setInt(4, item.getConfirmationCode());
-
+//        	    orderDao.createOrder(order);
                 return stmt.executeUpdate() > 0;
             }
 
@@ -206,13 +273,27 @@ public class WaitingListDAO {
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
         int subIdTemp = rs.getInt("customer_id");
         Integer subId = rs.wasNull() ? null : subIdTemp;
-
-        return new WaitingList(
+        WaitingList waitingList = new WaitingList(
                 rs.getInt("waiting_id"),
                 subId,
                 rs.getInt("number_of_guests"),
                 rs.getTimestamp("enter_time"),
                 rs.getInt("confirmation_code"), null);
+        try {
+        	if(rs.getTimestamp("order_date")!= null) {
+        		java.sql.Timestamp orderDate = rs.getTimestamp("order_date");
+        		if (orderDate != null) {
+                    waitingList.setReservationDate(new java.util.Date(orderDate.getTime()));
+                }
+        	}
+           
+           
+        } catch (SQLException e) {
+            // במקרה שמשתמשים בפונקציה הזו במקום אחר בלי ה-JOIN
+            System.err.println("Warning: order_date column missing in result set");
+        }
+
+        return waitingList;
     }
 
     private void closeResources(ResultSet rs, Statement stmt) {

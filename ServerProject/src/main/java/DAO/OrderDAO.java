@@ -2,9 +2,11 @@ package DAO;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 import DBConnection.DBConnection;
 import entities.Customer;
@@ -131,6 +133,52 @@ public class OrderDAO {
 		} finally {
 			DBConnection.getInstance().releaseConnection(con);
 		}
+	}
+	
+	public int countConflictingOrders(Date requestedDate, int guests) throws SQLException {
+	    // 1. חישוב טווחי זמנים לבדיקה
+	    java.sql.Timestamp newStart = new java.sql.Timestamp(requestedDate.getTime());
+	    
+	    Calendar cal = Calendar.getInstance();
+	    cal.setTime(requestedDate);
+	    cal.add(Calendar.HOUR_OF_DAY, 2); // הנחה: משך ארוחה הוא שעתיים
+	    java.sql.Timestamp newEnd = new java.sql.Timestamp(cal.getTime().getTime());
+
+	    // 2. השאילתה המותאמת לסכמה BISTRO
+	    // שינויים: order_date במקום order_time, number_of_guests במקום num_of_guests
+	    String sql = "SELECT COUNT(*) FROM `order` WHERE " +
+	                 "number_of_guests >= ? " + 
+	                 "AND order_status IN ('APPROVED', 'SEATED') " + 
+	                 "AND order_date < ? " +   // בדיקת חפיפה: התחלה קיימת < סוף חדש
+	                 "AND DATE_ADD(order_date, INTERVAL 2 HOUR) > ?"; // בדיקת חפיפה: סוף קיים > התחלה חדשה
+
+	    Connection con = DBConnection.getInstance().getConnection();
+	    
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        
+	        stmt.setInt(1, guests);
+	        stmt.setTimestamp(2, newEnd);   
+	        stmt.setTimestamp(3, newStart);
+	        
+	        // --- הדפסות DEBUGGING חיוניות ---
+	        // תסתכל בקונסול ותשווה את מה שמודפס כאן למה שיש לך בטבלה ב-Workbench
+	        System.out.println("========== CHECKING CONFLICTS ==========");
+	        System.out.println("Looking for orders with Guests >= " + guests);
+	        System.out.println("Checking Time Range: " + newStart + "  <--->  " + newEnd);
+	        System.out.println("SQL Logic: order_date < " + newEnd + " AND (order_date + 2h) > " + newStart);
+	        // -------------------------------------
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                int count = rs.getInt(1);
+	                System.out.println("Found " + count + " conflicting orders.");
+	                return count;
+	            }
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	    return 0;
 	}
 
 	public Order getOrder(int id) throws SQLException {

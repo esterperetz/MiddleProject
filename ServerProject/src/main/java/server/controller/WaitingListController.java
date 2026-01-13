@@ -72,15 +72,13 @@ public class WaitingListController {
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
 	    WaitingList item = (WaitingList) req.getPayload();
 
-	    // יצירת קוד אישור
 	    int generatedCode = 1000 + (int) (Math.random() * 9000);
 	    item.setConfirmationCode(generatedCode);
 	    item.setEnterTime(new Date());
 
-	    // --- זיהוי הלקוח (לוגיקה קיימת שלך) ---
 	    Customer finalCustomer = null;
 	    Integer subCode = item.getCustomer().getSubscriberCode();
-
+	 
 	    if (subCode != null && subCode > 0) {
 	        finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
 	        if (finalCustomer == null) {
@@ -106,30 +104,35 @@ public class WaitingListController {
 	        return;
 	    }
 
-	    // עדכון הפריט עם פרטי הלקוח
 	    item.setCustomerId(finalCustomer.getCustomerId());
 	    item.setCustomer(finalCustomer);
 
-	    // --- שלב קריטי: יצירת הזמנה "רדומה" (Placeholder) ---
-	    // אנו יוצרים הזמנה עם התאריך שהלקוח ביקש (item.getReservationDate())
-	    // הסטטוס נשלח כ-NULL (הפרמטר האחרון בבנאי)
+	  
+	    if (waitingListDAO.isCustomerWaitingForDate(finalCustomer.getCustomerId(), item.getReservationDate())) {
+	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                Response.ResponseStatus.ERROR, "You are already in the waiting list for this time.", null));
+	        return; 
+	    }
+
+	    
 	    Order placeholderOrder = new Order(0, item.getReservationDate(), item.getNumberOfGuests(), 
 	                                       item.getConfirmationCode(), finalCustomer, null, 
-	                                       new Date(), null, null, 0.0, null); // Status = null
-	    
-	    // שומרים את ההזמנה במסד הנתונים
-	    orderDAO.createOrder(placeholderOrder);
+	                                       new Date(), null, null, 0.0, null); // Status = null OR PENDING
 
-	    // --- שמירה לרשימת ההמתנה ---
-	    // ההזמנה (id) תקושר בפנים אם עדכנת את DAO כפי שדיברנו, או דרך הקוד אישור
-	    // נשתמש ב-generatedCode כדי למנוע כפילות בתוך enterWaitingList אם מימשת את הלוגיקה הקודמת
-	    if (waitingListDAO.enterWaitingList(item)) {
-	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
-	        sendListToAllClients();
+	    if (orderDAO.createOrder(placeholderOrder)) {
+	        
+	    	if (waitingListDAO.enterWaitingList(item)) {
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                    Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
+	            sendListToAllClients();
+	        } else {
+	           
+	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+	                    Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
+	        }
 	    } else {
 	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
+	                Response.ResponseStatus.DATABASE_ERROR, "Failed to create placeholder order.", null));
 	    }
 	}
 	private void handleExitWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
