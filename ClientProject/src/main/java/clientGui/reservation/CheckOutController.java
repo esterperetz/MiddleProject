@@ -89,10 +89,8 @@ public class CheckOutController extends MainNavigator implements  Initializable 
 	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		//MainNavigator.loadScreen("user/SubscriberOption", clientUi);
 		SubscriberOptionController controller = 
     	       super.loadScreen("user/SubscriberOption", event,clientUi);
-    	//if (isSubsriber)
 		if(controller!=null)
 		{
     		controller.initData(clientUi,isSubsriber, currentSubscriberCode,customer);

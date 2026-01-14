@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<StackPane prefHeight="600.0" prefWidth="350.0" style="-fx-background-color: #000;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+fx:controller="clientGui.user.BarcodeScannerController">
+   <children>
+      
+      <ImageView fx:id="cameraView" fitHeight="600.0" fitWidth="350.0" pickOnBounds="true" preserveRatio="true" />
+      
+      <VBox alignment="CENTER" spacing="10.0">
+         <children>
+            <Label text="Scan Barcode" textFill="WHITE">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+               <effect>
+                  <javafx.scene.effect.DropShadow />
+               </effect>
+            </Label>
+            
+            <StackPane maxHeight="200.0" maxWidth="300.0" prefHeight="200.0" prefWidth="300.0">
+               <children>
+                  <Rectangle arcHeight="20.0" arcWidth="20.0" fill="#1f93ff00" height="200.0" stroke="WHITE" strokeType="INSIDE" strokeWidth="2.0" width="300.0" />
+                  
+                  <Rectangle fill="#ff1f1f" height="2.0" width="280.0" opacity="0.8">
+                     <effect>
+                        <javafx.scene.effect.Glow level="0.8" />
+                     </effect>
+                  </Rectangle>
+               </children>
+            </StackPane>
+            
+            <Label text="Align code within frame" textFill="#cccccc">
+               <font>
+                  <Font size="12.0" />
+               </font>
+            </Label>
+         </children>
+      </VBox>
+
+      <BorderPane pickOnBounds="false" prefHeight="200.0" prefWidth="200.0">
+         
+         <top>
+            <HBox alignment="CENTER_LEFT" style="-fx-background-color: rgba(0,0,0,0.5); -fx-padding: 10;" BorderPane.alignment="CENTER">
+               <children>
+                  <Label text="Scanner" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+         </top>
+         
+         <bottom>
+            <VBox spacing="15.0" style="-fx-background-color: white; -fx-background-radius: 15 15 0 0; -fx-padding: 20;" BorderPane.alignment="CENTER">
+               <children>
+                  <Label text="Scanned Result:" textFill="#666666" />
+                  
+                  <HBox alignment="CENTER" spacing="10.0" style="-fx-background-color: #f0f0f0; -fx-background-radius: 5; -fx-padding: 5;">
+                     <children>
+                        <TextField fx:id="resultField" editable="false" promptText="Waiting for scan..." style="-fx-background-color: transparent;" HBox.hgrow="ALWAYS">
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </TextField>
+                     </children>
+                  </HBox>
+                  
+                  <HBox alignment="CENTER" spacing="20.0">
+                     <children>
+                        <Button fx:id="cancelBtn" mnemonicParsing="false" prefHeight="40.0" prefWidth="100.0" style="-fx-background-color: #f0f0f0; -fx-text-fill: #333;" text="Cancel" />
+                        <Button fx:id="scanBtn" mnemonicParsing="false" prefHeight="40.0" prefWidth="100.0" style="-fx-background-color: #007bff; -fx-text-fill: white; -fx-font-weight: bold;" text="Scan Again" />
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </bottom>
+      </BorderPane>
+   </children>
+</StackPane>
