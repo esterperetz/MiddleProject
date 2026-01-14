@@ -236,4 +236,45 @@ public class TableDAO {
         }
         return capacities;
     }
+    //if working delete above function
+    public List<Integer> getAllTableCapacities2() {
+        List<Integer> capacities = new ArrayList<>();
+        String sql = "SELECT number_of_seats FROM tables  WHERE is_occupied = 0 ORDER BY number_of_seats ASC"; 
+        Connection con = null;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    capacities.add(rs.getInt("number_of_seats"));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error getting table capacities: " + e.getMessage());
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+        return capacities;
+    }
+    /**
+     * מחזירה את כמות השולחנות הפיזיים במסעדה שיכולים להכיל את כמות האנשים המבוקשת.
+     * (לא בודק אם הם פנויים או תפוסים - רק אם הם קיימים)
+     */
+    public int countTotalPhysicalTables(int minSeats) throws SQLException {
+        String query = "SELECT COUNT(*) FROM tables WHERE number_of_seats >= ?";
+
+        Connection con = DBConnection.getInstance().getConnection();
+        try (PreparedStatement stmt = con.prepareStatement(query)) {
+            stmt.setInt(1, minSeats);
+            
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+                return 0;
+            }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+    }
 }
