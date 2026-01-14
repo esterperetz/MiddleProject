@@ -15,6 +15,8 @@ public class WaitingList implements Serializable {
 	private Customer customer;
 	private Date reservationDate;
 
+	
+	
 	public WaitingList() {
 		
 	}
