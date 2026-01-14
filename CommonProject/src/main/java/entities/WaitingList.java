@@ -15,6 +15,8 @@ public class WaitingList implements Serializable {
 	private Customer customer;
 	private Date reservationDate;
 
+	private int inWaitingList;
+
 	public WaitingList() {
 		
 	}
@@ -86,7 +88,14 @@ public class WaitingList implements Serializable {
 
 	@Override
 	public String toString() {
-		return "WaitingList [guests=" + numberOfGuests + ", code=" + confirmationCode + "]";
+		return "WaitingList [guests=" + numberOfGuests + ", code=" + confirmationCode + "]" + " date: " + reservationDate;
+	}
+	public void setInWaitingList(int val) {
+		this.inWaitingList = val;
+		
+	}
+	public int getInWaitingList() {
+		return inWaitingList;
 	}
 
 }
