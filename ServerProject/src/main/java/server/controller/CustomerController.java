@@ -60,8 +60,6 @@ public class CustomerController {
 	}
 
 	private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
-//		boolean isUnique = false;
-//		int code;
 		Customer newCub = (Customer) req.getPayload();
 
 		// Updated to camelCase
@@ -71,20 +69,6 @@ public class CustomerController {
 					Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
 			return;
 		}
-//		if (newCub.getType() == CustomerType.SUBSCRIBER) {
-//
-//			// לולאה שרצה עד שנמצא מספר פנוי
-//			do {
-//				// הגרלת מספר (למשל מספר בן 5 ספרות: 10000 עד 99999)
-//				code = 10000 + (int) (Math.random() * 90000);
-//
-//				// בדיקה מול ה-DB אם המספר הזה כבר קיים
-//				if (CustomerDAO.getCustomerBySubscriberCode(code) == null) {
-//					isUnique = true;
-//				}
-//			} while (!isUnique);
-//			newCub.setSubscriberCode(code);
-//		}
 
 		boolean success = CustomerDAO.createCustomer(newCub);
 		if (success) {

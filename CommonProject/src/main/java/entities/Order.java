@@ -60,6 +60,7 @@ public class Order implements Serializable {
 	public void setCustomer(Customer customer) {
 		this.customer = customer;
 	}
+	
 
 	// Getters and Setters
 	public int getOrderNumber() {

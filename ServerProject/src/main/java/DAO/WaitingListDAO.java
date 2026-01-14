@@ -38,10 +38,9 @@ public class WaitingListDAO {
 	private OrderDAO orderDao = new OrderDAO();
 	
 	public List<WaitingList> getAllWaitingList() throws SQLException {
-	    // השאילתה שולפת את כל נתוני הממתין (wl.*)
-	    // ומוסיפה להם את עמודת order_date מטבלת ההזמנות (o.order_date)
-	    // הקישור נעשה לפי confirmation_code
-	    String sql = "SELECT wl.*, o.order_date " +
+	    // שינוי קריטי: o.order_date AS res_date
+	    // זה מכריח את ה-ResultSet לזהות את העמודה בשם res_date
+	    String sql = "SELECT wl.*, o.order_date AS res_date " +
 	                 "FROM waiting_list wl " +
 	                 "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
 	                 "ORDER BY wl.enter_time ASC";
@@ -101,29 +100,26 @@ public class WaitingListDAO {
         return resultList;
     }
 
-    public WaitingList getByWaitingId(int waitingId) {
-        String sql = "SELECT * FROM waiting_list WHERE waiting_id = ?";
-        Connection con = null;
+    public WaitingList getByWaitingId(int waitingId) throws SQLException {
+        // הוספנו JOIN ו-Alias גם כאן
+        String sql = "SELECT wl.*, o.order_date AS res_date " +
+                     "FROM waiting_list wl " +
+                     "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
+                     "WHERE wl.waiting_id = ?";
 
-        try {
-            con = DBConnection.getInstance().getConnection();
-            try (PreparedStatement stmt = con.prepareStatement(sql)) {
-                stmt.setInt(1, waitingId);
-
-                try (ResultSet rs = stmt.executeQuery()) {
-                    if (rs.next()) {
-                        return mapResultSetToWaitingList(rs);
-                    }
+        Connection con = DBConnection.getInstance().getConnection();
+        try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            stmt.setInt(1, waitingId);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToWaitingList(rs);
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         } finally {
             DBConnection.getInstance().releaseConnection(con);
         }
         return null;
     }
-
     public WaitingList getByCode(int code) throws SQLException {
         String sql = "SELECT * FROM waiting_list WHERE confirmation_code = ?";
         Connection con = null;
@@ -269,30 +265,30 @@ public class WaitingListDAO {
         }
     }
 
-    // creates waiting list from rs
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
-        int subIdTemp = rs.getInt("customer_id");
-        Integer subId = rs.wasNull() ? null : subIdTemp;
+        // ... (שליפת שאר השדות הרגילים נשארת אותו דבר) ...
         WaitingList waitingList = new WaitingList(
                 rs.getInt("waiting_id"),
-                subId,
+                rs.getObject("customer_id") != null ? rs.getInt("customer_id") : null,
                 rs.getInt("number_of_guests"),
                 rs.getTimestamp("enter_time"),
-                rs.getInt("confirmation_code"), null);
+                rs.getInt("confirmation_code"), 
+                null
+        );
+        waitingList.setInWaitingList(rs.getInt("in_waiting_list"));
+        // --- התיקון: שימוש בכינוי res_date ---
         try {
-        	if(rs.getTimestamp("order_date")!= null) {
-        		java.sql.Timestamp orderDate = rs.getTimestamp("order_date");
-        		if (orderDate != null) {
-                    waitingList.setReservationDate(new java.util.Date(orderDate.getTime()));
-                }
-        	}
-           
-           
+            java.sql.Timestamp ts = rs.getTimestamp("res_date"); // השם החדש שהגדרנו בשאילתה
+            if (ts != null) {
+                waitingList.setReservationDate(new java.util.Date(ts.getTime()));
+                // הדפסת דיבוג שתאשר לך שזה עובד:
+                // System.out.println("DEBUG: Date found for code " + waitingList.getConfirmationCode() + ": " + waitingList.getReservationDate());
+            }
         } catch (SQLException e) {
-            // במקרה שמשתמשים בפונקציה הזו במקום אחר בלי ה-JOIN
-            System.err.println("Warning: order_date column missing in result set");
+            // שגיאה זו תקרה רק אם תשתמש בפונקציה הזו משאילתה אחרת שלא כוללת את ה-JOIN
+            System.out.println("Warning: 'res_date' missing (Did you forget the JOIN in the SQL query?)");
         }
-
+       
         return waitingList;
     }
 
@@ -350,6 +346,7 @@ public class WaitingListDAO {
                     }
                     
                     wl.setCustomer(cust);
+                    wl.setInWaitingList(rs.getInt("in_waiting_list"));
                     list.add(wl);
                 }
                 return list;
