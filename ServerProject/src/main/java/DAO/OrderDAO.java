@@ -16,7 +16,6 @@ import entities.Order.OrderStatus;
 public class OrderDAO {
 
 	public List<Order> getAllOrders() throws SQLException {
-		// הוספת JOIN כדי להביא את שם הלקוח ופרטיו
 		String sql = "SELECT o.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type "
 				+ "FROM `order` o " + "LEFT JOIN Customer c ON o.customer_id = c.customer_id";
 
