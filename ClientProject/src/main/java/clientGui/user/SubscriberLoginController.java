@@ -12,7 +12,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
@@ -68,11 +67,11 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		try {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
-//					boolean isSuccess = res.getStatus().getString().equals("SUCCESS");
 					boolean isSuccess = res.getStatus().name().equals("SUCCESS");
 					Platform.runLater(() -> {
 						if (isSuccess) {
 							System.out.println(res.getStatus().name());
+							customer = (Customer) res.getData();
 							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
 									currentEvent, clientUi);
 							if (controller != null) {
@@ -94,6 +93,15 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 	public void move() {
 
+	}
+
+	@FXML
+	void openScanner(ActionEvent event) { 
+		BarcodeScannerController controller = super.loadScreen("user/BarcodeScanner", event, clientUi);
+	    
+	    if (controller != null) {
+	        controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode, customer);
+	    }
 	}
 
 	@FXML
