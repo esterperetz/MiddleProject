@@ -135,30 +135,34 @@ public class CustomerDAO {
 		return null;
 	}
 
-	// Updates editable details (name, phone, email)
+	
 	public boolean updateCustomerDetails(Customer customer) {
-		String query = "UPDATE Customer SET  customer_id= ?, subscriber_name = ?, phone_number = ?, email = ? WHERE subscriber_id = ?";
-		Connection con = null;
-		try {
-			con = DBConnection.getInstance().getConnection();
-			try (PreparedStatement ps = con.prepareStatement(query)) {
-				ps.setInt(1, customer.getSubscriberCode());
-				ps.setString(2, customer.getName());
-				ps.setString(3, customer.getPhoneNumber());
-				ps.setString(4, customer.getEmail());
-				ps.setString(5, customer.getType().getString());
+	    String query = "UPDATE customer SET customer_name = ?, phone_number = ?, email = ? WHERE subscriber_code = ?";
+	    
+	    Connection con = null;
+	    try {
+	        con = DBConnection.getInstance().getConnection();
+	        try (PreparedStatement ps = con.prepareStatement(query)) {
+	            
+	            ps.setString(1, customer.getName()); 
+	            
+	            ps.setString(2, customer.getPhoneNumber());
+	            
+	            ps.setString(3, customer.getEmail());
+	            
+	            ps.setInt(4, customer.getSubscriberCode());
 
-				int rowsAffected = ps.executeUpdate();
-				return rowsAffected > 0;
+	            int rowsAffected = ps.executeUpdate();
+	            return rowsAffected > 0;
 
-			}
-		} catch (SQLException e) {
-			System.out.println("Error updating subscriber: " + e.getMessage());
-			e.printStackTrace();
-		} finally {
-			DBConnection.getInstance().releaseConnection(con);
-		}
-		return false;
+	        }
+	    } catch (SQLException e) {
+	        System.out.println("Error updating subscriber: " + e.getMessage());
+	        e.printStackTrace();
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	    return false;
 	}
 
 	// Returns a list of all subscribers in the system
