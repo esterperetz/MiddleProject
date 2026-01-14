@@ -25,10 +25,6 @@ public class Order implements Serializable {
 	private double totalPrice;
 	private OrderStatus orderStatus;
 
-//	private String clientName;
-//	private String clientEmail;
-//	private String clientPhone;
-//	private Integer subscriberCode;
 	private Customer customer;
 
 	// Indicates if a reminder (Email/SMS) has been sent 2 hours prior
