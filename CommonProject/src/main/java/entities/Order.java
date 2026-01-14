@@ -10,7 +10,7 @@ public class Order implements Serializable {
 
 	// Enum for Order Status
 	public enum OrderStatus {
-		APPROVED, SEATED, PAID, CANCELLED
+		APPROVED, SEATED, PAID, CANCELLED,PENDING
 	}
 
 	private int orderNumber;
