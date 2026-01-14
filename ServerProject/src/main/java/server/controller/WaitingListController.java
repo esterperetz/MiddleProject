@@ -159,7 +159,7 @@ public class WaitingListController {
 
 	    // 1. שליפת הפריט מרשימת ההמתנה
 	    WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
-	    if (entry == null) return false;
+	    if (entry == null || entry.getInWaitingList() == 0) return false;
 
 	    Customer customer = entry.getCustomer();
 	    if (customer == null && entry.getCustomerId() != null) {

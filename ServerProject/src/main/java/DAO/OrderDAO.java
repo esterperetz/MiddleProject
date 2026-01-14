@@ -317,6 +317,29 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
+	
+	public List<Order> getApprovedOrdersByGuestCount(int guests) throws SQLException {
+	    String sql = "SELECT * FROM `order` WHERE order_status = 'APPROVED' AND number_of_guests = ?";
+	    
+	    List<Order> list = new ArrayList<>();
+	    Connection con = DBConnection.getInstance().getConnection();
+
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        stmt.setInt(1, guests);
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            while (rs.next()) {
+	                // שימוש בפונקציית המיפוי הקיימת שלך (או יצירה ידנית)
+	            	Order o = this.mapResultSetToOrder(rs);
+	                
+	                list.add(o);
+	            }
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	    return list;
+	}
 
 	public Order getOrderByConfirmationCode(int code) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status = 'APPROVED' ";
@@ -336,7 +359,7 @@ public class OrderDAO {
 
 	// for waitingList
 	public Order getOrderByConfirmationCodeWithStatusNull(int code) throws SQLException {
-		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status IS NULL";
+		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status IS NULL OR order_status = 'APPROVED'";
 
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
