@@ -123,7 +123,7 @@ public class SubscriberOptionController extends MainNavigator implements Initial
 		System.out.println("Subscriber specific action executed.");
 		SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory", event, clientUi);
         if(subHistoryController != null) {
-		    subHistoryController.initData(subId, this.isSubscriber, customer);
+		    subHistoryController.initData(subId, this.isSubscriber,null, customer);
         }
 	}
 
