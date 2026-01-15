@@ -46,11 +46,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     @FXML private Label lblTicker;
     @FXML private javafx.scene.text.TextFlow tfTicker;
 
-    // --- FXML UI Components (Left Side - Navigation) ---
     @FXML private Button btnViewReports;
     @FXML private Button btnMonthlyReports;
-    
-    // --- New Button ---
+    @FXML private Button btnViewSubscribers;
     @FXML private Button btnManageTables; 
     
     @FXML private Label lblDashboardTitle;
@@ -118,7 +116,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         this.clientUi = clientUi;
         this.emp = emp;
         employeeLogic = new EmployeeLogic(this.clientUi);
-
+//        setButtonVisible(btnViewSubscribers, true);
         if (isManager == Employee.Role.MANAGER) {
             this.isManager = Employee.Role.MANAGER;
             this.isManagerFlag = true;
@@ -161,7 +159,16 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     }
 
     // --- Navigation Methods ---
-
+    @FXML
+    void goToSubscriberManagementBtn(ActionEvent event) {
+        // We load the new controller (See Step 4)
+        SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event, clientUi);
+        if (controller != null) {
+            controller.initData(emp, clientUi, isManager);
+        } else {
+            System.err.println("Error: Could not load SubscriberManagementController.");
+        }
+    }
     @FXML
     void goToTableManagementBtn(ActionEvent event) {
         TableManagementController controller = super.loadScreen("managerTeam/TableManagement", event, clientUi);
