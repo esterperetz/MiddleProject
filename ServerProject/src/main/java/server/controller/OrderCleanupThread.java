@@ -50,6 +50,8 @@ public class OrderCleanupThread extends Thread {
                 // 15-minute late rule enforcement [cite: 32]
                 if (diffInMinutes > 15) {
                     System.out.println("System: Auto-cancelling late order #" + order.getOrderNumber());
+                    EmailService.sendCancelation(order.getCustomer(), order);
+                    System.out.println(EmailService.getContent());
                     order.setOrderStatus(Order.OrderStatus.CANCELLED);
                     orderDao.updateOrder(order);
                     hasChanges = true;

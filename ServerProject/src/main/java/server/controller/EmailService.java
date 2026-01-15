@@ -28,7 +28,7 @@ public class EmailService {
 
     private static void setService() {
     	
-        apiKey = System.getenv("SENDGRID_API_KEY"); // need to set it up in ur system*ASK LIEL*
+        apiKey = System.getenv("SENDGRID_API_KEY"); 
 
         from = new Email("systembistro@gmail.com"); // Gmail password : Bistro123456
         sg = new SendGrid(apiKey);
