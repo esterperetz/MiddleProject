@@ -266,7 +266,6 @@ public class WaitingListDAO {
     }
 
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
-        // ... (שליפת שאר השדות הרגילים נשארת אותו דבר) ...
         WaitingList waitingList = new WaitingList(
                 rs.getInt("waiting_id"),
                 rs.getObject("customer_id") != null ? rs.getInt("customer_id") : null,
@@ -276,16 +275,12 @@ public class WaitingListDAO {
                 null
         );
         waitingList.setInWaitingList(rs.getInt("in_waiting_list"));
-        // --- התיקון: שימוש בכינוי res_date ---
         try {
-            java.sql.Timestamp ts = rs.getTimestamp("res_date"); // השם החדש שהגדרנו בשאילתה
+            java.sql.Timestamp ts = rs.getTimestamp("res_date"); 
             if (ts != null) {
                 waitingList.setReservationDate(new java.util.Date(ts.getTime()));
-                // הדפסת דיבוג שתאשר לך שזה עובד:
-                // System.out.println("DEBUG: Date found for code " + waitingList.getConfirmationCode() + ": " + waitingList.getReservationDate());
             }
         } catch (SQLException e) {
-            // שגיאה זו תקרה רק אם תשתמש בפונקציה הזו משאילתה אחרת שלא כוללת את ה-JOIN
             System.out.println("Warning: 'res_date' missing (Did you forget the JOIN in the SQL query?)");
         }
        
@@ -305,7 +300,6 @@ public class WaitingListDAO {
  // בתוך WaitingListDAO.java
 //for manager reports
     public List<WaitingList> getWaitingListForReport(int month, int year) throws SQLException {
-        // עדכנתי את השאילתה: הוספתי תנאי ש-customer_id לא יהיה NULL
         String sql = "SELECT w.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
                      "FROM waiting_list w " +
                      "LEFT JOIN Customer c ON w.customer_id = c.customer_id " +
@@ -321,9 +315,6 @@ public class WaitingListDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 List<WaitingList> list = new ArrayList<>();
                 while (rs.next()) {
-                    // אין צורך לבדוק כאן אם ה-ID הוא null כי הסינון נעשה ב-SQL
-
-                    // 1. יצירת אובייקט WaitingList
                     WaitingList wl = new WaitingList(
                             rs.getInt("waiting_id"),
                             rs.getInt("customer_id"),
@@ -332,12 +323,9 @@ public class WaitingListDAO {
                             rs.getInt("confirmation_code"),
                             null
                     );
-
-                    // 2. יצירת אובייקט Customer ומילוי הפרטים
                     entities.Customer cust = new entities.Customer();
                     String name = rs.getString("customer_name");
                     
-                    // כעת בטוח שיהיה שם (אלא אם יש בעיה ב-DB שלקוח נמחק), אבל נשאיר את הבדיקה ליתר ביטחון
                     if (name != null) {
                         cust.setName(name);
                         cust.setPhoneNumber(rs.getString("phone_number"));

@@ -35,6 +35,10 @@ public class OrderLogic {
 		Request req = new Request(ResourceType.ORDER, ActionType.GET_ALL_BY_SUBSCRIBER_ID, subscriberId, null);
 		client.sendRequest(req);
 	}
+	public void getSubscriberOrders(int subscriberCode) {
+		Request req = new Request(ResourceType.ORDER, ActionType.GET_USER_ORDERS, subscriberCode, null);
+		client.sendRequest(req);
+	}
 	
 	public void getAvailabilityOptions(Order order) {
 		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, order);

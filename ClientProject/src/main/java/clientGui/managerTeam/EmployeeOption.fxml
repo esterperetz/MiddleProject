@@ -8,6 +8,8 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -19,182 +21,216 @@
 <?import javafx.scene.text.TextFlow?>
 
 <ScrollPane fitToWidth="true" styleClass="main-background"
-	stylesheets="@../managerTeam/EmployeeOption.css"
-	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="clientGui.managerTeam.ManagerOptionsController">
+            stylesheets="@../managerTeam/EmployeeOption.css"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="clientGui.managerTeam.ManagerOptionsController">
 
-	<content>
-		<VBox alignment="TOP_CENTER" spacing="20.0">
-			<padding>
-				<Insets bottom="40.0" left="40.0" right="40.0" top="15.0" />
-			</padding>
+    <content>
+        <VBox alignment="TOP_CENTER" spacing="20.0">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="15.0" />
+            </padding>
 
-			<children>
-				<HBox alignment="CENTER_LEFT" spacing="10.0">
-					<children>
-						<VBox alignment="CENTER_LEFT" spacing="5.0"
-							HBox.hgrow="ALWAYS">
-							<Label fx:id="lblDashboardTitle" styleClass="main-title"
-								text="Manager Dashboard" textFill="#0008f7" />
-							<Label fx:id="lblDashboardSubtitle"
-								style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
-								text="Manage restaurant operations, orders, and settings"
-								textFill="#8a8a8e" />
-						</VBox>
-						<Region HBox.hgrow="ALWAYS" />
-						<Button onAction="#goBackBtn" styleClass="back-button"
-							text="Sign Out / Back" />
-					</children>
-				</HBox>
+            <children>
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                        <VBox alignment="CENTER_LEFT" spacing="5.0" HBox.hgrow="ALWAYS">
+                            <Label fx:id="lblDashboardTitle" styleClass="main-title"
+                                   text="Manager Dashboard" textFill="#0008f7" />
+                            <Label fx:id="lblDashboardSubtitle"
+                                   style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;"
+                                   text="Manage restaurant operations, orders, and settings"
+                                   textFill="#8a8a8e" />
+                        </VBox>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Button onAction="#goBackBtn" styleClass="back-button" text="Sign Out / Back" />
+                    </children>
+                </HBox>
 
-				<Separator opacity="0.5" />
+                <Separator opacity="0.5" />
 
-				<HBox alignment="CENTER_LEFT" spacing="5.0"
-					style="-fx-background-color: #eef2f3; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;">
-					<padding>
-						<Insets top="5" right="5" bottom="5" left="10" />
-					</padding>
-					<children>
-						<Label text="OPENING HOURS: "
-							style="-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 12px;" />
+                <HBox alignment="CENTER_LEFT" spacing="5.0"
+                      style="-fx-background-color: #eef2f3; -fx-border-color: #bdc3c7; -fx-border-width: 1; -fx-background-radius: 5; -fx-border-radius: 5;">
+                    <padding>
+                        <Insets top="5" right="5" bottom="5" left="10" />
+                    </padding>
+                    <children>
+                        <Label text="OPENING HOURS: "
+                               style="-fx-font-weight: bold; -fx-text-fill: #e74c3c; -fx-font-size: 12px;" />
 
-						<Pane fx:id="tickerPane" HBox.hgrow="ALWAYS"
-							prefHeight="25.0" style="-fx-background-color: transparent;">
-							<children>
-								<TextFlow fx:id="tfTicker" layoutY="3" />
-							</children>
-						</Pane>
-					</children>
-				</HBox>
+                        <Pane fx:id="tickerPane" HBox.hgrow="ALWAYS"
+                              prefHeight="25.0" style="-fx-background-color: transparent;">
+                            <children>
+                                <TextFlow fx:id="tfTicker" layoutY="3" />
+                            </children>
+                        </Pane>
+                    </children>
+                </HBox>
 
-				<GridPane hgap="25.0" vgap="25.0">
-					<columnConstraints>
-						<ColumnConstraints hgrow="ALWAYS"
-							minWidth="300.0" percentWidth="50.0" />
-						<ColumnConstraints hgrow="ALWAYS"
-							minWidth="300.0" percentWidth="50.0" />
-					</columnConstraints>
-					<rowConstraints>
-						<RowConstraints valignment="TOP" vgrow="ALWAYS" />
-					</rowConstraints>
+                <GridPane hgap="25.0" vgap="25.0">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="300.0" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="ALWAYS" minWidth="300.0" percentWidth="50.0" />
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints valignment="TOP" vgrow="ALWAYS" />
+                    </rowConstraints>
 
-					<children>
-						<VBox spacing="15.0" styleClass="card-pane"
-							GridPane.columnIndex="0">
-							<padding>
-								<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-							</padding>
-							<children>
-								<Label styleClass="section-header" text="Quick Actions"
-									textFill="#001dfc" />
-								<Label
-									style="-fx-text-fill: gray; -fx-font-size: 12px; -fx-padding: 0 0 10 0;"
-									text="Select an operation to proceed" />
+                    <children>
+                        <VBox spacing="15.0" styleClass="card-pane" GridPane.columnIndex="0">
+                            <padding>
+                                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+                            </padding>
+                            <children>
+                                <Label styleClass="section-header" text="Quick Actions" textFill="#001dfc" />
+                                <Label style="-fx-text-fill: gray; -fx-font-size: 12px; -fx-padding: 0 0 10 0;"
+                                       text="Select an operation to proceed" />
 
-								<Button maxWidth="Infinity"
-									onAction="#goToWaitingListBtn"
-									styleClass="dashboard-tile-button" text="Waiting List"
-									wrapText="true" />
-								<Button maxWidth="Infinity"
-									onAction="#goToOrderDetailsBtn"
-									styleClass="dashboard-tile-button" text="Order Details"
-									wrapText="true" />
-								<Button maxWidth="Infinity"
-									onAction="#goToRegisterSubscriberBtn"
-									styleClass="dashboard-tile-button" text="Register Subscriber"
-									wrapText="true" />
-								<Button maxWidth="Infinity"
-									onAction="#goToTableManagementBtn"
-									styleClass="dashboard-tile-button" text="Manage Tables"
-									wrapText="true" />
-								<Button fx:id="btnViewReports" managed="false"
-									maxWidth="Infinity" onAction="#goToReportsBtn"
-									styleClass="dashboard-tile-button, report-button"
-									text="View Reports" visible="false" wrapText="true" />
-								<Button fx:id="btnMonthlyReports" managed="false"
-									maxWidth="Infinity" onAction="#goToMonthlyReportsBtn"
-									styleClass="dashboard-tile-button, report-button"
-									text="Monthly Reports" visible="false" wrapText="true" />
-								<Button fx:id="btnSignUp" managed="false"
-									maxWidth="Infinity" onAction="#goToSignUpEmployee"
-									styleClass="dashboard-tile-button, report-button" text="SignUp"
-									visible="false" wrapText="true" />
-							</children>
-						</VBox>
+                                <Button maxWidth="Infinity" onAction="#goToWaitingListBtn"
+                                        styleClass="dashboard-tile-button" text="Waiting List" wrapText="true" />
+                                <Button maxWidth="Infinity" onAction="#goToOrderDetailsBtn"
+                                        styleClass="dashboard-tile-button" text="Order Details" wrapText="true" />
 
-						<VBox spacing="20.0" styleClass="card-pane"
-							GridPane.columnIndex="1">
-							<padding>
-								<Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
-							</padding>
-							<children>
-								<HBox alignment="CENTER_LEFT" spacing="10">
-									<Label styleClass="section-header" text="Manage Schedule"
-										textFill="#1101f7" />
-								</HBox>
+                                <Button fx:id="btnViewSubscribers" maxWidth="Infinity"
+                                        onAction="#goToSubscriberManagementBtn"
+                                        styleClass="dashboard-tile-button" text="View Subscribers" wrapText="true" />
 
-								<VBox spacing="15.0" VBox.vgrow="ALWAYS">
-									<Label style="-fx-text-fill: gray;"
-										text="Select a date to update opening hours." wrapText="true" />
+                                <Button maxWidth="Infinity" onAction="#goToRegisterSubscriberBtn"
+                                        styleClass="dashboard-tile-button" text="Register Subscriber" wrapText="true" />
+                                <Button maxWidth="Infinity" onAction="#goToTableManagementBtn"
+                                        styleClass="dashboard-tile-button" text="Manage Tables" wrapText="true" />
 
-									<VBox spacing="5.0">
-										<Label style="-fx-font-weight: bold;"
-											text="Select Date:" />
-										<DatePicker fx:id="dpManageDate"
-											maxWidth="Infinity" promptText="Pick a date" />
-									</VBox>
+                                <Button fx:id="btnViewReports" managed="false" maxWidth="Infinity"
+                                        onAction="#goToReportsBtn" styleClass="dashboard-tile-button, report-button"
+                                        text="View Reports" visible="false" wrapText="true" />
+                                <Button fx:id="btnMonthlyReports" managed="false" maxWidth="Infinity"
+                                        onAction="#goToMonthlyReportsBtn" styleClass="dashboard-tile-button, report-button"
+                                        text="Monthly Reports" visible="false" wrapText="true" />
+                                <Button fx:id="btnSignUp" managed="false" maxWidth="Infinity"
+                                        onAction="#goToSignUpEmployee" styleClass="dashboard-tile-button, report-button"
+                                        text="SignUp" visible="false" wrapText="true" />
+                            </children>
+                        </VBox>
 
-									<HBox spacing="15.0" alignment="CENTER_LEFT">
-										<VBox spacing="2">
-											<Label style="-fx-font-size: 11px;" text="Opening Time" />
-											<TextField fx:id="txtManageOpen" prefWidth="90.0"
-												promptText="08:00" styleClass="time-field" />
-										</VBox>
-										<Label style="-fx-padding: 18 0 0 0;" text="-"
-											textFill="#7f8c8d" />
-										<VBox spacing="2">
-											<Label style="-fx-font-size: 11px;" text="Closing Time" />
-											<TextField fx:id="txtManageClose" prefWidth="90.0"
-												promptText="23:00" styleClass="time-field" />
-										</VBox>
-									</HBox>
+                        <VBox spacing="10.0" styleClass="card-pane" GridPane.columnIndex="1">
+                            <padding>
+                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                            </padding>
+                            <children>
+                                <HBox alignment="CENTER_LEFT" spacing="10">
+                                    <Label styleClass="section-header" text="Manage Schedule" textFill="#1101f7" />
+                                </HBox>
 
-									<CheckBox fx:id="cbIsSpecial"
-										text="Mark as Special Event / Holiday"
-										style="-fx-font-size: 13px; -fx-text-fill: #2c3e50;" />
+                                <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+                                    <tabs>
+                                        <Tab text="Standard Week">
+                                            <content>
+                                                <ScrollPane fitToWidth="true" hbarPolicy="NEVER" style="-fx-background-color: transparent;">
+                                                    <content>
+                                                        <VBox spacing="10.0" style="-fx-padding: 10;">
+                                                            <Label style="-fx-text-fill: gray; -fx-font-size: 11px;" text="Set default opening hours for each day." />
 
-									<CheckBox fx:id="cbIsClosed"
-										text="Mark as Closed (Day Off)"
-										style="-fx-font-size: 13px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;" />
+                                                            <GridPane hgap="10.0" vgap="10.0">
+                                                                <columnConstraints>
+                                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="60.0" prefWidth="80.0" />
+                                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="70.0" prefWidth="90.0" />
+                                                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="70.0" prefWidth="90.0" />
+                                                                </columnConstraints>
 
-									<Button maxWidth="Infinity"
-										onAction="#updateScheduleBtn"
-										styleClass="dashboard-tile-button"
-										style="-fx-background-color: #0008f7; -fx-text-fill: white;"
-										text="Update Hours for Date" />
+                                                                <Label text="Day" style="-fx-font-weight: bold;" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                                                                <Label text="Open" style="-fx-font-weight: bold;" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+                                                                <Label text="Close" style="-fx-font-weight: bold;" GridPane.columnIndex="2" GridPane.rowIndex="0"/>
 
-									<Separator />
+                                                                <Label text="Sunday" GridPane.rowIndex="1" />
+                                                                <TextField fx:id="txtSunOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                                                <TextField fx:id="txtSunClose" promptText="23:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="1" />
 
-									<Label
-										style="-fx-font-weight: bold; -fx-font-size: 12px;"
-										text="Recently Updated:" />
-									<ListView fx:id="listSpecialDates" prefHeight="100.0"
-										styleClass="custom-list-view" />
+                                                                <Label text="Monday" GridPane.rowIndex="2" />
+                                                                <TextField fx:id="txtMonOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                                                <TextField fx:id="txtMonClose" promptText="23:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="2" />
 
-									<HBox alignment="CENTER_RIGHT">
-										<Button onAction="#removeSpecialDateBtn"
-											style="-fx-text-fill: #e74c3c; -fx-cursor: hand;"
-											styleClass="text-only-button" text="Remove Selected" />
-									</HBox>
-								</VBox>
+                                                                <Label text="Tuesday" GridPane.rowIndex="3" />
+                                                                <TextField fx:id="txtTueOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                                                <TextField fx:id="txtTueClose" promptText="23:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="3" />
 
-								<Label fx:id="lblHoursStatus" alignment="CENTER"
-									maxWidth="Infinity" styleClass="status-label" text="" />
-							</children>
-						</VBox>
-					</children>
-				</GridPane>
-			</children>
-		</VBox>
-	</content>
+                                                                <Label text="Wednesday" GridPane.rowIndex="4" />
+                                                                <TextField fx:id="txtWedOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                                                <TextField fx:id="txtWedClose" promptText="23:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+
+                                                                <Label text="Thursday" GridPane.rowIndex="5" />
+                                                                <TextField fx:id="txtThuOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                                                <TextField fx:id="txtThuClose" promptText="23:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+
+                                                                <Label text="Friday" GridPane.rowIndex="6" />
+                                                                <TextField fx:id="txtFriOpen" promptText="08:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                                                <TextField fx:id="txtFriClose" promptText="14:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+
+                                                                <Label text="Saturday" GridPane.rowIndex="7" />
+                                                                <TextField fx:id="txtSatOpen" promptText="18:00" styleClass="time-field" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                                                <TextField fx:id="txtSatClose" promptText="24:00" styleClass="time-field" GridPane.columnIndex="2" GridPane.rowIndex="7" />
+                                                            </GridPane>
+
+                                                            <Button maxWidth="Infinity" onAction="#updateStandardWeekBtn"
+                                                                    styleClass="dashboard-tile-button" style="-fx-background-color: #0008f7; -fx-text-fill: white;"
+                                                                    text="Save Weekly Schedule" />
+                                                        </VBox>
+                                                    </content>
+                                                </ScrollPane>
+                                            </content>
+                                        </Tab>
+
+                                        <Tab text="Special / Holidays">
+                                            <content>
+                                                <VBox spacing="15.0" style="-fx-padding: 10;">
+                                                    <Label style="-fx-text-fill: gray;" text="Select specific dates to override standard hours." wrapText="true" />
+
+                                                    <VBox spacing="5.0">
+                                                        <Label style="-fx-font-weight: bold;" text="Select Date:" />
+                                                        <DatePicker fx:id="dpManageDate" maxWidth="Infinity" promptText="Pick a date" />
+                                                    </VBox>
+
+                                                    <HBox spacing="15.0" alignment="CENTER_LEFT">
+                                                        <VBox spacing="2">
+                                                            <Label style="-fx-font-size: 11px;" text="Opening Time" />
+                                                            <TextField fx:id="txtManageOpen" prefWidth="90.0" promptText="08:00" styleClass="time-field" />
+                                                        </VBox>
+                                                        <Label style="-fx-padding: 18 0 0 0;" text="-" textFill="#7f8c8d" />
+                                                        <VBox spacing="2">
+                                                            <Label style="-fx-font-size: 11px;" text="Closing Time" />
+                                                            <TextField fx:id="txtManageClose" prefWidth="90.0" promptText="23:00" styleClass="time-field" />
+                                                        </VBox>
+                                                    </HBox>
+
+                                                    <CheckBox fx:id="cbIsSpecial" text="Mark as Special Event / Holiday"
+                                                              style="-fx-font-size: 13px; -fx-text-fill: #2c3e50;" />
+
+                                                    <CheckBox fx:id="cbIsClosed" text="Mark as Closed (Day Off)"
+                                                              style="-fx-font-size: 13px; -fx-text-fill: #e74c3c; -fx-font-weight: bold;" />
+
+                                                    <Button maxWidth="Infinity" onAction="#updateScheduleBtn"
+                                                            styleClass="dashboard-tile-button" text="Update Date" />
+
+                                                    <Separator />
+
+                                                    <Label style="-fx-font-weight: bold; -fx-font-size: 12px;" text="Recently Updated:" />
+                                                    <ListView fx:id="listSpecialDates" prefHeight="100.0" styleClass="custom-list-view" />
+
+                                                    <HBox alignment="CENTER_RIGHT">
+                                                        <Button onAction="#removeSpecialDateBtn" style="-fx-text-fill: #e74c3c; -fx-cursor: hand;"
+                                                                styleClass="text-only-button" text="Remove Selected" />
+                                                    </HBox>
+                                                </VBox>
+                                            </content>
+                                        </Tab>
+                                    </tabs>
+                                </TabPane>
+
+                                <Label fx:id="lblHoursStatus" alignment="CENTER" maxWidth="Infinity" styleClass="status-label" text="" />
+                            </children>
+                        </VBox>
+                    </children>
+                </GridPane>
+            </children>
+        </VBox>
+    </content>
 </ScrollPane>

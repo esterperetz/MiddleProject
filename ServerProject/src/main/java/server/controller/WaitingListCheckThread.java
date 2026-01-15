@@ -61,8 +61,6 @@ public class WaitingListCheckThread extends Thread {
 						localConflicts++;
 					}
 				}
-				System.out.println("Date: " + requestedDate + " totalTables : " + totalSuitableTables + " dbConflicts: "
-						+ dbConflicts + " localConflicts: " + localConflicts);
 				
 				if ((totalSuitableTables > (dbConflicts + localConflicts))) {
 					List<Integer> table_list= tableDao.getAllTableCapacities2();
@@ -105,15 +103,13 @@ public class WaitingListCheckThread extends Thread {
 		
 		table_list.sort(Comparator.reverseOrder());//2
 		orders.sort(Comparator.reverseOrder());//2
-		System.out.println("table list: "+table_list.toString());
-		System.out.println("order list: "+orders.toString());
 		int size = 0;
 
 		for (int i = 0; i < orders.size(); i++) {
 			if (!(table_list.get(size) >= orders.get(i))) {
 				return false;
 			}
-			size++;//2
+			size++;
 			if(size >= table_list.size()) {
 				break;
 			}

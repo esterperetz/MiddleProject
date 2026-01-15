@@ -31,14 +31,6 @@ public class OrderController {
 
 	}
 
-	public void test() throws IOException {
-		Order order = new Order();
-		order.setDateOfPlacingOrder(java.sql.Date.valueOf(LocalDate.now()));
-		order.getArrivalTime();
-		order.setNumberOfGuests(5);
-		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, order);
-		handle(req, null, null);
-	}
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
@@ -61,6 +53,9 @@ public class OrderController {
 			case GET_AVAILABLE_TIME:
 				Order order = (Order) req.getPayload();
 				checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
+				break;
+			case GET_USER_ORDERS:
+				handleGetSubscriberApprovedOrders(req, client);
 				break;
 			case GET_BY_CODE:
 				handleGetByCode(req, client);
@@ -137,6 +132,21 @@ public class OrderController {
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
 
+	private void handleGetSubscriberApprovedOrders(Request req, ConnectionToClient client)
+			throws SQLException, IOException {
+		int subscriberCode = (int) req.getId();
+
+		List<Order> orders = orderdao.getAllOrdersApproved(subscriberCode);
+		if (orders != null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+					Response.ResponseStatus.SUCCESS, null, orders));
+			return;
+		}
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS, Response.ResponseStatus.ERROR,
+				"Error: No orders for subscriber ", null));
+
+	}
+
 	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
@@ -145,8 +155,14 @@ public class OrderController {
 		}
 		Customer cusId = customerDao.getCustomerBySubscriberCode(req.getId());
 		List<Order> subOrders = orderdao.getOrdersByCustomerId(cusId.getCustomerId());
+		if (subOrders != null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
+					Response.ResponseStatus.SUCCESS, null, subOrders));
+			return;
+		}
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
-				Response.ResponseStatus.SUCCESS, null, subOrders));
+				Response.ResponseStatus.ERROR, "Can not find any history", null));
+
 	}
 
 	private void handleGetById(Request req, ConnectionToClient client) throws SQLException, IOException {
@@ -262,7 +278,6 @@ public class OrderController {
 			java.util.Date orderDate = requestedOrder.getOrderDate();
 			int guests = requestedOrder.getNumberOfGuests();
 
-			///////////////////////////////////////////////////////
 			if (tabledao.countSuitableTables(guests) == 0) {
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
@@ -271,8 +286,6 @@ public class OrderController {
 			boolean isAvailable = isSpaceAvailable(orderDate, guests);
 
 			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
-			System.out.println("the time is " + orderDate);
-			System.out.println("The time slots " + timeSlots);
 			if (isAvailable) {
 				///////////////////////////////////////////////////////////////////////////
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
@@ -296,7 +309,6 @@ public class OrderController {
 		List<TimeSlotStatus> results = new ArrayList<>();
 
 		List<String> allSlots = getAvailabilityOptions(date);
-		System.out.println("hereeee " + allSlots);
 		if (allSlots == null)
 			return new ArrayList<>();
 
@@ -395,15 +407,15 @@ public class OrderController {
 			return false;
 		}
 
-		table_list.sort(Comparator.reverseOrder());//2
-		orders.sort(Comparator.reverseOrder());//2
+		table_list.sort(Comparator.reverseOrder());// 2
+		orders.sort(Comparator.reverseOrder());// 2
 		int size = 0;
-		for (int i = 0; i < orders.size() ; i++) {
+		for (int i = 0; i < orders.size(); i++) {
 			if (!(table_list.get(size) >= orders.get(i))) {
 				return false;
 			}
 
-			size++;//1//2
+			size++;// 1//2
 			if (size >= table_list.size()) {
 				break;
 			}
@@ -460,7 +472,7 @@ public class OrderController {
 				tabledao.updateTableStatus(order.getTableNumber(), 0);
 			}
 		}
-		
+
 		if (orderdao.updateOrderStatus(req.getId(), OrderStatus.CANCELLED)) {
 			/// need to get email from customer table
 
