@@ -35,7 +35,7 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 
 public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
-
+ 
     // --- Internal Fields ---
     private TranslateTransition currentTransition;
     private Employee.Role isManager;
