@@ -34,6 +34,40 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
+	
+	public List<Order> getAllOrdersApproved(int subscriberCode) throws SQLException {
+	    
+	    String sql = "SELECT o.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type "
+	            + "FROM `order` o " 
+	            + "LEFT JOIN Customer c ON o.customer_id = c.customer_id "
+	            + "WHERE o.order_status='APPROVED' AND c.subscriber_code = ?";
+
+	    Connection con = DBConnection.getInstance().getConnection();
+	    
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        
+	        stmt.setInt(1, subscriberCode);
+	        
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            List<Order> list = new ArrayList<>();
+	            while (rs.next()) {
+	                Order order = mapResultSetToOrder(rs);
+	                
+	                if (order.getCustomer() != null) {
+	                    order.getCustomer().setName(rs.getString("customer_name"));
+	                    order.getCustomer().setEmail(rs.getString("email"));
+	                    order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
+	                    order.getCustomer().setSubscriberCode(rs.getInt("subscriber_code"));
+	                }
+	                
+	                list.add(order);
+	            }
+	            return list;
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	}
 
 	public List<Integer> getActiveOrderSizes2(Date requestedDate) throws SQLException {
 		List<Integer> activeSizes = new ArrayList<>();
@@ -45,7 +79,7 @@ public class OrderDAO {
 		java.sql.Timestamp checkEnd = new java.sql.Timestamp(cal.getTime().getTime());
 
 		String sql = "SELECT number_of_guests FROM `order` "
-				+ "WHERE (order_status NOT IN ('CANCELLED', 'PAID','SEATED') OR order_status IS NULL) "
+				+ "WHERE (order_status NOT IN ('CANCELLED', 'PAID','SEATED') OR order_status = 'PENDING') "
 				+ "AND order_date < ? " + "AND DATE_ADD(order_date, INTERVAL 2 HOUR) > ?";
 
 		Connection con = DBConnection.getInstance().getConnection();
@@ -345,7 +379,7 @@ public class OrderDAO {
 
 	// for waitingList
 	public Order getOrderByConfirmationCodeWithStatusNull(int code) throws SQLException {
-		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND (order_status IS NULL OR order_status = 'APPROVED')";
+		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND (order_status = 'PENDING' OR order_status = 'APPROVED')";
 
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -641,7 +675,6 @@ public class OrderDAO {
 
 	// to manager reports
 	public List<Order> getFinishedOrdersByMonth(int month, int year) throws SQLException {
-		// 1. וודא שה-SQL שולף את השם (c.customer_name)
 		String sql = "SELECT o.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type "
 				+ "FROM `order` o " + "LEFT JOIN Customer c ON o.customer_id = c.customer_id "
 				+ "WHERE (MONTH(o.order_date) = ? AND YEAR(o.order_date) = ?) "
@@ -655,28 +688,21 @@ public class OrderDAO {
 			try (ResultSet rs = stmt.executeQuery()) {
 				List<Order> list = new ArrayList<>();
 				while (rs.next()) {
-					// המרה בסיסית של נתוני ההזמנה
 					Order order = mapResultSetToOrder(rs);
 
-					// --- התיקון: מילוי פרטי הלקוח מתוך ה-JOIN ---
-
-					// וודא שיש אובייקט לקוח (בדרך כלל נוצר ב-mapResultSetToOrder אם יש customer_id)
 					if (order.getCustomer() == null) {
 						order.setCustomer(new entities.Customer());
 					}
 
-					// הגדרת השם ידנית מהתוצאה של ה-SQL
 					String nameFromDB = rs.getString("customer_name");
 					if (nameFromDB != null) {
-						order.getCustomer().setName(nameFromDB); // <--- זו השורה שחסרה לך!
+						order.getCustomer().setName(nameFromDB); 
 					} else {
-						order.getCustomer().setName("Guest"); // במקרה שאין שם
+						order.getCustomer().setName("Guest"); 
 					}
 
-					// מילוי שאר הפרטים אם הם חסרים בדוח
 					order.getCustomer().setEmail(rs.getString("email"));
 
-					// טיפול בסוג לקוח (כפי שכבר עשינו)
 					if (rs.getString("customer_type") != null) {
 						try {
 							order.getCustomer().setType(entities.CustomerType.valueOf(rs.getString("customer_type")));
@@ -693,15 +719,11 @@ public class OrderDAO {
 		}
 	}
 
-	/**
-	 * מחזירה רשימה של מספר האורחים בכל הזמנה פעילה בטווח הזמן הרלוונטי. משמש לבדיקת
-	 * היתכנות הושבה (Bin Packing).
-	 */
+
+
 	public List<Integer> getActiveOrderSizes(Date requestedDate) throws SQLException {
 		List<Integer> activeSizes = new ArrayList<>();
 
-		// מביא את כמות האורחים בכל הזמנה שחופפת לשעתיים הקרובות
-		// אנחנו מתעלמים מ-Table ID כי הוא לא תמיד קיים, וסומכים על הגודל
 		String sql = "SELECT number_of_guests FROM `order` " + "WHERE order_status IN ('APPROVED', 'SEATED') "
 				+ "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
 
