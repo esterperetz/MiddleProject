@@ -26,28 +26,28 @@ public class WaitingListController {
 
 		try {
 			switch (req.getAction()) {
-				case GET_ALL:
-					handleGetAll(req, client);
-					break;
-				case GET_ALL_LIST:
-					handleGetAllListWithCustomer(req, client);
-					break;
-				case ENTER_WAITING_LIST:
-					handleEnterWaitingList(req, client);
-					break;
+			case GET_ALL:
+				handleGetAll(req, client);
+				break;
+			case GET_ALL_LIST:
+				handleGetAllListWithCustomer(req, client);
+				break;
+			case ENTER_WAITING_LIST:
+				handleEnterWaitingList(req, client);
+				break;
 
-				case EXIT_WAITING_LIST:
-					handleExitWaitingList(req, client);
-					break;
+			case EXIT_WAITING_LIST:
+				handleExitWaitingList(req, client);
+				break;
 
-				case PROMOTE_TO_ORDER:
-					handlePromoteToOrder(req.getId(), client);
-					break;
+			case PROMOTE_TO_ORDER:
+				handlePromoteToOrder(req.getId(), client);
+				break;
 
-				default:
-					client.sendToClient(new Response(ResourceType.WAITING_LIST, req.getAction(),
-							Response.ResponseStatus.ERROR, "Unknown action", null));
-					break;
+			default:
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, req.getAction(),
+						Response.ResponseStatus.ERROR, "Unknown action", null));
+				break;
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -64,77 +64,75 @@ public class WaitingListController {
 
 	private void handleGetAllListWithCustomer(Request req, ConnectionToClient client) throws SQLException, IOException {
 		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
-		client.sendToClient(
-				new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST, Response.ResponseStatus.SUCCESS,
-						null, list));
+		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
+				Response.ResponseStatus.SUCCESS, null, list));
 	}
 
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
-	    WaitingList item = (WaitingList) req.getPayload();
+		WaitingList item = (WaitingList) req.getPayload();
 
-	    int generatedCode = 1000 + (int) (Math.random() * 9000);
-	    item.setConfirmationCode(generatedCode);
-	    item.setEnterTime(new Date());
+		int generatedCode = 1000 + (int) (Math.random() * 9000);
+		item.setConfirmationCode(generatedCode);
+		item.setEnterTime(new Date());
 
-	    Customer finalCustomer = null;
-	    Integer subCode = item.getCustomer().getSubscriberCode();
-	 
-	    if (subCode != null && subCode > 0) {
-	        finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
-	        if (finalCustomer == null) {
-	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                    Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
-	            return;
-	        }
-	    } else {
-	        String email = item.getCustomer().getEmail();
-	        finalCustomer = customerDAO.getCustomerByEmail(email);
+		Customer finalCustomer = null;
+		Integer subCode = item.getCustomer().getSubscriberCode();
 
-	        if (finalCustomer == null) {
-	            Customer newGuest = item.getCustomer();
-	            newGuest.setType(CustomerType.REGULAR);
-	            customerDAO.createCustomer(newGuest);
-	            finalCustomer = customerDAO.getCustomerByEmail(email);
-	        }
-	    }
+		if (subCode != null && subCode > 0) {
+			finalCustomer = customerDAO.getCustomerBySubscriberCode(subCode);
+			if (finalCustomer == null) {
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+						Response.ResponseStatus.ERROR, "Invalid Subscriber Code.", null));
+				return;
+			}
+		} else {
+			String email = item.getCustomer().getEmail();
+			finalCustomer = customerDAO.getCustomerByEmail(email);
 
-	    if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
-	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to identify customer.", null));
-	        return;
-	    }
+			if (finalCustomer == null) {
+				Customer newGuest = item.getCustomer();
+				newGuest.setType(CustomerType.REGULAR);
+				customerDAO.createCustomer(newGuest);
+				finalCustomer = customerDAO.getCustomerByEmail(email);
+			}
+		}
 
-	    item.setCustomerId(finalCustomer.getCustomerId());
-	    item.setCustomer(finalCustomer);
+		if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
+			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+					Response.ResponseStatus.DATABASE_ERROR, "Failed to identify customer.", null));
+			return;
+		}
 
-	  
-	    if (waitingListDAO.isCustomerWaitingForDate(finalCustomer.getCustomerId(), item.getReservationDate())) {
-	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                Response.ResponseStatus.ERROR, "You are already in the waiting list for this time.", null));
-	        return; 
-	    }
+		item.setCustomerId(finalCustomer.getCustomerId());
+		item.setCustomer(finalCustomer);
 
-	    
-	    Order placeholderOrder = new Order(0, item.getReservationDate(), item.getNumberOfGuests(), 
-	                                       item.getConfirmationCode(), finalCustomer, null, 
-	                                       new Date(), null, null, 0.0, null); // Status = null OR PENDING
+		if (waitingListDAO.isCustomerWaitingForDate(finalCustomer.getCustomerId(), item.getReservationDate())) {
+			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+					Response.ResponseStatus.ERROR, "You are already in the waiting list for this time.", null));
+			return;
+		}
 
-	    if (orderDAO.createOrder(placeholderOrder)) {
-	        
-	    	if (waitingListDAO.enterWaitingList(item)) {
-	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                    Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
-	            sendListToAllClients();
-	        } else {
-	           
-	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                    Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
-	        }
-	    } else {
-	        client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
-	                Response.ResponseStatus.DATABASE_ERROR, "Failed to create placeholder order.", null));
-	    }
+		Order placeholderOrder = new Order(0, item.getReservationDate(), item.getNumberOfGuests(),
+				item.getConfirmationCode(), finalCustomer, null, new Date(), null, null, 0.0, OrderStatus.PENDING); 
+																													
+
+		if (orderDAO.createOrder(placeholderOrder)) {
+
+			if (waitingListDAO.enterWaitingList(item)) {
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+						Response.ResponseStatus.SUCCESS, String.valueOf(generatedCode), true));
+				sendListToAllClients();
+			} else {
+
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+						Response.ResponseStatus.DATABASE_ERROR, "Failed to add to waiting list.", null));
+			}
+		} else {
+			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST,
+					Response.ResponseStatus.DATABASE_ERROR, "Failed to create placeholder order.", null));
+		}
 	}
+
 	private void handleExitWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
 			client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.EXIT_WAITING_LIST,
@@ -148,59 +146,59 @@ public class WaitingListController {
 			sendListToAllClients();
 		}
 	}
-	//there is a problem with waiting list , they move to orders as proved with the thread when not needed (ask liel)
+
+	// there is a problem with waiting list , they move to orders as proved with the
+	// thread when not needed (ask liel)
 	public boolean handlePromoteToOrder(Integer waitingId, ConnectionToClient client) throws SQLException, IOException {
-	    if (waitingId == null) {
-	        if (client != null)
-	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
-	                    Response.ResponseStatus.ERROR, "Missing ID", null));
-	        return false;
-	    }
-	    System.out.println("helllooooooooo");
-	    WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
-	    if (entry == null || entry.getInWaitingList() == 0) return false;
+		if (waitingId == null) {
+			if (client != null)
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
+						Response.ResponseStatus.ERROR, "Missing ID", null));
+			return false;
+		}
+		WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
+		if (entry == null || entry.getInWaitingList() == 0)
+			return false;
 
-	    Customer customer = entry.getCustomer();
-	    if (customer == null && entry.getCustomerId() != null) {
-	        customer = customerDAO.getCustomerByCustomerId(entry.getCustomerId());
-	    }
+		Customer customer = entry.getCustomer();
+		if (customer == null && entry.getCustomerId() != null) {
+			customer = customerDAO.getCustomerByCustomerId(entry.getCustomerId());
+		}
 
-	    if (customer == null) {
-	        System.err.println("Failed to promote waiting list entry " + waitingId + ": Customer not found.");
-	        return false;
-	    }
+		if (customer == null) {
+			System.err.println("Failed to promote waiting list entry " + waitingId + ": Customer not found.");
+			return false;
+		}
 
-	    Order existingOrder = orderDAO.getOrderByConfirmationCodeWithStatusNull(entry.getConfirmationCode());
-	    System.out.println(existingOrder);
-	    if (existingOrder==null) {
-	        System.err.println("Critical Error: Order not found for code " + entry.getConfirmationCode());
-	        return false;
-	    }
+		Order existingOrder = orderDAO.getOrderByConfirmationCodeWithStatusNull(entry.getConfirmationCode());
+		if (existingOrder == null) {
+			System.err.println("Critical Error: Order not found for code " + entry.getConfirmationCode());
+			return false;
+		}
 
-	    existingOrder.setCustomer(customer);
-	    existingOrder.setOrderStatus(OrderStatus.APPROVED); 
-	    System.out.println("order status "+existingOrder.getOrderStatus());
-	    
-	    if (orderDAO.updateOrder(existingOrder)) {
-	        System.out.println("in the if ");
-	        waitingListDAO.exitWaitingList(waitingId);
+		existingOrder.setCustomer(customer);
+		existingOrder.setOrderStatus(OrderStatus.APPROVED);
 
-	        List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
-	        EmailService.sendConfirmation(existingOrder.getCustomer(), existingOrder);
-	        
-	        Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
-	                Response.ResponseStatus.SUCCESS, null, updatedList));
-	        Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
-	                Response.ResponseStatus.SUCCESS, null, orderDAO.getAllOrders()));
+		if (orderDAO.updateOrder(existingOrder)) {
+			waitingListDAO.exitWaitingList(waitingId);
 
-	        if (client != null) {
-	            client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
-	                    Response.ResponseStatus.SUCCESS, null, true));
-	        }
-	        return true;
-	    }
-	    return false;
+			List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
+			EmailService.sendConfirmation(existingOrder.getCustomer(), existingOrder);
+
+			Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
+					Response.ResponseStatus.SUCCESS, null, updatedList));
+			Router.sendToAllClients(new Response(ResourceType.ORDER, ActionType.GET_ALL,
+					Response.ResponseStatus.SUCCESS, null, orderDAO.getAllOrders()));
+
+			if (client != null) {
+				client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER,
+						Response.ResponseStatus.SUCCESS, null, true));
+			}
+			return true;
+		}
+		return false;
 	}
+
 	private void sendListToAllClients() throws SQLException {
 		List<WaitingList> list = waitingListDAO.getAllWaitingList();
 		Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
