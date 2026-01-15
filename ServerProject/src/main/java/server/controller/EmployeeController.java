@@ -57,11 +57,8 @@ public class EmployeeController {
 			return;
 		}
 		
-		// לולאה שרצה עד שנמצא מספר פנוי
 		do {
-			// הגרלת מספר (למשל מספר בן 5 ספרות: 10000 עד 99999)
 			code = 10000 + (int) (Math.random() * 90000);
-			// בדיקה מול ה-DB אם המספר הזה כבר קיים
 			if ( customerDAO.getCustomerBySubscriberCode(code) == null) {
 					isUnique = true;
 				}
