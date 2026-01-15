@@ -4,15 +4,11 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 import DAO.WaitingListDAO;
 import DAO.TableDAO;
 import DAO.OrderDAO;
-import entities.Order;
 import entities.WaitingList;
-import java.util.Collections;
 import java.util.Comparator;
 
 public class WaitingListCheckThread extends Thread {
@@ -72,9 +68,7 @@ public class WaitingListCheckThread extends Thread {
 					List<Integer> table_list= tableDao.getAllTableCapacities2();
 					List<Integer> orders = orderDao.getActiveOrderSizes2(requestedDate);
 				
-					System.out.println("table list: "+table_list.toString());
-					System.out.println("order list: "+orders.toString());
-					System.out.println(""+isValidRemoveWaitingList(table_list,orders));
+				
 					if (isValidRemoveWaitingList(table_list,orders) && entry.getInWaitingList() == 1) {
 						boolean success = promoteEntry(entry);
 					
@@ -109,81 +103,23 @@ public class WaitingListCheckThread extends Thread {
 		}
 		
 		
-		table_list.sort(Comparator.reverseOrder());
-		orders.sort(Comparator.reverseOrder());
-		int size = table_list.size()-1;
+		table_list.sort(Comparator.reverseOrder());//2
+		orders.sort(Comparator.reverseOrder());//2
+		System.out.println("table list: "+table_list.toString());
+		System.out.println("order list: "+orders.toString());
+		int size = 0;
 
-		for (int i = orders.size()-1; i >= 0; i--) {
+		for (int i = 0; i < orders.size(); i++) {
 			if (!(table_list.get(size) >= orders.get(i))) {
 				return false;
 			}
-			size--;
-			if(size < 0) {
+			size++;//2
+			if(size >= table_list.size()) {
 				break;
 			}
 		}
 		return true;
 	}
-
-//	/**
-//	 * פונקציה חכמה לבדיקת זמינות (Waterfall Logic) לוקחת בחשבון גם את ה-DB וגם את
-//	 * מה שקידמנו הרגע בתוך הלולאה
-//	 */
-//	private boolean isSpaceAvailable(Date date, int guests, Map<Integer, Integer> promotedInThisLoop)
-//			throws SQLException {
-//		// שולף את הגדלים (למשל: 2, 4). חייב להיות ממוין עולה!
-//		List<Integer> allSizes = tableDao.getAllTableCapacities();
-//		if (allSizes == null || allSizes.isEmpty())
-//			return false;
-//
-//		// מתחילים מ-0 כדי לתפוס את השולחן הכי קטן
-//		int prevSize = 0;
-//
-//		for (int currentTableSize : allSizes) {
-//			// החישוב הקריטי:
-//			// עבור שולחן בגודל 2 -> הסף הוא 1 (כל מי שגדול מ-0).
-//			// עבור שולחן בגודל 4 -> הסף הוא 3 (כל מי שגדול מ-2).
-//			int threshold = prevSize + 1;
-//
-//			// 1. היצע: כמה שולחנות יש בגודל הזה ומעלה?
-//			// (למשל עבור גודל 4 -> יש 1. עבור גודל 2 -> יש 2).
-//			int supply = tableDao.countSuitableTables(currentTableSize);
-//
-//			// 2. ביקוש: כמה הזמנות ב-DB יש להן 'threshold' אורחים ומעלה?
-//			// כאן התיקון הגדול: הזמנה של 3 אנשים (שהיא >= 3) תיספר כאן!
-//			int activeDemand = orderDao.countActiveOrdersInTimeRange(date, threshold);
-//
-//			// 3. כמה הזמנות קידמנו הרגע בלולאה הנוכחית?
-//			int promotedDemand = countRelevantPromotions(promotedInThisLoop, threshold);
-//
-//			// 4. הבקשה הנוכחית שלי (מה-WaitingList) - האם אני צריך שולחן בגודל הזה?
-//			// אם אני 4 אורחים, והסף הוא 3 -> כן, אני תורם לביקוש.
-//			int myDemand = (guests >= threshold) ? 1 : 0;
-//
-//			int totalDemand = activeDemand + promotedDemand + myDemand;
-//
-//			// אם הביקוש עולה על ההיצע ברמה הזו - אין מקום!
-//			if (supply < totalDemand) {
-//				return false;
-//			}
-//
-//			// שומרים את הגודל הנוכחי כדי לחשב את הסף לשולחן הבא
-//			prevSize = currentTableSize;
-//		}
-//
-//		return true;
-//	}
-
-	
-//	private int countRelevantPromotions(Map<Integer, Integer> promotedMap, int minGuests) {
-//		int count = 0;
-//		for (Map.Entry<Integer, Integer> entry : promotedMap.entrySet()) {
-//			if (entry.getKey() >= minGuests) {
-//				count += entry.getValue();
-//			}
-//		}
-//		return count;
-//	}
 
 	private boolean promoteEntry(WaitingList entry) {
 		try {
