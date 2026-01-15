@@ -2,6 +2,7 @@ package clientGui.user;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import client.MessageListener;
@@ -10,8 +11,9 @@ import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator; // ודא שיש לך את ה-Import הזה
 import clientLogic.EmployeeLogic;
 import clientLogic.UserLogic;
-import entities.ActionType;
 import entities.Response;
+import entities.Response.ResponseStatus;
+import entities.Alarm;
 import entities.Customer;
 import entities.CustomerType;
 import entities.Employee;
@@ -31,9 +33,20 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	private Label lblMessage;
 	private Employee.Role isManager;
 	private UserLogic UserLogic;
-	private ActionEvent currentEvent; // Added to save the event for async navigation
+	private ActionEvent currentEvent; 
+	private EmployeeLogic employeeLogic;
+	// Added to save the event for async navigation
 
 	private Employee emp;
+	
+	public void initData(Employee emp, ClientUi clientUi,Employee.Role isManager)
+	{
+		this.emp = emp;
+		this.clientUi=clientUi;
+		this.isManager=isManager;
+		employeeLogic = new EmployeeLogic(clientUi);//MUST DO NOT FORGER
+
+	}
 
 	/**
 	 * Handles the registration process when "Register Now" is clicked.
@@ -45,7 +58,7 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 		String phone = txtPhone.getText();
 		String email = txtEmail.getText();
 		
-		this.currentEvent = event; // Save current event
+		 // Save current event
 
 		// 2. Validate Input (Basic checks)
 		if (username.isEmpty() || phone.isEmpty() || email.isEmpty()) {
@@ -60,46 +73,58 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 			return;
 		}
 		try {
-//		clientUi.addListener(this);//MUST DO NOT FORGER
-		EmployeeLogic emp = new EmployeeLogic(clientUi);//MUST DO NOT FORGER
-		emp.createSubscriber(new Customer(0,0, username, phone, email,CustomerType.SUBSCRIBER)); //CHANGED FROM 123456 TO 0 (AUTO INC)
+			
+		employeeLogic.createSubscriber(new Customer(0,0, username, phone, email,CustomerType.SUBSCRIBER)); //CHANGED FROM 123456 TO 0 (AUTO INC)
+		this.currentEvent = event;
 		} catch(Exception e) {
 			System.out.println("one ");
 		}
 
 	}
-
 	@Override
 	public void onMessageReceive(Object msg) {
-		try {
-		if (msg instanceof Response) {
-			Response res = (Response) msg;
-			System.out.println(res.getStatus().getString());
-			
-			// Handle successful registration and navigate to Subscriber Options
-			if (res.getStatus().name().equals("SUCCESS")) {
-				Platform.runLater(() -> {
-//					Employee newEmp = (Employee) res.getData();
-					ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", currentEvent, clientUi);
-					if (controller != null) {
-						controller.initData(emp,this.clientUi,this.isManager);
-					}
-				});
-			} else if (res.getStatus().name().equals("ERROR")) {
-				Platform.runLater(() -> lblMessage.setText(res.getMessage_from_server()));
-			}
-		} else
-			System.out.println("nothing works");
-		} catch(Exception e) {
-			System.out.println("two ");
-		}
+	    if (!(msg instanceof Response))
+	        return;
+	    Response res = (Response) msg;
 
+	    Platform.runLater(() -> {
+	        try {
+	            switch (res.getResource()) {
+	            case EMPLOYEE: 
+	                handleUserResponse(res);
+	                break;
+	            default:
+	                break;
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    });
 	}
-	public void initData(Employee emp, ClientUi clientUi,Employee.Role isManager)
-	{
-		this.emp = emp;
-		this.clientUi=clientUi;
-		this.isManager=isManager;
+
+
+	private void handleUserResponse(Response res) {
+	    if (res.getStatus() == ResponseStatus.SUCCESS) {
+	        try {
+	            ManagerOptionsController controller = super.loadScreen(
+	                "managerTeam/EmployeeOption", 
+	                currentEvent, 
+	                clientUi
+	            );
+	            
+	            if (controller != null) {
+		        	Alarm.showAlert("SUCCESS", "subscriber add succesfully", AlertType.INFORMATION);
+	                controller.initData(emp, this.clientUi, this.isManager);
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    } 
+	    else if (res.getStatus() == ResponseStatus.ERROR) {
+	        if (lblMessage != null) {
+	            lblMessage.setText(res.getMessage_from_server());
+	        }
+	    }
 	}
 
 	/**
@@ -107,9 +132,6 @@ public class RegisterSubscriberController extends MainNavigator implements Messa
 	 */
 	@FXML
 	void handleBackBtn(ActionEvent event) {
-		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
-//		super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
-		// Fixed: Navigate back to EmployeeOption maybe the employee has more operation that he want to do before disconnecting 
 		ManagerOptionsController controller = 
     	        super.loadScreen("managerTeam/EmployeeOption", event,clientUi);
     	if (controller != null) {
