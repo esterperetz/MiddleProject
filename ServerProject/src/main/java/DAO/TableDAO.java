@@ -214,8 +214,7 @@ public class TableDAO {
         }
         return false;
     }
- // הוסף בסוף TableDAO.java
-
+    
     public List<Integer> getAllTableCapacities() {
         List<Integer> capacities = new ArrayList<>();
         String sql = "SELECT DISTINCT number_of_seats FROM tables ORDER BY number_of_seats ASC"; 
@@ -256,10 +255,8 @@ public class TableDAO {
         }
         return capacities;
     }
-    /**
-     * מחזירה את כמות השולחנות הפיזיים במסעדה שיכולים להכיל את כמות האנשים המבוקשת.
-     * (לא בודק אם הם פנויים או תפוסים - רק אם הם קיימים)
-     */
+    
+    
     public int countTotalPhysicalTables(int minSeats) throws SQLException {
         String query = "SELECT COUNT(*) FROM tables WHERE number_of_seats >= ?";
 

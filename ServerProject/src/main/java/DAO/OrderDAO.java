@@ -24,11 +24,9 @@ public class OrderDAO {
 			List<Order> list = new ArrayList<>();
 			while (rs.next()) {
 				Order order = mapResultSetToOrder(rs);
-				// מילוי ידני של פרטי הלקוח כדי שה-UI לא יתרוקן
 				order.getCustomer().setName(rs.getString("customer_name"));
 				order.getCustomer().setEmail(rs.getString("email"));
 				order.getCustomer().setPhoneNumber(rs.getString("phone_number"));
-				// ... וכן הלאה
 				list.add(order);
 			}
 			return list;
@@ -38,40 +36,33 @@ public class OrderDAO {
 	}
 
 	public List<Integer> getActiveOrderSizes2(Date requestedDate) throws SQLException {
-	    List<Integer> activeSizes = new ArrayList<>();
-	    
-	    // חישוב זמנים
-	    java.sql.Timestamp checkStart = new java.sql.Timestamp(requestedDate.getTime());
-	    Calendar cal = Calendar.getInstance();
-	    cal.setTime(requestedDate);
-	    cal.add(Calendar.HOUR_OF_DAY, 2);
-	    java.sql.Timestamp checkEnd = new java.sql.Timestamp(cal.getTime().getTime());
+		List<Integer> activeSizes = new ArrayList<>();
 
-	    // השאילתה שולפת *רק* את מספר האורחים
-	    //check SEATED
-	    String sql = "SELECT number_of_guests FROM `order` " +
-	            "WHERE (order_status NOT IN ('CANCELLED', 'PAID','SEATED') OR order_status IS NULL) " +
-	            "AND order_date < ? " +
-	            "AND DATE_ADD(order_date, INTERVAL 2 HOUR) > ?";
-	            
-	    Connection con = DBConnection.getInstance().getConnection();
-	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
-	        stmt.setTimestamp(1, checkEnd);
-	        stmt.setTimestamp(2, checkStart);
-	        
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            while (rs.next()) {
-	                // --- וודא שאין כאן קריאה ל-mapResultSetToOrder(rs) ---
-	                // --- וודא שאין כאן שימוש ב-Order order = ... ---
-	                
-	                // אנו צריכים רק את המספר:
-	                activeSizes.add(rs.getInt("number_of_guests"));
-	            }
-	        }
-	    } finally {
-	        DBConnection.getInstance().releaseConnection(con);
-	    }
-	    return activeSizes;
+		java.sql.Timestamp checkStart = new java.sql.Timestamp(requestedDate.getTime());
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(requestedDate);
+		cal.add(Calendar.HOUR_OF_DAY, 2);
+		java.sql.Timestamp checkEnd = new java.sql.Timestamp(cal.getTime().getTime());
+
+		String sql = "SELECT number_of_guests FROM `order` "
+				+ "WHERE (order_status NOT IN ('CANCELLED', 'PAID','SEATED') OR order_status IS NULL) "
+				+ "AND order_date < ? " + "AND DATE_ADD(order_date, INTERVAL 2 HOUR) > ?";
+
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+			stmt.setTimestamp(1, checkEnd);
+			stmt.setTimestamp(2, checkStart);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+
+					activeSizes.add(rs.getInt("number_of_guests"));
+				}
+			}
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+		return activeSizes;
 	}
 
 	public List<Order> getOrdersForReminder(int minutesAhead) throws SQLException {
@@ -169,7 +160,6 @@ public class OrderDAO {
 	}
 
 	public int countConflictingOrders(Date requestedDate, int guests) throws SQLException {
-		// 1. חישוב טווחי זמנים לבדיקה
 		java.sql.Timestamp newStart = new java.sql.Timestamp(requestedDate.getTime());
 
 		Calendar cal = Calendar.getInstance();
@@ -177,21 +167,15 @@ public class OrderDAO {
 		cal.add(Calendar.HOUR_OF_DAY, 2);
 		java.sql.Timestamp newEnd = new java.sql.Timestamp(cal.getTime().getTime());
 
-		// --- התיקון בוצע כאן ---
-		// הוחלף o.table_id ב-o.table_number (כי זה השם ב-DB לפי שאר הקוד שלך)
-		// הוחלף t.table_id ב-t.table_number (כנ"ל בטבלת tables)
-		String sql = "SELECT COUNT(*) FROM `order` o " + 
-				"JOIN tables t ON o.table_number = t.table_number " // <--- התיקון הקריטי
-				+ "WHERE t.number_of_seats >= ? " + 
-				"AND o.order_status IN ('APPROVED', 'SEATED') " + 
-				"AND o.order_date < ? "
-				+ "AND DATE_ADD(o.order_date, INTERVAL 2 HOUR) > ?";
+		String sql = "SELECT COUNT(*) FROM `order` o " + "JOIN tables t ON o.table_number = t.table_number "
+				+ "WHERE t.number_of_seats >= ? " + "AND o.order_status IN ('APPROVED', 'SEATED') "
+				+ "AND o.order_date < ? " + "AND DATE_ADD(o.order_date, INTERVAL 2 HOUR) > ?";
 
 		Connection con = DBConnection.getInstance().getConnection();
 
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 
-			stmt.setInt(1, guests); 
+			stmt.setInt(1, guests);
 			stmt.setTimestamp(2, newEnd);
 			stmt.setTimestamp(3, newStart);
 
@@ -205,6 +189,7 @@ public class OrderDAO {
 		}
 		return 0;
 	}
+
 	public Order getOrder(int id) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE order_number = ?";
 		Connection con = DBConnection.getInstance().getConnection();
@@ -272,6 +257,7 @@ public class OrderDAO {
 
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+			System.out.println(o.toString());
 			stmt.setTimestamp(1, new Timestamp(o.getOrderDate().getTime()));
 			stmt.setInt(2, o.getNumberOfGuests());
 			stmt.setInt(3, o.getConfirmationCode());
@@ -297,6 +283,7 @@ public class OrderDAO {
 			}
 
 			stmt.setDouble(8, o.getTotalPrice());
+			System.out.println("in the dao "+o.getOrderStatus().name());
 			stmt.setString(9, o.getOrderStatus().name());
 			stmt.setBoolean(10, o.isReminderSent());
 			stmt.setInt(11, o.getOrderNumber());
@@ -317,28 +304,27 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
-	
+
 	public List<Order> getApprovedOrdersByGuestCount(int guests) throws SQLException {
-	    String sql = "SELECT * FROM `order` WHERE order_status = 'APPROVED' AND number_of_guests = ?";
-	    
-	    List<Order> list = new ArrayList<>();
-	    Connection con = DBConnection.getInstance().getConnection();
+		String sql = "SELECT * FROM `order` WHERE order_status = 'APPROVED' AND number_of_guests = ?";
 
-	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
-	        stmt.setInt(1, guests);
+		List<Order> list = new ArrayList<>();
+		Connection con = DBConnection.getInstance().getConnection();
 
-	        try (ResultSet rs = stmt.executeQuery()) {
-	            while (rs.next()) {
-	                // שימוש בפונקציית המיפוי הקיימת שלך (או יצירה ידנית)
-	            	Order o = this.mapResultSetToOrder(rs);
-	                
-	                list.add(o);
-	            }
-	        }
-	    } finally {
-	        DBConnection.getInstance().releaseConnection(con);
-	    }
-	    return list;
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+			stmt.setInt(1, guests);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					Order o = this.mapResultSetToOrder(rs);
+
+					list.add(o);
+				}
+			}
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+		return list;
 	}
 
 	public Order getOrderByConfirmationCode(int code) throws SQLException {
@@ -359,7 +345,7 @@ public class OrderDAO {
 
 	// for waitingList
 	public Order getOrderByConfirmationCodeWithStatusNull(int code) throws SQLException {
-		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status IS NULL OR order_status = 'APPROVED'";
+		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND (order_status IS NULL OR order_status = 'APPROVED')";
 
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -378,7 +364,7 @@ public class OrderDAO {
 	public Order getOrderByConfirmationCodeApproved(int code, Integer customerId) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE (customer_id = ? OR confirmation_code = ?) "
 				+ "AND order_status = 'APPROVED' "
-				+ "AND DATE(order_date) = CURDATE() AND TIME(order_date)>= SUBTIME(CURTIME(), '00:15:00')";
+				+ "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, NOW())) <= 15";
 
 		Connection con = DBConnection.getInstance().getConnection();
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
@@ -458,6 +444,32 @@ public class OrderDAO {
 		} finally {
 			DBConnection.getInstance().releaseConnection(con);
 		}
+	}
+
+	public List<Integer> getActiveOrdersInTimeRange(java.util.Date requestedDate) throws SQLException {
+
+		List<Integer> activeSizes = new ArrayList<>();
+
+		String sql = "SELECT number_of_guests FROM `order` " + "WHERE order_status IN ('APPROVED', 'SEATED') "
+				+ "AND ABS(TIMESTAMPDIFF(MINUTE, order_date, ?)) < 120";
+
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+
+			Timestamp reqTime = new Timestamp(requestedDate.getTime());
+
+//	        stmt.setInt(1, minGuestsThreshold); 
+			stmt.setTimestamp(1, reqTime);
+
+			try (ResultSet rs = stmt.executeQuery()) {
+				while (rs.next()) {
+					activeSizes.add(rs.getInt("number_of_guests"));
+				}
+			}
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+		return activeSizes;
 	}
 
 	public int countActiveOrdersInTimeRange(java.util.Date requestedDate, int minGuestsThreshold) throws SQLException {

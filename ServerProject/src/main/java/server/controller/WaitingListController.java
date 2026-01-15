@@ -156,8 +156,7 @@ public class WaitingListController {
 	                    Response.ResponseStatus.ERROR, "Missing ID", null));
 	        return false;
 	    }
-
-	    // 1. שליפת הפריט מרשימת ההמתנה
+	    System.out.println("helllooooooooo");
 	    WaitingList entry = waitingListDAO.getByWaitingId(waitingId);
 	    if (entry == null || entry.getInWaitingList() == 0) return false;
 
@@ -171,27 +170,21 @@ public class WaitingListController {
 	        return false;
 	    }
 
-	    // 2. מציאת ההזמנה ה"רדומה" לפי קוד האישור
-	    // (כאן אנחנו משתמשים בפונקציה שעדכנו קודם שמוצאת גם NULL)
 	    Order existingOrder = orderDAO.getOrderByConfirmationCodeWithStatusNull(entry.getConfirmationCode());
-	    
+	    System.out.println(existingOrder);
 	    if (existingOrder==null) {
 	        System.err.println("Critical Error: Order not found for code " + entry.getConfirmationCode());
 	        return false;
 	    }
 
-	    // 3. עדכון הסטטוס ל-APPROVED
 	    existingOrder.setCustomer(customer);
 	    existingOrder.setOrderStatus(OrderStatus.APPROVED); 
-	    // אם התאריך היה יכול להשתנות, זה הזמן לעדכן אותו ב-existingOrder
-
+	    System.out.println("order status "+existingOrder.getOrderStatus());
 	    
 	    if (orderDAO.updateOrder(existingOrder)) {
-	        
-	        // מחיקה מרשימת ההמתנה
+	        System.out.println("in the if ");
 	        waitingListDAO.exitWaitingList(waitingId);
 
-	        // שליחת עדכונים
 	        List<WaitingList> updatedList = waitingListDAO.getAllWaitingList();
 	        EmailService.sendConfirmation(existingOrder.getCustomer(), existingOrder);
 	        
