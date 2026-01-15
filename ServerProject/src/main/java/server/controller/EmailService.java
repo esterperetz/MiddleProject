@@ -1,7 +1,12 @@
 package server.controller;
 
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.QRCodeWriter;
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Attachments;
 import com.sendgrid.helpers.mail.objects.Content;
 import com.sendgrid.helpers.mail.objects.Email;
 
@@ -9,8 +14,10 @@ import entities.Customer;
 import entities.Employee;
 import entities.Order;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Base64;
 
 public class EmailService {
     private static String plainTextBody;
@@ -20,7 +27,7 @@ public class EmailService {
     private static SendGrid sg;
 
     private static void setService() {
-        // משיכת המפתח מהגדרות הווינדוס
+    	
         apiKey = System.getenv("SENDGRID_API_KEY"); // need to set it up in ur system*ASK LIEL*
 
         from = new Email("systembistro@gmail.com"); // Gmail password : Bistro123456
@@ -177,29 +184,51 @@ public class EmailService {
 
     }
     
-
     public static void sendEmailToSubscriber(Customer customer) {
 
         String subject = "Subscriber creation in Bistro System";
         Email to = new Email(customer.getEmail());
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        String qrCodeBase64 = generateQRCodeBase64(String.valueOf(customer.getSubscriberCode()));
 
-        plainTextBody = String.format(
-                "Hello %s %s,\n\n" +
-                        "Your subscribtion at BISTRO has been created succsefully! :) \n\n" +
-                        "--- Subscriber Details ---\n" +                        
-                        "Subscriber Code: %s\n" +
-                        "Phone Number: %s\n\n" +
-                        "If you wish to ask any question, please do not hesitate! \n\n" +
-                        "Farewell, Bistro Team.",
+        String htmlBody = String.format(
+                "<div style='font-family: Arial, sans-serif;'>" +
+                    "<h2>Hello %s,</h2>" +
+                    "<p>Your subscription at <b>BISTRO</b> has been created successfully! :)</p>" +
+                    "<hr>" +
+                    "<h3>--- Subscriber Details ---</h3>" +
+                    "<p><b>Subscriber Code:</b> %s</p>" +
+                    "<p><b>Phone Number:</b> %s</p>" +
+                    "<br>" +
+                    "<div style='text-align: center; border: 1px solid #ddd; padding: 10px; display: inline-block;'>" +
+                        "<p style='margin: 0 0 10px 0;'>Scan your Code:</p>" +
+                        "<img src=\"cid:qr-image\" alt=\"QR Code\" width=\"150\" height=\"150\" />" +
+                    "</div>" +
+                    "<br><br>" +
+                    "<p>If you wish to ask any question, please do not hesitate!</p>" +
+                    "<p>Farewell, <br>Bistro Team.</p>" +
+                "</div>",
                 customer.getName(),
                 customer.getSubscriberCode(),
-                customer.getPhoneNumber());
-
-        Content content = new Content("text/plain", plainTextBody);
+                customer.getPhoneNumber()
+        );
+        
+        plainTextBody = htmlBody;
+        Content content = new Content("text/html", htmlBody);
+        
         setService();
+
         Mail mail = new Mail(from, subject, to, content);
+
+        if (qrCodeBase64 != null) {
+            Attachments attachments = new Attachments();
+            attachments.setContent(qrCodeBase64);
+            attachments.setType("image/png");
+            attachments.setFilename("qrcode.png");
+            attachments.setDisposition("inline");  
+            attachments.setContentId("qr-image");   
+            mail.addAttachments(attachments);
+        }
 
         try {
             request.setMethod(Method.POST);
@@ -208,14 +237,29 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Your mail has been sent succsesfully!");
+                System.out.println("Your mail has been sent successfully!");
             } else {
                 System.out.println("Error in Sending: " + response.getBody());
             }
         } catch (IOException ex) {
             System.err.println("Error in communication: " + ex.getMessage());
         }
+    }
 
+   
+    private static String generateQRCodeBase64(String text) {
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+            
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (Exception e) {
+            System.err.println("Could not generate QR code: " + e.getMessage());
+            return null;
+        }
     }
 
 
