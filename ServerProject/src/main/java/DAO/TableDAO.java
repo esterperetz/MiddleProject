@@ -214,7 +214,6 @@ public class TableDAO {
         }
         return false;
     }
- // הוסף בסוף TableDAO.java
     
     public List<Integer> getAllTableCapacities() {
         List<Integer> capacities = new ArrayList<>();
