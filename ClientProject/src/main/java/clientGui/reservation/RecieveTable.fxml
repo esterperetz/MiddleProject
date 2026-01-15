@@ -3,54 +3,57 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="15.0" 
-      prefHeight="450.0" prefWidth="350.0" 
-      stylesheets="@../navigation/SelectionScreen.css" 
-      styleClass="main-container"
-      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
-      fx:controller="clientGui.reservation.GetTableController">
+<VBox alignment="TOP_CENTER" prefHeight="600.0" prefWidth="400.0" spacing="10.0" styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.reservation.GetTableController">
 
    <padding>
-      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+      <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
    </padding>
 
    <children>
-      <Label text="Receive Table" styleClass="title-label">
+      <Label styleClass="title-label" text="Receive Table">
          <VBox.margin>
-            <Insets bottom="20.0" />
+            <Insets bottom="10.0" />
          </VBox.margin>
       </Label>
 
-      <TextField fx:id="txtConformationCode" promptText="Put code of reservation" 
-                 styleClass="input-field" prefHeight="40.0" />
+      <TextField fx:id="txtConformationCode" prefHeight="40.0" promptText="Enter reservation code manually" styleClass="input-field" />
       
-      <Button fx:id="btnLostCode" mnemonicParsing="false" onAction="#openLostCodePopup" 
-              text="I lost my code" 
-              style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true; -fx-cursor: hand; -fx-font-size: 12px;">
+      <Button fx:id="btnLostCode" mnemonicParsing="false" onAction="#openLostCodePopup" style="-fx-background-color: transparent; -fx-text-fill: #3498db; -fx-underline: true; -fx-cursor: hand; -fx-font-size: 12px;" text="I lost my code">
          <VBox.margin>
-            <Insets top="-10.0" bottom="5.0" />
+            <Insets bottom="5.0" top="-10.0" />
          </VBox.margin>
       </Button>
 
-      <Button mnemonicParsing="false" onAction="#checkTableAvailability" 
-              prefHeight="45.0" prefWidth="280.0" 
-              styleClass="menu-button, primary-button" text="Check table">
-         <VBox.margin>
-            <Insets top="5.0" />
-         </VBox.margin>
-      </Button>
+      <Button mnemonicParsing="false" onAction="#checkTableAvailability" prefHeight="40.0" prefWidth="280.0" styleClass="menu-button, primary-button" text="Check Code manually" />
       
-      <Label fx:id="lblResult" text="" wrapText="true" 
-             style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" />
+      <Label fx:id="lblResult" style="-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;" text="" wrapText="true" />
 
-      <Button mnemonicParsing="false" onAction="#goBack" 
-              prefHeight="45.0" prefWidth="280.0" 
-              styleClass="menu-button" text="Back">
+      <Separator prefWidth="200.0">
          <VBox.margin>
-            <Insets top="20.0" />
+            <Insets bottom="10.0" top="10.0" />
+         </VBox.margin>
+      </Separator>
+
+      <Label fx:id="lblYourOrders" style="-fx-font-size: 16px; -fx-text-fill: #2c3e50; -fx-font-weight: bold;" text="Tap to select your reservation:" />
+
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="250.0" style="-fx-background-color: transparent; -fx-background: transparent;">
+         <content>
+            <VBox fx:id="ordersContainer" alignment="TOP_CENTER" spacing="10.0">
+               <padding>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </padding>
+               </VBox>
+         </content>
+      </ScrollPane>
+
+      <Button mnemonicParsing="false" onAction="#goBack" prefHeight="40.0" prefWidth="280.0" styleClass="menu-button" text="Back">
+         <VBox.margin>
+            <Insets top="10.0" />
          </VBox.margin>
       </Button>
    </children>
