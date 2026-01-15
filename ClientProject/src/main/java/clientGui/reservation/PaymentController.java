@@ -13,6 +13,7 @@ import entities.CustomerType;
 import entities.Order;
 import entities.Order.OrderStatus;
 import entities.Response;
+import entities.Response.ResponseStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -23,7 +24,7 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
-public class PaymentController extends MainNavigator implements MessageListener<Object>,Initializable {
+public class PaymentController extends MainNavigator implements MessageListener<Object>, Initializable {
 
 	@FXML
 	private TextField txtCardNumber;
@@ -36,7 +37,6 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	@FXML
 	private Label lblError;
 
-	// משתנה לשמירת הסכום לתשלום (אופציונלי, כדי להציג בלוג)
 	private double amountToPay;
 	private int tableId;
 	private int subscriberId;
@@ -46,8 +46,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	private OrderLogic orderLogic;
 	private Customer customer;
 	private ActionEvent currentEvent;
-	
-	
+
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		Platform.runLater(() -> {
@@ -60,15 +59,16 @@ public class PaymentController extends MainNavigator implements MessageListener<
 			}
 		});
 	}
+
 	public void setPaymentDetails(double amount, int tableId) {
 		this.amountToPay = amount;
 		this.tableId = tableId;
 	}
 
-	public void initData(Order order,double originalTotal, int subId, CustomerType isSubscriber, int tableId,Customer customer) {
+	public void initData(Order order, double originalTotal, int subId, CustomerType isSubscriber, int tableId,
+			Customer customer) {
 		this.tableId = tableId;
 		this.subscriberId = subId;
-		// itemsList.setItems(items);
 		this.isSubscriber = isSubscriber;
 		this.order = order;
 		this.totalPrice = originalTotal;
@@ -90,7 +90,7 @@ public class PaymentController extends MainNavigator implements MessageListener<
 			return;
 		}
 
-		if (cardNum.length() < 12) { 
+		if (cardNum.length() < 12) {
 			showError("Invalid Card Number.");
 			return;
 		}
@@ -99,34 +99,20 @@ public class PaymentController extends MainNavigator implements MessageListener<
 			showError("CVV must be 3 digits.");
 			return;
 		}
-
 		System.out.println("Processing Credit Card Payment...");
 		System.out.println("Card: " + cardNum + " | Amount: " + totalPrice);
 
-		
-//		order.setOrderStatus(OrderStatus.PAID);
 		orderLogic.updateOrderCheckOut(order);
 		this.currentEvent = event;
-		
-//		System.out.println("Order closed at: " + order.getLeavingTime());
 
-		// Alert pay good
-	
-		// else
-		// controller.initData(clientUi, false, subscriberId);
-
-		// public void initData(ClientUi clientUi, boolean isSubscriberStatus, Integer
-		// subId)
 	}
-	
-	
+
 	@FXML
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill", event, clientUi);
-		// if(isSub) String orderId, Integer subscriberId, CustomerType customerType, int tableId
-		billController.initData(order, subscriberId, isSubscriber, tableId,customer);
-		// else
-		// billController.initData(amountToPay, subscriberId ,false, tableId);
+		if (billController != null) {
+			billController.initData(order, subscriberId, isSubscriber, tableId, customer);
+		}
 
 	}
 
@@ -142,36 +128,53 @@ public class PaymentController extends MainNavigator implements MessageListener<
 
 	@Override
 	public void onMessageReceive(Object msg) {
-		
-	
-		if (msg instanceof Response) {
-            Response res = (Response) msg;
-            
-            // בדיקה האם העדכון הצליח (תלוי איך השרת שלך מחזיר תשובה)
-            // נניח שחזרה הזמנה תקינה או אישור
-            
-            // עדכון ה-UI ומעבר מסך חייב להתבצע ב-Platform.runLater
-            Platform.runLater(() -> {
-            	if(res.getData() instanceof Order) {
-	                Order o = (Order) res.getData();
-	                o.setTableNumber(null);
-	                this.order = o;
-            	}
+		if (!(msg instanceof Response))
+			return;
+		Response res = (Response) msg;
 
-                // 1. הצגת הודעת הצלחה
-                Alarm.showAlert("Payment Successfully!", "You paid " + totalPrice + " to Bistro, Thank you!", AlertType.INFORMATION);
-                System.out.println("Payment Approved! Table " + tableId + " released.");
-                try {
-                	SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent, clientUi);
-	
-                	controller.initData(clientUi, isSubscriber, subscriberId,customer);
-                }catch(Exception e) {
-                	e.printStackTrace();
-                    System.out.println("Error navigating after payment");
-                }
-		
-            });
+		Platform.runLater(() -> {
+			try {
+				switch (res.getResource()) {
+				case ORDER:
+					handleOrderResponse(res);
+					break;
+				default:
+					break;
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	private void handleOrderResponse(Response res) {
+		if (res.getStatus() == ResponseStatus.SUCCESS) {
+
+			if (res.getData() instanceof Order) {
+				Order o = (Order) res.getData();
+				o.setTableNumber(null);
+				this.order = o;
+			}
+
+			System.out.println("Payment Approved! Table " + tableId + " released.");
+
+			try {
+				SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", currentEvent,
+						clientUi);
+				if (controller != null) {
+					Alarm.showAlert("Payment Successfully!", "You paid " + totalPrice + " to Bistro, Thank you!",
+							AlertType.INFORMATION);
+					controller.initData(clientUi, isSubscriber, subscriberId, customer);
+				} else
+					System.out.println("Error navigating after payment");
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Error navigating after payment");
+			}
+
+		} else {
+			Alarm.showAlert("Error", res.getMessage_from_server(), AlertType.ERROR);
 		}
 	}
-	
+
 }
