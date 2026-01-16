@@ -132,7 +132,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         orderTable.setItems(filteredData);
 
         if (filterDatePicker != null) {
-            filterDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> updateFilter());
+            filterDatePicker.valueProperty().addListener((observable, oldValue, selectedDate) -> {
+                updateFilter();
+            });
         }
         if (cmbStatusFilter != null) {
             cmbStatusFilter.valueProperty().addListener((observable, oldValue, newValue) -> updateFilter());
@@ -140,13 +142,15 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     }
 
     private void updateFilter() {
-        filteredData.setPredicate(order -> {
-            // 1. Date Filter (Null-Safe Stream-like logic)
+    	filteredData.setPredicate(order -> {
+            // --- 1. Date Filter (Local) ---
             if (filterDatePicker.getValue() != null) {
                 if (order.getOrderDate() == null)
                     return false;
 
+                LocalDate selectedDate = filterDatePicker.getValue();
                 LocalDate orderDate;
+
                 if (order.getOrderDate() instanceof java.sql.Date) {
                     orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
                 } else {
@@ -155,16 +159,12 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                             .toLocalDate();
                 }
 
-                LocalDate selectedDate = filterDatePicker.getValue();
-                LocalDate today = LocalDate.now();
-
-                // Logic: After Selected Date AND Before Today (Historical)
-                if (orderDate.isBefore(selectedDate) || orderDate.isAfter(today)) {
+                if (orderDate.isBefore(selectedDate)) {
                     return false;
                 }
             }
 
-            // 2. Status Filter
+            // --- 2. Status Filter (הלוגיקה הקיימת לסינון לפי סטטוס) ---
             if (cmbStatusFilter != null && cmbStatusFilter.getValue() != null) {
                 String selectedStatus = cmbStatusFilter.getValue();
                 if (!"ALL".equals(selectedStatus)) {
@@ -175,10 +175,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                 }
             }
 
-            return true;
+            return true; 
         });
 
-        // Visual Feedback for Empty State
         if (filteredData.isEmpty()) {
             if (orderTable.getPlaceholder() == null ||
                     !((javafx.scene.control.Label) orderTable.getPlaceholder()).getText().contains("No matching")) {
