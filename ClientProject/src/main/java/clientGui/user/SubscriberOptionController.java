@@ -78,9 +78,6 @@ public class SubscriberOptionController extends MainNavigator implements Initial
     @FXML
     void goToUpdateProfile(ActionEvent event) {
         System.out.println("Navigating to update profile...");
-        
-        // כאן עלייך ליצור את המסך והקונטרולר של עדכון פרטים
-        // לדוגמה:
         UpdateProfileController controller = super.loadScreen("user/UpdateProfile", event, clientUi);
         if (controller != null) {
             controller.initData(clientUi, customer);
@@ -88,7 +85,6 @@ public class SubscriberOptionController extends MainNavigator implements Initial
         
         System.out.println("Update Profile Screen is not ready yet.");
     }
-    // ----------------------------------
 
 	@FXML
 	void goBackBtn(ActionEvent event) {
