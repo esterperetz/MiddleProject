@@ -98,7 +98,7 @@ public class BillController extends MainNavigator implements  Initializable , Me
             double discount = subtotal * 0.10; // 10% הנחה למנוי
             double finalPrice = subtotal - discount;
             totalPrice = finalPrice;
-            
+         
             discountBox.setVisible(true);
             discountBox.setManaged(true);
             lblDiscountAmount.setText(String.format("-%.2f $", discount));
