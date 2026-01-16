@@ -1,88 +1,102 @@
-.main-background {
-    -fx-background-color: #f4f6f8;
+/* ReportStyle.css - Fine Dining Luxury Theme */
+
+.root {
+    -fx-background-color: #1A1A1A;
+    -fx-font-family: "Montserrat", sans-serif;
 }
 
-.main-title {
-    -fx-font-size: 24px;
-    -fx-font-weight: bold;
-    -fx-text-fill: #2c3e50;
-    -fx-font-family: "Segoe UI";
-}
-
-.sub-label {
-    -fx-font-size: 14px;
-    -fx-text-fill: #7f8c8d;
-}
-
-.chart-pane {
-    -fx-background-color: #2c3e50;
-    /* Dark background for charts */
-    -fx-background-radius: 12px;
-    -fx-padding: 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.15), 10, 0, 0, 5);
-}
-
-.back-button {
+/* FIX: Ensure ScrollPane and Viewport are transparent to see the background image */
+.scroll-pane {
     -fx-background-color: transparent;
-    -fx-border-color: #95a5a6;
-    -fx-border-radius: 20px;
-    -fx-text-fill: #7f8c8d;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.main-background {
+    -fx-background-image: url('restaurant_background.png');
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+}
+
+/* Glassmorphism Card Pane */
+.chart-pane {
+    -fx-background-color: rgba(35, 35, 35, 0.6);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(197, 160, 89, 0.2);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 20, 0, 0, 5);
+    -fx-padding: 25;
+}
+
+.title-label {
+    -fx-text-fill: #C5A059;
+    /* Muted Champagne Gold */
+    -fx-font-size: 32px;
+    -fx-font-family: "Playfair Display", serif;
+}
+
+.subtitle-label {
+    -fx-text-fill: #bdc3c7;
+    -fx-font-size: 16px;
+}
+
+/* Menu/Action Buttons */
+.menu-button,
+.action-icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #C5A059;
+    -fx-border-color: #C5A059;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 8 16;
     -fx-cursor: hand;
-    -fx-padding: 8 20;
-}
-
-.back-button:hover {
-    -fx-background-color: #bdc3c7;
-    -fx-text-fill: white;
-}
-
-.filter-combo {
-    -fx-background-color: #ecf0f1;
-    -fx-border-color: transparent;
-}
-
-.action-button-primary {
-    -fx-background-color: #3498db;
-    -fx-text-fill: white;
     -fx-font-weight: bold;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
 }
 
-.action-button-primary:hover {
-    -fx-background-color: #2980b9;
+.menu-button:hover,
+.action-icon-button:hover {
+    -fx-background-color: #C5A059;
+    -fx-text-fill: #1A1A1A;
 }
 
-/* Chart Styling */
+/* Charts Styling */
 .chart {
     -fx-padding: 10px;
+    -fx-background-color: transparent;
 }
 
 .chart-content {
-    -fx-padding: 10px;
-}
-
-.chart-legend {
     -fx-background-color: transparent;
-    -fx-padding: 10px;
 }
 
-.chart-legend-item {
-    -fx-text-fill: #ecf0f1;
-    /* Legend text color for dark bg */
-    -fx-font-weight: bold;
-}
-
-.axis {
-    -fx-tick-label-fill: #bdc3c7;
-    /* Axis labels color */
-    -fx-font-size: 11px;
-    -fx-tick-length: 5;
-    -fx-minor-tick-length: 3;
+.chart-title {
+    -fx-text-fill: #C5A059;
+    -fx-font-size: 1.6em;
+    -fx-font-family: "Playfair Display", serif;
 }
 
 .axis-label {
     -fx-text-fill: #ecf0f1;
+    -fx-font-family: "Montserrat", sans-serif;
+}
+
+.axis {
+    -fx-tick-label-fill: #bdc3c7;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #ecf0f1;
+}
+
+/* Borderless Chart */
+.chart-plot-background {
+    -fx-background-color: transparent;
 }
 
 .chart-vertical-grid-lines {
@@ -104,10 +118,6 @@
     -fx-fill: linear-gradient(to bottom, rgba(52, 152, 219, 0.5), rgba(52, 152, 219, 0.05));
 }
 
-.default-color0.chart-legend-item-symbol {
-    -fx-background-color: #3498db, white;
-}
-
 /* Series 1: Departures (Green) */
 .default-color1.chart-series-area-line {
     -fx-stroke: #2ecc71;
@@ -118,10 +128,6 @@
     -fx-fill: linear-gradient(to bottom, rgba(46, 204, 113, 0.5), rgba(46, 204, 113, 0.05));
 }
 
-.default-color1.chart-legend-item-symbol {
-    -fx-background-color: #2ecc71, white;
-}
-
 /* Series 2: Late/No-Show (Red) */
 .default-color2.chart-series-area-line {
     -fx-stroke: #e74c3c;
@@ -130,8 +136,4 @@
 
 .default-color2.chart-series-area-fill {
     -fx-fill: linear-gradient(to bottom, rgba(231, 76, 60, 0.5), rgba(231, 76, 60, 0.05));
-}
-
-.default-color2.chart-legend-item-symbol {
-    -fx-background-color: #e74c3c, white;
 }

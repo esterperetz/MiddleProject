@@ -1,0 +1,109 @@
+/* Server Login - High Class Premium Theme */
+
+.root {
+    -fx-background-color: #0d0d0d;
+    /* Very Dark Carbon */
+}
+
+.main-background {
+    -fx-background-image: url('restaurant_background.png');
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+}
+
+/* Glassmorphism Card Pane */
+.card-pane {
+    -fx-background-color: rgba(30, 30, 30, 0.85);
+    /* Semi-transparent dark background */
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
+    /* Subtle Gold border */
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 20, 0, 0, 10);
+    -fx-padding: 30;
+    /* Optional: Server might not have background image, but we keep dark branding */
+    -fx-background-color: #1A1A1A;
+}
+
+/* Card Pane (Server uses similar containers) */
+.card-pane,
+.text-area {
+    -fx-background-color: rgba(35, 35, 35, 0.8);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(197, 160, 89, 0.2);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 10, 0, 0, 2);
+    -fx-padding: 10;
+}
+
+.label {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 14px;
+}
+
+.title-label {
+    -fx-text-fill: #C5A059;
+    -fx-font-size: 24px;
+    -fx-font-family: "Playfair Display", serif;
+}
+
+/* Text Area */
+.text-area .content {
+    -fx-background-color: #0d0d0d;
+    -fx-text-fill: #2ecc71;
+    /* Terminal Green for logs */
+    -fx-font-family: "Consolas", "Monospace";
+}
+
+.text-area {
+    -fx-border-color: #C5A059;
+    -fx-border-width: 1px;
+}
+
+/* Buttons */
+.button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #C5A059;
+    -fx-border-color: #C5A059;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-padding: 8 16;
+}
+
+.button:hover {
+    -fx-background-color: #C5A059;
+    -fx-text-fill: #1A1A1A;
+}
+
+/* Table View in Server */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: transparent;
+    -fx-border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #C5A059;
+    -fx-font-weight: bold;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ecf0f1;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(255, 255, 255, 0.05);
+    -fx-border-width: 0 0 1px 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.02);
+}
