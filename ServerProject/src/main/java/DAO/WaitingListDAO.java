@@ -335,4 +335,96 @@ public class WaitingListDAO {
             DBConnection.getInstance().releaseConnection(con);
         }
     }
+    public List<Map<String, Object>> getAllWaitingListWithCustomersToFilter() {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+        String sql = "SELECT " 
+                + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
+                + " w.waiting_id, w.customer_id, w.enter_time, " 
+                + " w.number_of_guests, w.confirmation_code, w.in_waiting_list, "
+                + " o.order_date AS reservation_date " // <--- הוספנו את זה
+                + "FROM Customer c " 
+                + "JOIN waiting_list w ON c.customer_id = w.customer_id "
+                + "JOIN `order` o ON w.confirmation_code = o.confirmation_code " // <--- הוספנו את ה-JOIN הזה
+                + "ORDER BY o.order_date ASC"; // מיון לפי תאריך ההזמנה המבוקש
+
+        Connection con = null;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("customer_name", rs.getString("customer_name"));
+                    row.put("email", rs.getString("email"));
+                    row.put("phone_number", rs.getString("phone_number"));
+                    row.put("subscriber_code", rs.getObject("subscriber_code"));
+                    row.put("waiting_id", rs.getInt("waiting_id"));
+                    row.put("customer_id", rs.getInt("customer_id"));
+                    row.put("number_of_guests", rs.getInt("number_of_guests"));
+                    row.put("confirmation_code", rs.getInt("confirmation_code"));
+                    row.put("enter_time", rs.getTimestamp("enter_time"));
+                    row.put("in_waiting_list", rs.getInt("in_waiting_list"));
+                    
+                    row.put("reservation_date", rs.getTimestamp("reservation_date"));
+
+                    resultList.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+        return resultList;
+    }
+    //for filter date
+    public List<Map<String, Object>> getWaitingListFromDate(java.sql.Date fromDate) {
+        List<Map<String, Object>> resultList = new ArrayList<>();
+
+        String sql = "SELECT " 
+                + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
+                + " w.waiting_id, w.customer_id, w.enter_time, " 
+                + " w.number_of_guests, w.confirmation_code, w.in_waiting_list, "
+                + " o.order_date AS reservation_date "
+                + "FROM Customer c " 
+                + "JOIN waiting_list w ON c.customer_id = w.customer_id "
+                + "JOIN `order` o ON w.confirmation_code = o.confirmation_code "
+                + "WHERE o.order_date >= ? " // סינון לפי תאריך ההזמנה ולא זמן הכניסה לרשימה
+                + "ORDER BY o.order_date ASC";
+
+        Connection con = null;
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+                
+                stmt.setTimestamp(1, new Timestamp(fromDate.getTime()));
+
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, Object> row = new HashMap<>();
+                        row.put("customer_name", rs.getString("customer_name"));
+                        row.put("email", rs.getString("email"));
+                        row.put("phone_number", rs.getString("phone_number"));
+                        row.put("subscriber_code", rs.getObject("subscriber_code"));
+                        row.put("waiting_id", rs.getInt("waiting_id"));
+                        row.put("customer_id", rs.getInt("customer_id"));
+                        row.put("enter_time", rs.getTimestamp("enter_time"));
+                        row.put("number_of_guests", rs.getInt("number_of_guests"));
+                        row.put("confirmation_code", rs.getInt("confirmation_code"));
+                        row.put("in_waiting_list", rs.getInt("in_waiting_list"));
+                        
+                        row.put("reservation_date", rs.getTimestamp("reservation_date"));
+
+                        resultList.add(row);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+        return resultList;
+    }
 }
