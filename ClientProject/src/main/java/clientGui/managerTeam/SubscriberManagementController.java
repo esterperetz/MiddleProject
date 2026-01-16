@@ -18,7 +18,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -26,7 +25,7 @@ import javafx.scene.layout.VBox;
 public class SubscriberManagementController extends MainNavigator implements Initializable, MessageListener<Object> {
 
 	@FXML
-	private VBox subscribersContainer; // המיכל של הכפתורים
+	private VBox subscribersContainer; 
 
 	private UserLogic userLogic;
 	private Employee connectedEmployee;

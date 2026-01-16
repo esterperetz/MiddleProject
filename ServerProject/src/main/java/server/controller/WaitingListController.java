@@ -66,6 +66,7 @@ public class WaitingListController {
 		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
 		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
 				Response.ResponseStatus.SUCCESS, null, list));
+		sendListToAllClients();
 	}
 
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
@@ -200,8 +201,8 @@ public class WaitingListController {
 	}
 
 	private void sendListToAllClients() throws SQLException {
-		List<WaitingList> list = waitingListDAO.getAllWaitingList();
-		Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL,
+		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
+		Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
 				Response.ResponseStatus.SUCCESS, null, list));
 	}
 }
