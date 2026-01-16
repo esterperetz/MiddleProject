@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox alignment="CENTER" spacing="15.0" 
-      prefHeight="450.0" prefWidth="350.0" 
+      prefHeight="450.0" prefWidth="400.0" 
       stylesheets="@../navigation/SelectionScreen.css" 
       styleClass="main-container"
       xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" 
@@ -18,7 +18,7 @@
    </padding>
 
    <children>
-      <Label text="Check Out" styleClass="title-label">
+      <Label text="CHECK OUT" styleClass="title-label">
          <VBox.margin>
             <Insets bottom="20.0" />
          </VBox.margin>

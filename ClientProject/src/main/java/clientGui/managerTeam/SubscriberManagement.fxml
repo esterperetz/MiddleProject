@@ -30,7 +30,7 @@
                           styleClass="menu-button" text="← Back" />
 
                   <VBox alignment="CENTER_LEFT">
-                      <Label text="Subscriber Management" styleClass="title-label">
+                      <Label text="SUBSCRIBER MANAGEMENT" styleClass="title-label">
                           <font><Font name="System Bold" size="24.0" /></font>
                       </Label>
                       <Label text="Click a subscriber to view history" styleClass="subtitle-label" textFill="#7f8c8d"/>

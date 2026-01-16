@@ -10,7 +10,7 @@
 <?import javafx.scene.shape.SVGPath?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="TOP_CENTER" prefHeight="500.0" prefWidth="350.0" spacing="15.0" styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.user.SubscriberOptionController">
+<VBox alignment="TOP_CENTER" prefHeight="500.0" prefWidth="400.0" spacing="15.0" styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.user.SubscriberOptionController">
 
    <padding>
       <Insets bottom="30.0" left="30.0" right="30.0" top="30.0" />
@@ -56,7 +56,7 @@
          </VBox.margin>
       </HBox>
 
-      <Label styleClass="title-label" text="Choose Action">
+      <Label styleClass="title-label" text="CHOOSE ACTION">
          <VBox.margin>
             <Insets bottom="5.0" />
          </VBox.margin>

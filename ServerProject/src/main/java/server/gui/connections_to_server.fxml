@@ -21,7 +21,7 @@
                 <!-- Header Section -->
                 <HBox alignment="CENTER_LEFT" spacing="20.0" style="-fx-padding: 0 0 10 0;">
                     <children>
-                        <Label text="Server Command Center" styleClass="header-label" />
+                        <Label text="SERVER COMMAND CENTER" styleClass="header-label" minWidth="-1.0" />
                         <Region HBox.hgrow="ALWAYS" />
                         
                         <!-- Status Indicators -->

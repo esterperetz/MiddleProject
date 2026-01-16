@@ -6,13 +6,13 @@
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="clientGui.LoginController"
-            prefWidth="450.0" prefHeight="300.0"
+            prefWidth="500.0" prefHeight="350.0"
             styleClass="main-background" stylesheets="@reservation/orderUi.css">
 
     <children>
         <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
             <children>
-                <Label text="Server Connection" styleClass="header-label" style="-fx-font-size: 24px;"/>
+                <Label text="SERVER CONNECTION" styleClass="header-label" style="-fx-font-size: 32px;"/>
                 
                 <VBox alignment="CENTER" spacing="10.0" styleClass="glass-pane" maxWidth="350.0">
                      <children>

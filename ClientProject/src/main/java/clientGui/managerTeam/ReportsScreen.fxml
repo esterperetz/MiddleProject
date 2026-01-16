@@ -26,7 +26,7 @@
                           styleClass="menu-button" text="← Back" />
 
                   <VBox alignment="CENTER_LEFT" spacing="5.0">
-                      <Label text="Monthly Performance Reports" styleClass="title-label" />
+                      <Label text="MONTHLY PERFORMANCE REPORTS" styleClass="title-label" />
                       <Label text="View statistics regarding orders and waiting lists" styleClass="subtitle-label" />
                   </VBox>
                </children>
