@@ -18,7 +18,7 @@ public class WaitingListCheckThread extends Thread {
 	private final OrderDAO orderDao = new OrderDAO();
 
 	private boolean running = true;
-
+	
 	@Override
 	public void run() {
 		System.out.println("WaitingList Thread Started...");
@@ -75,8 +75,6 @@ public class WaitingListCheckThread extends Thread {
 
 							promotedThisCycle.add(entry);
 						}
-					}else {
-						System.out.println("The waiting list is Empty.");
 					}
 				}
 			}

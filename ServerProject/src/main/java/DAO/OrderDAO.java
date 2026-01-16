@@ -377,6 +377,21 @@ public class OrderDAO {
 		}
 	}
 
+	public Order getOrderByConfirmationCodePending(int confirmationCode) throws SQLException {
+		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND order_status = 'PENDING' ";
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+			stmt.setInt(1, confirmationCode);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (rs.next()) {
+					return mapResultSetToOrder(rs);
+				}
+				return null;
+			}
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+	}
 	// for waitingList
 	public Order getOrderByConfirmationCodeWithStatusNull(int code) throws SQLException {
 		String sql = "SELECT * FROM `order` WHERE confirmation_code = ? AND (order_status = 'PENDING' OR order_status = 'APPROVED')";
@@ -474,6 +489,17 @@ public class OrderDAO {
 		try (PreparedStatement stmt = con.prepareStatement(sql)) {
 			stmt.setString(1, status.name());
 			stmt.setInt(2, orderNumber);
+			return stmt.executeUpdate() > 0;
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+	}
+	public boolean updateOrderStatusByConformationCode(int confirmation_code, Order.OrderStatus status) throws SQLException {
+		String sql = "UPDATE `order` SET order_status = ? WHERE confirmation_code = ?";
+		Connection con = DBConnection.getInstance().getConnection();
+		try (PreparedStatement stmt = con.prepareStatement(sql)) {
+			stmt.setString(1, status.name());
+			stmt.setInt(2, confirmation_code);
 			return stmt.executeUpdate() > 0;
 		} finally {
 			DBConnection.getInstance().releaseConnection(con);

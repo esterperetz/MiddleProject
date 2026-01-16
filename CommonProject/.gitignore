@@ -1,2 +1,11 @@
 /bin/
 /target/
+.metadata/
+.classpath
+.project
+.settings/
+*.tmp
+*.bak
+*.swp
+*~
+/.gitignore

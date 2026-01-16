@@ -27,8 +27,8 @@ public class EmailService {
     private static SendGrid sg;
 
     private static void setService() {
-    	
-        apiKey = System.getenv("SENDGRID_API_KEY"); 
+
+        apiKey = System.getenv("SENDGRID_API_KEY");
 
         from = new Email("systembistro@gmail.com"); // Gmail password : Bistro123456
         sg = new SendGrid(apiKey);
@@ -40,15 +40,13 @@ public class EmailService {
         String subject = "Confirmation booking in Bistro";
         Email to = new Email(customer.getEmail());
 
-        // פורמטים לעיצוב התאריך והשעה
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
-        
-        // יצירת מחרוזת המשלבת תאריך ושעה מתוך orderDate
+
         String formattedOrderDate = "To be assigned";
         if (order.getOrderDate() != null) {
-            // כאן אנחנו שואבים גם את התאריך וגם את השעה מאותו אובייקט Date
-            formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at " + timeFormat.format(order.getOrderDate());
+            formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at "
+                    + timeFormat.format(order.getOrderDate());
         }
 
         plainTextBody = String.format(
@@ -56,7 +54,7 @@ public class EmailService {
                         "Your reservation at BISTRO has been successfully confirmed!\n\n" +
                         "--- Reservation Details ---\n" +
                         "Confirmation Code: %d\n" +
-                        "Scheduled Date & Time: %s\n" + // שינוי הכותרת לתיאור מדויק יותר
+                        "Scheduled Date & Time: %s\n" +
                         "Arrival Status: %s\n" +
                         "Number of Guests: %d\n" +
                         "Table Number: %s\n\n" +
@@ -66,7 +64,7 @@ public class EmailService {
                         "Farewell, Bistro Team.",
                 customer.getName(),
                 order.getConfirmationCode(),
-                formattedOrderDate, // המשתנה החדש שכולל תאריך + שעה
+                formattedOrderDate,
                 order.getArrivalTime() != null ? timeFormat.format(order.getArrivalTime()) : "Not arrived yet",
                 order.getNumberOfGuests(),
                 (order.getTableNumber() != null ? order.getTableNumber() : "To be assigned"),
@@ -100,11 +98,11 @@ public class EmailService {
         // תוכן המייל
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
-        
+
         String formattedOrderDate = "To be assigned";
         if (order.getOrderDate() != null) {
-            // כאן אנחנו שואבים גם את התאריך וגם את השעה מאותו אובייקט Date
-            formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at " + timeFormat.format(order.getOrderDate());
+            formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at "
+                    + timeFormat.format(order.getOrderDate());
         }
 
         plainTextBody = String.format(
@@ -183,7 +181,7 @@ public class EmailService {
         }
 
     }
-    
+
     public static void sendEmailToSubscriber(Customer customer) {
 
         String subject = "Subscriber creation in Bistro System";
@@ -193,29 +191,29 @@ public class EmailService {
 
         String htmlBody = String.format(
                 "<div style='font-family: Arial, sans-serif;'>" +
-                    "<h2>Hello %s,</h2>" +
-                    "<p>Your subscription at <b>BISTRO</b> has been created successfully! :)</p>" +
-                    "<hr>" +
-                    "<h3>--- Subscriber Details ---</h3>" +
-                    "<p><b>Subscriber Code:</b> %s</p>" +
-                    "<p><b>Phone Number:</b> %s</p>" +
-                    "<br>" +
-                    "<div style='text-align: center; border: 1px solid #ddd; padding: 10px; display: inline-block;'>" +
+                        "<h2>Hello %s,</h2>" +
+                        "<p>Your subscription at <b>BISTRO</b> has been created successfully! :)</p>" +
+                        "<hr>" +
+                        "<h3>--- Subscriber Details ---</h3>" +
+                        "<p><b>Subscriber Code:</b> %s</p>" +
+                        "<p><b>Phone Number:</b> %s</p>" +
+                        "<br>" +
+                        "<div style='text-align: center; border: 1px solid #ddd; padding: 10px; display: inline-block;'>"
+                        +
                         "<p style='margin: 0 0 10px 0;'>Scan your Code:</p>" +
                         "<img src=\"cid:qr-image\" alt=\"QR Code\" width=\"150\" height=\"150\" />" +
-                    "</div>" +
-                    "<br><br>" +
-                    "<p>If you wish to ask any question, please do not hesitate!</p>" +
-                    "<p>Farewell, <br>Bistro Team.</p>" +
-                "</div>",
+                        "</div>" +
+                        "<br><br>" +
+                        "<p>If you wish to ask any question, please do not hesitate!</p>" +
+                        "<p>Farewell, <br>Bistro Team.</p>" +
+                        "</div>",
                 customer.getName(),
                 customer.getSubscriberCode(),
-                customer.getPhoneNumber()
-        );
-        
+                customer.getPhoneNumber());
+
         plainTextBody = htmlBody;
         Content content = new Content("text/html", htmlBody);
-        
+
         setService();
 
         Mail mail = new Mail(from, subject, to, content);
@@ -225,8 +223,8 @@ public class EmailService {
             attachments.setContent(qrCodeBase64);
             attachments.setType("image/png");
             attachments.setFilename("qrcode.png");
-            attachments.setDisposition("inline");  
-            attachments.setContentId("qr-image");   
+            attachments.setDisposition("inline");
+            attachments.setContentId("qr-image");
             mail.addAttachments(attachments);
         }
 
@@ -246,7 +244,6 @@ public class EmailService {
         }
     }
 
-   
     private static String generateQRCodeBase64(String text) {
         try {
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
@@ -254,14 +251,13 @@ public class EmailService {
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
-            
+
             return Base64.getEncoder().encodeToString(baos.toByteArray());
         } catch (Exception e) {
             System.err.println("Could not generate QR code: " + e.getMessage());
             return null;
         }
     }
-
 
     public static String getContent() {
         return plainTextBody;
@@ -313,6 +309,40 @@ public class EmailService {
             }
         } catch (IOException ex) {
             System.err.println("Error in communication (Reminder): " + ex.getMessage());
+        }
+    }
+
+    public static void sendReceipt(Customer fullCustomer, Order order) {
+        String subject = "Receipt for your visit at BISTRO";
+        Email to = new Email(fullCustomer.getEmail());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
+        plainTextBody = String.format(
+                "Hello %s,\n\n" + "Thank you for dining with us at BISTRO!\n\n" + "--- Receipt Details ---\n"
+                        + "Order Number: %d\n" + "Date: %s\n" + "Total Price: $%.2f\n\n"
+                        + "We hope to see you again soon!\n" + "Bistro Team.",
+                fullCustomer.getName(), order.getOrderNumber(),
+                order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "N/A", order.getTotalPrice());
+
+        Content content = new Content("text/plain", plainTextBody);
+        setService();
+        Mail mail = new Mail(from, subject, to, content);
+
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            Response response = sg.api(request);
+
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                System.out.println("Receipt email sent successfully to " + fullCustomer.getEmail());
+            } else {
+                System.out.println("Error in Sending Receipt: " + response.getBody());
+            }
+        } catch (IOException ex) {
+            System.err.println("Error in communication (Receipt): " + ex.getMessage());
         }
     }
 }

@@ -31,7 +31,6 @@ public class OrderController {
 
 	}
 
-
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.ERROR,
@@ -41,55 +40,55 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-			case GET_ALL:
-				handleGetAll(req, client);
-				break;
-			case GET_ALL_BY_SUBSCRIBER_ID:
-				handleGetAllBySubscriberId(req, client);
-				break;
-			case GET_BY_ID:
-				handleGetById(req, client);
-				break;
-			case GET_AVAILABLE_TIME:
-				Order order = (Order) req.getPayload();
-				checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
-				break;
-			case GET_USER_ORDERS:
-				handleGetSubscriberApprovedOrders(req, client);
-				break;
-			case GET_BY_CODE:
-				handleGetByCode(req, client);
-				break;
-			case CREATE:
-				handleCreate(req, client);
-				break;
-			case UPDATE:
-				handleUpdate(req, client);
-				break;
-			case UPDATE_CHECKOUT:
-				handelUpdateCheckOut(req, client);
-				break;
-			case DELETE:
-				handleDelete(req, client);
-				break;
-			case CHECK_AVAILABILITY:
-				handleCheckAvailability(req, client);
-				break;
-			case IDENTIFY_AT_TERMINAL:
-				handleIdentifyAtTerminal(req, client);
-				break;
-			case PAY_BILL:
-				handlePayBill(req, client);
-				break;
-			case SEND_EMAIL:
-				handleSendEmail(req, client);
-				break;
-			case RESEND_CONFIRMATION:
-				handleResendConfirmation(req, client);
-				break;
-			default:
-				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
-						"Unsupported action: " + req.getAction(), null));
+				case GET_ALL:
+					handleGetAll(req, client);
+					break;
+				case GET_ALL_BY_SUBSCRIBER_ID:
+					handleGetAllBySubscriberId(req, client);
+					break;
+				case GET_BY_ID:
+					handleGetById(req, client);
+					break;
+				case GET_AVAILABLE_TIME:
+					Order order = (Order) req.getPayload();
+					checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
+					break;
+				case GET_USER_ORDERS:
+					handleGetSubscriberApprovedOrders(req, client);
+					break;
+				case GET_BY_CODE:
+					handleGetByCode(req, client);
+					break;
+				case CREATE:
+					handleCreate(req, client);
+					break;
+				case UPDATE:
+					handleUpdate(req, client);
+					break;
+				case UPDATE_CHECKOUT:
+					handelUpdateCheckOut(req, client);
+					break;
+				case DELETE:
+					handleDelete(req, client);
+					break;
+				case CHECK_AVAILABILITY:
+					handleCheckAvailability(req, client);
+					break;
+				case IDENTIFY_AT_TERMINAL:
+					handleIdentifyAtTerminal(req, client);
+					break;
+				case PAY_BILL:
+					handlePayBill(req, client);
+					break;
+				case SEND_EMAIL:
+					handleSendEmail(req, client);
+					break;
+				case RESEND_CONFIRMATION:
+					handleResendConfirmation(req, client);
+					break;
+				default:
+					client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+							"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -223,16 +222,15 @@ public class OrderController {
 				} else {
 					dataToUse = order.getCustomer();
 				}
-				finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
+				finalCustomer = customerDao.getCustomerByEmailSUBSCRIBER(dataToUse.getEmail());
 
 				if (finalCustomer == null) {
 					dataToUse.setType(CustomerType.REGULAR);
 					customerDao.createCustomer(dataToUse);
-
 					finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 				}
 			}
-
+			System.out.println(finalCustomer);
 			if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
 				throw new SQLException("Failed to resolve customer ID.");
 			}
@@ -287,7 +285,6 @@ public class OrderController {
 
 			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
 			if (isAvailable) {
-				///////////////////////////////////////////////////////////////////////////
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
 				return true;
@@ -450,6 +447,7 @@ public class OrderController {
 
 			return;
 		}
+		
 		boolean updateTable = tabledao.updateTableStatus(order.getTableNumber(), 0);
 		if (!updateTable) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
@@ -457,6 +455,12 @@ public class OrderController {
 			/// need to get email from customer table
 			return;
 		}
+
+		Customer customer = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
+		if (customer != null) {
+			EmailService.sendReceipt(customer, order);
+		}
+
 		client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 				"Order updated.", order));
 		sendOrdersToAllClients();
@@ -538,11 +542,12 @@ public class OrderController {
 
 		if (order != null && order.getOrderStatus() == Order.OrderStatus.SEATED) {
 			double amount = order.getTotalPrice();
+			Customer c = null;
 
 			// Check if customer is SUBSCRIBER for 10% discount
 			if (order.getCustomer().getCustomerId() != null) {
 				// Use correct DAO method to fetch customer by ID
-				Customer c = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
+				c = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
 				if (c != null && c.getType() == CustomerType.SUBSCRIBER) {
 					amount *= 0.9;
 				}
@@ -557,6 +562,11 @@ public class OrderController {
 				if (order.getTableNumber() != null) {
 					tabledao.updateTableStatus(order.getTableNumber(), 0);
 				}
+
+				if (c != null) {
+					EmailService.sendReceipt(c, order);
+				}
+
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.PAY_BILL,
 						Response.ResponseStatus.SUCCESS, "Paid", amount));
 				sendOrdersToAllClients();
