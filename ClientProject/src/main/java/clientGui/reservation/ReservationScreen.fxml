@@ -25,7 +25,7 @@
    </padding>
 
    <children>
-      <Label styleClass="title-label" text="Make a Reservation">
+      <Label styleClass="title-label" text="MAKE A RESERVATION">
          <font>
             <Font name="System Bold" size="24.0" />
          </font>
@@ -54,7 +54,7 @@
                            <Label style="-fx-font-size: 10px;" text="Free" textFill="#777"/>
                         </HBox>
                         <HBox alignment="CENTER" spacing="4.0">
-                           <Circle fill="#fff3e0" radius="4.0" stroke="#ff9800" />
+                           <Circle fill="#3498db" radius="4.0" stroke="#2980b9" />
                            <Label style="-fx-font-size: 10px;" text="Waiting List" textFill="#777"/>
                         </HBox>
                      </children>

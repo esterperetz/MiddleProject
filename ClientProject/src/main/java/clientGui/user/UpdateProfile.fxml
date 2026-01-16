@@ -7,7 +7,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
 
-<VBox alignment="CENTER" prefHeight="500.0" prefWidth="350.0" spacing="15.0" 
+<VBox alignment="CENTER" prefHeight="500.0" prefWidth="400.0" spacing="15.0" 
 styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="clientGui.user.UpdateProfileController">
 
    <padding>
@@ -15,7 +15,7 @@ styleClass="main-container" stylesheets="@../navigation/SelectionScreen.css" xml
    </padding>
 
    <children>
-      <Label styleClass="title-label" text="Edit Profile">
+      <Label styleClass="title-label" text="EDIT PROFILE">
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin>

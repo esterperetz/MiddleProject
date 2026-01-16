@@ -15,7 +15,7 @@
    </padding>
 
    <children>
-      <Label styleClass="title-label" text="Receive Table">
+      <Label styleClass="title-label" text="RECEIVE TABLE">
          <VBox.margin>
             <Insets bottom="10.0" />
          </VBox.margin>

@@ -19,7 +19,7 @@
    </padding>
 
    <children>
-      <Label text="Register Employee" styleClass="title-label">
+      <Label text="REGISTER EMPLOYEE" styleClass="title-label">
          <VBox.margin>
             <Insets bottom="20.0" />
          </VBox.margin>
@@ -27,16 +27,16 @@
 
       <VBox spacing="10.0" maxWidth="300.0">
           <children>
-              <Label text="Username / Full Name:" style="-fx-text-fill: black; -fx-font-weight: bold;"/>
+              <Label text="Username / Full Name:" style="-fx-text-fill: #E1E1E1; -fx-font-weight: bold;"/>
               <TextField fx:id="txtUsername" promptText="Enter full name" styleClass="input-field" prefHeight="40.0" />
               
-              <Label text="Mobile Phone:" style="-fx-text-fill: black; -fx-font-weight: bold;"/>
+              <Label text="Mobile Phone:" style="-fx-text-fill: #E1E1E1; -fx-font-weight: bold;"/>
               <TextField fx:id="txtPhone" promptText="05X-XXXXXXX" styleClass="input-field" prefHeight="40.0" />
               
-              <Label text="Email Address:" style="-fx-text-fill: black; -fx-font-weight: bold;"/>
+              <Label text="Email Address:" style="-fx-text-fill: #E1E1E1; -fx-font-weight: bold;"/>
               <TextField fx:id="txtEmail" promptText="example@mail.com" styleClass="input-field" prefHeight="40.0" />
 
-              <Label text="Role / Permission:" style="-fx-text-fill: black; -fx-font-weight: bold;"/>
+              <Label text="Role / Permission:" style="-fx-text-fill: #E1E1E1; -fx-font-weight: bold;"/>
               <ComboBox fx:id="selectRole" promptText="Select Role..." 
                         prefWidth="300.0" prefHeight="40.0" 
                         styleClass="combo-box-styled" />

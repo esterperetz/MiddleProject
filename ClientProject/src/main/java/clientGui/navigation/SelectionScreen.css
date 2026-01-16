@@ -4,6 +4,15 @@
     -fx-background-color: #1A1A1B;
     /* Deep Matte Black */
     -fx-font-family: "Montserrat", "Segoe UI", sans-serif;
+
+    /* Global JavaFX Theme Overrides */
+    -fx-base: #1A1A1B;
+    -fx-control-inner-background: #252526;
+    -fx-control-inner-background-alt: #252526;
+    -fx-text-box-border: #555;
+    -fx-focus-color: #D4AF37;
+    -fx-faint-focus-color: rgba(212, 175, 55, 0.2);
+    -fx-accent: #D4AF37;
 }
 
 .main-background {
@@ -38,21 +47,34 @@
 }
 
 /* Input Fields - Luxury Style */
+/* Input Fields - Luxury Style */
+.date-picker .text-field,
+.combo-box .text-field,
+.text-field,
 .input-field {
-    -fx-background-color: #252526;
-    -fx-text-fill: #E1E1E1;
-    -fx-prompt-text-fill: derive(#E1E1E1, -50%);
-    -fx-border-color: #555;
+    -fx-background-color: #383838;
+    -fx-control-inner-background: #383838;
+    -fx-text-fill: #FFFFFF;
+    -fx-prompt-text-fill: #AAAAAA;
+    /* Lighter prompt */
+    -fx-border-color: #666;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
     -fx-font-size: 16px;
-    -fx-padding: 10px;
-    /* Requested Breathing Room */
+    -fx-padding: 12px;
+    -fx-pref-height: 50px;
+    /* Fix clipping */
+    -fx-highlight-fill: rgba(212, 175, 55, 0.4);
+    -fx-highlight-text-fill: #FFFFFF;
 }
 
+.date-picker .text-field:focused,
+.combo-box .text-field:focused,
+.text-field:focused,
 .input-field:focused {
     -fx-border-color: #D4AF37;
-    /* Metallic Gold Focus */
+    -fx-background-color: #252526;
+    /* Maintain dark background on focus */
     -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.5), 10, 0, 0, 0);
 }
 
@@ -96,4 +118,32 @@
 .primary-button:hover {
     -fx-background-color: linear-gradient(to bottom, #F4C430, #D4AF37);
     -fx-text-fill: #1A1A1B;
+}
+
+/* Time Slot Buttons */
+.time-button {
+    -fx-cursor: hand;
+    -fx-background-radius: 5;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.waiting-list-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+}
+
+.waiting-list-button:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(three-pass-box, rgba(52, 152, 219, 0.6), 10, 0, 0, 0);
+}
+
+.available-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+}
+
+.available-button:hover {
+    -fx-background-color: #27ae60;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 113, 0.6), 10, 0, 0, 0);
 }

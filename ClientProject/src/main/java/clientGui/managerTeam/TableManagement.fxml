@@ -35,16 +35,16 @@
         </columnResizePolicy>
     </TableView>
 
-    <HBox alignment="CENTER" spacing="15.0" style="-fx-background-color: #f8f9fa; -fx-padding: 15; -fx-background-radius: 8;">
-        <TextField fx:id="txtTableNumber" promptText="Table Number" styleClass="text-field" />
-        <TextField fx:id="txtSeats" promptText="Seats" styleClass="text-field" />
-        <Button onAction="#handleClearBtn" styleClass="action-icon-button" style="-fx-background-color: #95a5a6;" text="Clear / New" />
-        <Button onAction="#handleAddTable" styleClass="action-icon-button" text="Add Table" />
-        <Button onAction="#handleUpdateTable" styleClass="action-icon-button" style="-fx-background-color: #f39c12;" text="Update Seats" />
+    <HBox alignment="CENTER" spacing="15.0" styleClass="glass-pane">
+        <TextField fx:id="txtTableNumber" promptText="Table Number" styleClass="input-field" />
+        <TextField fx:id="txtSeats" promptText="Seats" styleClass="input-field" />
+        <Button onAction="#handleClearBtn" styleClass="menu-button" text="CLEAR / NEW" />
+        <Button onAction="#handleAddTable" styleClass="menu-button" text="ADD TABLE" />
+        <Button onAction="#handleUpdateTable" styleClass="menu-button" text="UPDATE SEATS" />
     </HBox>
     
     <HBox alignment="CENTER">
-         <Button onAction="#handleDeleteTable" styleClass="action-icon-button" style="-fx-background-color: #e74c3c;" text="Delete Selected Table" />
+         <Button onAction="#handleDeleteTable" styleClass="menu-button" style="-fx-border-color: #e74c3c; -fx-text-fill: #e74c3c;" text="DELETE SELECTED TABLE" />
     </HBox>
 
 </VBox>

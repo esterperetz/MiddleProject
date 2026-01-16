@@ -155,7 +155,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 			this.isSubscriberVerified = true;
 			checkSubscriberId();
 
-//			fillAndLockFields(connectedCustomer);
+			// fillAndLockFields(connectedCustomer);
 		} else {
 			enableClientFields();
 		}
@@ -289,16 +289,16 @@ public class ReservationController extends MainNavigator implements MessageListe
 		Platform.runLater(() -> {
 			try {
 				switch (res.getResource()) {
-				case ORDER:
-					handleOrderResponse(res);
-					break;
-				case CUSTOMER:
-					handleCustomerResponse(res);
-					break;
-				case WAITING_LIST:
-					handleWaitingListResponse(res);
-				default:
-					break;
+					case ORDER:
+						handleOrderResponse(res);
+						break;
+					case CUSTOMER:
+						handleCustomerResponse(res);
+						break;
+					case WAITING_LIST:
+						handleWaitingListResponse(res);
+					default:
+						break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -326,16 +326,14 @@ public class ReservationController extends MainNavigator implements MessageListe
 				if (res.getData() instanceof List) {
 					updateTimeButtons((List<TimeSlotStatus>) res.getData());
 				}
-			}
-			else if (res.getStatus() == ResponseStatus.ERROR) {
+			} else if (res.getStatus() == ResponseStatus.ERROR) {
 				Alarm.showAlert("Error", res.getMessage_from_server(), Alert.AlertType.ERROR);
 				guestsField.setText("");
 				loadHours();
 				updateTimeButtons((List<TimeSlotStatus>) res.getData());
 
 			}
-			
-			
+
 		} else if (res.getAction() == ActionType.CREATE) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Success", "Order created successfully!", Alert.AlertType.INFORMATION);
@@ -379,8 +377,8 @@ public class ReservationController extends MainNavigator implements MessageListe
 	private void updateTimeButtons(List<TimeSlotStatus> slots) {
 		timeContainer.getChildren().clear();
 		if (slots == null) {
-	        return; 
-	    }
+			return;
+		}
 		for (TimeSlotStatus slot : slots) {
 			Button btn = new Button(slot.getTime());
 			btn.setMinWidth(80);
@@ -388,11 +386,11 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 			btn.getStyleClass().add("time-button");
 
-			if (slot.isFull()) {
-				btn.getStyleClass().add("waitlist");
+			if (slot.getCurrentDiners() >= slot.getMaxCapacity()) {
+				btn.getStyleClass().add("waiting-list-button");
 				btn.setOnAction(e -> selectTime(btn, slot.getTime(), true));
 			} else {
-				btn.getStyleClass().add("available");
+				btn.getStyleClass().add("available-button");
 				btn.setOnAction(e -> selectTime(btn, slot.getTime(), false));
 			}
 			timeContainer.getChildren().add(btn);
@@ -423,7 +421,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 		emailField.setEditable(false);
 
 		// Visual feedback for locked fields
-		String locked = "-fx-background-color: #e0e0e0;";
+		String locked = "-fx-background-color: #2A2A2A; -fx-text-fill: #AAAAAA; -fx-border-color: #444;";
 		nameField.setStyle(locked);
 		phoneField.setStyle(locked);
 		emailField.setStyle(locked);

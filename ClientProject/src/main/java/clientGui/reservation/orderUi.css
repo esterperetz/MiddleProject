@@ -63,14 +63,19 @@
 .combo-box,
 .text-field,
 .input-field {
-    -fx-background-color: #252526;
-    -fx-text-fill: #E1E1E1;
-    -fx-border-color: #555;
+    -fx-background-color: #383838;
+    -fx-text-fill: #FFFFFF;
+    -fx-prompt-text-fill: #AAAAAA;
+    /* Lighter prompt */
+    -fx-border-color: #666;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
     -fx-font-size: 16px;
-    -fx-padding: 10px;
-    /* Spacious Padding */
+    -fx-padding: 12px;
+    -fx-pref-height: 50px;
+    -fx-highlight-fill: rgba(212, 175, 55, 0.4);
+    /* Subtle Gold Selection */
+    -fx-highlight-text-fill: #FFFFFF;
 }
 
 .date-picker .text-field:focused,
@@ -236,4 +241,28 @@
     -fx-text-fill: #E1E1E1;
     -fx-font-size: 16px;
     -fx-font-family: "Montserrat", sans-serif;
+}
+
+.waiting-list-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.waiting-list-button:hover {
+    -fx-background-color: #2980b9;
+    -fx-effect: dropshadow(three-pass-box, rgba(52, 152, 219, 0.6), 10, 0, 0, 0);
+}
+
+.available-button {
+    -fx-background-color: #2ecc71;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-cursor: hand;
+}
+
+.available-button:hover {
+    -fx-background-color: #27ae60;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 113, 0.6), 10, 0, 0, 0);
 }
