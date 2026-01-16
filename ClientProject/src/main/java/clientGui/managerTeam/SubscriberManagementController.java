@@ -91,14 +91,20 @@ public class SubscriberManagementController extends MainNavigator implements Ini
 		btn.setPrefWidth(800);
 		btn.setPrefHeight(50);
 
-		btn.setStyle("-fx-background-color: white; " + "-fx-border-color: #bdc3c7; " + "-fx-border-radius: 5; "
-				+ "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; " + "-fx-font-size: 14px; "
-				+ "-fx-padding: 0 0 0 20;");
+		btn.setStyle("-fx-background-color: #383838; " + "-fx-text-fill: white; " + "-fx-border-color: #D4AF37; "
+				+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
+				+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20;");
 
-		btn.setOnMouseEntered(e -> btn.setStyle(
-				"-fx-background-color: #ecf0f1; -fx-border-color: #3498db; -fx-border-radius: 5; -fx-background-radius: 5; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px; -fx-padding: 0 0 0 20;"));
-		btn.setOnMouseExited(e -> btn.setStyle(
-				"-fx-background-color: white; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-alignment: CENTER_LEFT; -fx-font-size: 14px; -fx-padding: 0 0 0 20;"));
+		btn.setOnMouseEntered(e -> btn
+				.setStyle("-fx-background-color: #555; " + "-fx-text-fill: white; " + "-fx-border-color: #F4C430; "
+						+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
+						+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20; "
+						+ "-fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.4), 10, 0, 0, 0);"));
+
+		btn.setOnMouseExited(e -> btn
+				.setStyle("-fx-background-color: #383838; " + "-fx-text-fill: white; " + "-fx-border-color: #D4AF37; "
+						+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
+						+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20;"));
 
 		btn.setOnAction(event -> {
 			openSubscriberHistory(c, event);
@@ -110,7 +116,8 @@ public class SubscriberManagementController extends MainNavigator implements Ini
 	private void openSubscriberHistory(Customer selectedCustomer, ActionEvent event) {
 		SubscriberHistoryController controller = super.loadScreen("user/SubscriberHistory", event, clientUi);
 		if (controller != null) {
-			controller.initData(selectedCustomer.getSubscriberCode(), CustomerType.SUBSCRIBER, connectedEmployee, selectedCustomer);
+			controller.initData(selectedCustomer.getSubscriberCode(), CustomerType.SUBSCRIBER, connectedEmployee,
+					selectedCustomer);
 		}
 	}
 

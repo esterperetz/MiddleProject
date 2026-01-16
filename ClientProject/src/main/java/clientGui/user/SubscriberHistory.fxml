@@ -34,15 +34,13 @@
                           styleClass="menu-button" text="← Back" />
 
                   <VBox alignment="CENTER_LEFT">
-                      <Label text="Order History" styleClass="title-label">
-                          <font><Font name="System Bold" size="24.0" /></font>
-                      </Label>
-                      <Label text="Track your past meals and receipts" styleClass="subtitle-label" textFill="#7f8c8d"/>
+                      <Label text="Order History" styleClass="title-label" />
+                      <Label text="Track your past meals and receipts" styleClass="subtitle-label" />
                   </VBox>
 
                   <Region HBox.hgrow="ALWAYS" />
 
-                  <VBox prefWidth="200.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);" alignment="CENTER">
+                  <VBox prefWidth="200.0" styleClass="glass-pane" alignment="CENTER">
                      <padding><Insets top="10" bottom="10"/></padding>
                      <children>
                         <Label text="My Orders" style="-fx-text-fill: #7f8c8d; -fx-font-size: 14px;" />
@@ -58,22 +56,28 @@
                 
                 <HBox alignment="CENTER_LEFT">
                     <children>
-                        <Label text="Recent Activity" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
+                        <Label text="Recent Activity" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-text-fill: #D4AF37;"/>
                         
-                        <Region HBox.hgrow="ALWAYS" /> <HBox alignment="CENTER_LEFT" spacing="10.0" style="-fx-background-color: white; -fx-background-radius: 20; -fx-border-color: #bdc3c7; -fx-border-radius: 20; -fx-padding: 5 15 5 15;">
+                        <Region HBox.hgrow="ALWAYS" /> 
+						<HBox alignment="CENTER_LEFT" spacing="15.0" style="-fx-padding: 10; -fx-background-color: rgba(30, 30, 30, 0.6); -fx-background-radius: 10; -fx-border-color: rgba(212, 175, 55, 0.3); -fx-border-radius: 10;">
                             <children>
-                                <Label text="Filter from:" style="-fx-text-fill: #7f8c8d; -fx-font-weight: bold; -fx-font-size: 12px;"/>
+                                <javafx.scene.image.ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                                     <image>
+                                         <javafx.scene.image.Image url="@filter_icon_gold_1768577102157.png" />
+                                     </image>
+                                </javafx.scene.image.ImageView>
+                                <Label text="Filter Data:" styleClass="filter-label"/>
                                 
-                                <DatePicker fx:id="filterDatePicker" onAction="#handleDateFilter" promptText="Select Date" prefWidth="130.0" style="-fx-background-color: transparent; -fx-border-width: 0;"/>
+                                <DatePicker fx:id="filterDatePicker" onAction="#handleDateFilter" promptText="Select Date" styleClass="date-picker"/>
                                 
-                                <Button text="X" onAction="#handleClearFilter" style="-fx-background-color: transparent; -fx-text-fill: #e74c3c; -fx-cursor: hand; -fx-font-size: 10px; -fx-padding: 0 0 0 5;" />
+                                <Button text="✕" onAction="#handleClearFilter" styleClass="filter-icon-button" />
                             </children>
                         </HBox>
                     </children>
                 </HBox>
                 
-                <VBox style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.05), 10, 0, 0, 5); -fx-padding: 10;">
-                    <TableView fx:id="ordersTable" prefHeight="450.0" styleClass="modern-table">
+                <VBox styleClass="glass-pane">
+                    <TableView fx:id="ordersTable" prefHeight="450.0">
                       <columns>
                         <TableColumn fx:id="colOrderId" prefWidth="80.0" text="Order #" />
                         <TableColumn fx:id="colDate" prefWidth="120.0" text="Date" />

@@ -86,34 +86,46 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 	void handleDateFilter(ActionEvent event) {
 		LocalDate selectedDate = filterDatePicker.getValue();
 
+		// Null-Safe: If no date selected, show full list
 		if (selectedDate == null) {
+			ordersTable.setItems(fullDataList);
 			return;
 		}
 
-		// create a list that help us to filter
-		ObservableList<OrderHistoryItem> filteredList = FXCollections.observableArrayList();
+		// Filter using Java Stream
+		ObservableList<OrderHistoryItem> filteredList = fullDataList.stream()
+				.filter(item -> {
+					if (item.getDate() == null || item.getDate().isEmpty())
+						return false;
+					try {
+						// Parse date from String (dd/MM/yyyy)
+						LocalDate itemDate = LocalDate.parse(item.getDate(), formatter);
+						// Logic: Show orders ON the selected date (Exact Match)
+						return itemDate.isEqual(selectedDate);
+					} catch (Exception e) {
+						e.printStackTrace();
+						return false;
+					}
+				})
+				.collect(javafx.collections.FXCollections::observableArrayList,
+						javafx.collections.ObservableList::add,
+						javafx.collections.ObservableList::addAll);
 
-		for (OrderHistoryItem item : fullDataList) {
-			try {
-				// convert string
-				LocalDate itemDate = LocalDate.parse(item.getDate(), formatter);
-				// filter orders
-				if (!itemDate.isBefore(selectedDate)) {
-					filteredList.add(item);
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		// update the filter table
+		// Update Table
 		ordersTable.setItems(filteredList);
+
+		// Visual Feedback for empty result
+		if (filteredList.isEmpty()) {
+			ordersTable.setPlaceholder(
+					new javafx.scene.control.Label("No orders found after " + selectedDate.format(formatter)));
+		}
 	}
 
 	@FXML
 	void goBackBtn(ActionEvent event) {
 		if (employee != null) {
-			SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event, clientUi);
+			SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event,
+					clientUi);
 			if (controller != null) {
 				controller.initData(employee, clientUi, employee.getRole());
 			} else

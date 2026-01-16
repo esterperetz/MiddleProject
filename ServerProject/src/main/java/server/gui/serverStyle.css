@@ -45,7 +45,7 @@
 .header-label {
     -fx-text-fill: linear-gradient(to bottom, #D4AF37, #C5A059);
     -fx-font-family: "Playfair Display", "Georgia", serif;
-    -fx-font-size: 36px;
+    -fx-font-size: 32px;
     -fx-font-weight: bold;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 5, 0, 0, 0);
     /* Letter spacing emulated if possible */
