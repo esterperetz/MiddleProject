@@ -30,13 +30,16 @@
 
 /* Typography */
 .main-title {
-    -fx-text-fill: #C5A059;
-    /* Muted Champagne Gold */
-    -fx-font-size: 36px;
+    -fx-text-fill: linear-gradient(to bottom, #FFD700, #F4C430);
+    /* Bright Gold Gradient */
+    -fx-font-size: 48px;
+    /* Much Larger */
     -fx-font-family: "Playfair Display", "Times New Roman", serif;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 2);
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.8), 15, 0.5, 0, 0);
+    /* Strong Gold Glow */
     -fx-padding: 0 0 20 0;
     -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
 }
 
 .section-header {
@@ -48,7 +51,14 @@
     -fx-padding: 10 0 10 0;
 }
 
-.sub-label,
+.sub-label {
+    -fx-text-fill: #E1E1E1;
+    -fx-font-size: 18px;
+    -fx-font-style: italic;
+    -fx-font-family: "Montserrat", sans-serif;
+    -fx-opacity: 0.9;
+}
+
 .label {
     -fx-text-fill: #ecf0f1;
     /* Off-white for readability */

@@ -22,8 +22,8 @@
 
 .header-label {
     -fx-text-fill: #D4AF37;
-    -fx-font-size: 24px;
-    -fx-font-family: "Cinzel", "Times New Roman", "Segoe UI Light";
+    -fx-font-size: 36px;
+    -fx-font-family: "Playfair Display", "Times New Roman", serif;
     -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.3), 10, 0, 0, 0);
 }
 
@@ -31,6 +31,8 @@
     -fx-background-color: transparent;
     -fx-border-color: rgba(212, 175, 55, 0.3);
     -fx-border-width: 1px;
+    -fx-font-family: "Montserrat", sans-serif;
+    -fx-font-size: 16px;
 }
 
 .table-view .column-header-background {
@@ -42,6 +44,7 @@
 .table-view .column-header .label {
     -fx-text-fill: #D4AF37;
     -fx-font-weight: bold;
+    -fx-font-size: 18px;
 }
 
 .table-view .table-cell {

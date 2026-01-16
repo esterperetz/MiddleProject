@@ -141,40 +141,51 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
     private void updateFilter() {
         filteredData.setPredicate(order -> {
-            boolean dateMatch = true;
+            // 1. Date Filter (Null-Safe Stream-like logic)
             if (filterDatePicker.getValue() != null) {
-                if (order.getOrderDate() == null) {
-                    dateMatch = false;
-                } else {
-                    LocalDate orderDate;
-                    if (order.getOrderDate() instanceof java.sql.Date) {
-                        orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
-                    } else {
-                        orderDate = order.getOrderDate().toInstant()
-                                .atZone(ZoneId.systemDefault())
-                                .toLocalDate();
-                    }
-                    LocalDate selectedDate = filterDatePicker.getValue();
-                    LocalDate today = LocalDate.now();
+                if (order.getOrderDate() == null)
+                    return false;
 
-                    boolean isAfterSelection = !orderDate.isBefore(selectedDate);
-                    boolean isBeforeToday = !orderDate.isAfter(today);
-                    dateMatch = isAfterSelection && isBeforeToday;
+                LocalDate orderDate;
+                if (order.getOrderDate() instanceof java.sql.Date) {
+                    orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
+                } else {
+                    orderDate = order.getOrderDate().toInstant()
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate();
+                }
+
+                LocalDate selectedDate = filterDatePicker.getValue();
+                LocalDate today = LocalDate.now();
+
+                // Logic: After Selected Date AND Before Today (Historical)
+                if (orderDate.isBefore(selectedDate) || orderDate.isAfter(today)) {
+                    return false;
                 }
             }
 
-            boolean statusMatch = true;
+            // 2. Status Filter
             if (cmbStatusFilter != null && cmbStatusFilter.getValue() != null) {
                 String selectedStatus = cmbStatusFilter.getValue();
-                if (!selectedStatus.equals("ALL")) {
-                    String orderStatusStr = order.getOrderStatus().toString();
-                    if (!orderStatusStr.equalsIgnoreCase(selectedStatus)) {
-                        statusMatch = false;
+                if (!"ALL".equals(selectedStatus)) {
+                    if (order.getOrderStatus() == null ||
+                            !order.getOrderStatus().toString().equalsIgnoreCase(selectedStatus)) {
+                        return false;
                     }
                 }
             }
-            return dateMatch && statusMatch;
+
+            return true;
         });
+
+        // Visual Feedback for Empty State
+        if (filteredData.isEmpty()) {
+            if (orderTable.getPlaceholder() == null ||
+                    !((javafx.scene.control.Label) orderTable.getPlaceholder()).getText().contains("No matching")) {
+                orderTable.setPlaceholder(
+                        new javafx.scene.control.Label("No matching orders found. Try adjusting filters."));
+            }
+        }
     }
 
     @FXML

@@ -32,8 +32,8 @@
 
 .title-label {
     -fx-text-fill: linear-gradient(to bottom, #D4AF37, #C5A059);
-    -fx-font-size: 32px;
-    /* Requested 32px+ */
+    -fx-font-size: 36px;
+    /* Requested 36px+ */
     -fx-font-weight: bold;
     -fx-font-family: "Playfair Display", "Times New Roman", serif;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 5, 0, 0, 1);
@@ -41,9 +41,9 @@
 }
 
 .subtitle-label {
-    -fx-text-fill: #bdc3c7;
-    -fx-font-size: 16px;
-    -fx-font-family: "Montserrat", "Segoe UI Light";
+    -fx-text-fill: #E1E1E1;
+    -fx-font-size: 18px;
+    -fx-font-family: "Montserrat", sans-serif;
 }
 
 /* Input Fields - Luxury Style */
@@ -60,9 +60,11 @@
     -fx-border-color: #666;
     -fx-border-radius: 5;
     -fx-background-radius: 5;
-    -fx-font-size: 16px;
+    -fx-font-size: 18px;
+    /* increased from 16px */
     -fx-padding: 12px;
-    -fx-pref-height: 50px;
+    -fx-pref-height: 55px;
+    /* increased from 50px */
     /* Fix clipping */
     -fx-highlight-fill: rgba(212, 175, 55, 0.4);
     -fx-highlight-text-fill: #FFFFFF;
@@ -146,4 +148,153 @@
 .available-button:hover {
     -fx-background-color: #27ae60;
     -fx-effect: dropshadow(three-pass-box, rgba(46, 204, 113, 0.6), 10, 0, 0, 0);
+}
+
+/* Glassmorphism Container (Global) */
+.glass-pane,
+.main-container {
+    -fx-background-color: rgba(20, 20, 20, 0.9);
+    -fx-background-radius: 15;
+    -fx-border-color: rgba(212, 175, 55, 0.5);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 25, 0, 0, 10);
+    -fx-padding: 20;
+}
+
+/* Modern Filter Styles (Replaces Pill) */
+.filter-label {
+    -fx-text-fill: #D4AF37;
+    -fx-font-weight: bold;
+    -fx-font-size: 16px;
+    -fx-font-family: "Montserrat", sans-serif;
+}
+
+.filter-icon-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e74c3c;
+    -fx-cursor: hand;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent;
+}
+
+.filter-icon-button:hover {
+    -fx-effect: dropshadow(three-pass-box, rgba(231, 76, 60, 0.5), 10, 0, 0, 0);
+    -fx-scale-x: 1.1;
+    -fx-scale-y: 1.1;
+}
+
+/* Deprecated Pill Styles (Commented/Removed to avoid confusion) */
+/* .filter-pill { ... } */
+
+/* Seamless DatePicker inside Filter Area */
+.date-picker {
+    -fx-font-size: 14px;
+}
+
+
+/* Global Table Styling (Imported from WaitingList) */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
+    -fx-border-width: 1px;
+    -fx-font-family: "Montserrat", sans-serif;
+    -fx-font-size: 16px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #D4AF37;
+    -fx-border-width: 0 0 2px 0;
+}
+
+.table-view .column-header,
+.table-view .column-header .filler {
+    -fx-background-color: #1e1e1e;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #D4AF37;
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #ecf0f1;
+    -fx-alignment: CENTER-LEFT;
+}
+
+.table-row-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
+}
+
+.table-row-cell:even {
+    -fx-background-color: transparent;
+}
+
+.table-row-cell:filled:hover {
+    -fx-background-color: rgba(212, 175, 55, 0.1);
+}
+
+
+/* Content Card (For Bill, Forms, etc.) */
+.content-card {
+    -fx-background-color: rgba(30, 30, 30, 0.6);
+    -fx-background-radius: 15;
+    -fx-border-radius: 15;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.5), 20, 0, 0, 5);
+    -fx-padding: 20;
+}
+
+.bill-label {
+    -fx-text-fill: #bdc3c7;
+    -fx-font-size: 15px;
+    -fx-font-family: "Montserrat", sans-serif;
+}
+
+.bill-value {
+    -fx-text-fill: #E1E1E1;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Montserrat", sans-serif;
+}
+
+.bill-total-label {
+    -fx-text-fill: #D4AF37;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-font-family: "Playfair Display", serif;
+}
+
+.bill-total-value {
+    -fx-text-fill: #F4C430;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.4), 10, 0, 0, 0);
+    -fx-font-family: "Montserrat", sans-serif;
+}
+
+.bill-discount {
+    -fx-text-fill: #27ae60;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+/* List View Cells in Bill */
+.list-cell {
+    -fx-text-fill: #E1E1E1;
+    -fx-font-size: 14px;
+    -fx-background-color: transparent;
+    -fx-padding: 5;
+}
+
+.list-cell:even {
+    -fx-background-color: rgba(255, 255, 255, 0.03);
 }

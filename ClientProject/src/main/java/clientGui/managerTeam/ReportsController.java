@@ -116,6 +116,18 @@ public class ReportsController extends MainNavigator implements MessageListener<
 
         barChartTimes.getData().clear();
 
+        // Visual Feedback: If all maps are empty or null
+        boolean noData = (arr == null || arr.isEmpty()) && 
+                         (dep == null || dep.isEmpty()) && 
+                         (canc == null || canc.isEmpty());
+
+        if (noData) {
+            barChartTimes.setTitle("No details available for this period");
+            return;
+        } else {
+            barChartTimes.setTitle("Activity Times"); // Restore title
+        }
+
         XYChart.Series<String, Number> s1 = new XYChart.Series<>();
         s1.setName("Arrivals");
 
@@ -126,6 +138,7 @@ public class ReportsController extends MainNavigator implements MessageListener<
         s3.setName("Late/No-Show");
 
         for (int i = 0; i < 24; i++) {
+            // ... (rest of loop)
             String h = String.format("%02d:00", i);
             int val1 = arr != null ? arr.getOrDefault(i, 0) : 0;
             int val2 = dep != null ? dep.getOrDefault(i, 0) : 0;

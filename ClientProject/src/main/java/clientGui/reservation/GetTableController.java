@@ -117,14 +117,14 @@ public class GetTableController extends MainNavigator implements MessageListener
 		Platform.runLater(() -> {
 			try {
 				switch (res.getResource()) {
-				case TABLE:
-					handleTableResponse(res);
-					break;
-				case ORDER: // Handle the list of orders coming back
-					handleOrderResponse(res);
-					break;
-				default:
-					break;
+					case TABLE:
+						handleTableResponse(res);
+						break;
+					case ORDER: // Handle the list of orders coming back
+						handleOrderResponse(res);
+						break;
+					default:
+						break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -156,6 +156,7 @@ public class GetTableController extends MainNavigator implements MessageListener
 			}
 		}
 	}
+
 	private void handleTableResponse(Response res) {
 		if (res.getAction() == ActionType.GET) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
@@ -178,15 +179,19 @@ public class GetTableController extends MainNavigator implements MessageListener
 		btn.setPrefWidth(280);
 		btn.setPrefHeight(60);
 		btn.setStyle(
-				"-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-alignment: LEFT;");
-		btn.getStyleClass().add("order-card-button"); 
+				"-fx-background-color: #383838; -fx-text-fill: white; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-alignment: LEFT; -fx-font-size: 16px;");
+		btn.getStyleClass().add("order-card-button");
+
+		btn.setOnMouseEntered(evt -> btn.setStyle(
+				"-fx-background-color: #555; -fx-text-fill: white; -fx-border-color: #F4C430; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-alignment: LEFT; -fx-font-size: 16px;"));
+		btn.setOnMouseExited(evt -> btn.setStyle(
+				"-fx-background-color: #383838; -fx-text-fill: white; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-alignment: LEFT; -fx-font-size: 16px;"));
 
 		btn.setOnAction(e -> {
-			processCodeCheck(String.valueOf(o.getConfirmationCode())); 
+			processCodeCheck(String.valueOf(o.getConfirmationCode()));
 		});
 
 		return btn;
 	}
 
-	
 }

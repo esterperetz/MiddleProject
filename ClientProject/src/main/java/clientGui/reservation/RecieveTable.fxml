@@ -39,7 +39,7 @@
          </VBox.margin>
       </Separator>
 
-      <Label fx:id="lblYourOrders" style="-fx-font-size: 16px; -fx-text-fill: #2c3e50; -fx-font-weight: bold;" text="Tap to select your reservation:" />
+      <Label fx:id="lblYourOrders" style="-fx-font-size: 18px; -fx-text-fill: #D4AF37; -fx-font-weight: bold;" text="Tap to select your reservation:" />
 
       <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="250.0" style="-fx-background-color: transparent; -fx-background: transparent;">
          <content>

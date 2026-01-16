@@ -119,33 +119,26 @@
     -fx-text-fill: #D4AF37;
     -fx-font-family: "Playfair Display", "Georgia", serif;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
+    -fx-font-size: 20px;
+    /* Increased from 14px */
     -fx-alignment: CENTER_LEFT;
 }
 
 .table-row-cell {
     -fx-background-color: transparent;
     -fx-border-width: 0;
-    -fx-cell-size: 40px;
-    /* Fixed Row Height */
+    -fx-cell-size: 50px;
+    /* Increased from 40px */
 }
 
-.table-row-cell:odd {
-    -fx-background-color: rgba(45, 45, 46, 0.5);
-    /* Alternating Row #2D2D2E */
-}
-
-.table-row-cell:selected {
-    -fx-background-color: rgba(212, 175, 55, 0.15);
-    /* Low opacity gold selection */
-    -fx-border-color: transparent transparent rgba(212, 175, 55, 0.3) transparent;
-}
+/* ... existing styles ... */
 
 .table-view .table-cell {
     -fx-text-fill: #E1E1E1;
     -fx-alignment: CENTER_LEFT;
     -fx-border-width: 0;
-    -fx-font-size: 14px;
+    -fx-font-size: 18px;
+    /* Increased from 14px */
 }
 
 /* Custom ScrollBar - Minimalist */

@@ -30,10 +30,8 @@
                           styleClass="menu-button" text="← Back" />
 
                   <VBox alignment="CENTER_LEFT">
-                      <Label text="SUBSCRIBER MANAGEMENT" styleClass="title-label">
-                          <font><Font name="System Bold" size="24.0" /></font>
-                      </Label>
-                      <Label text="Click a subscriber to view history" styleClass="subtitle-label" textFill="#7f8c8d"/>
+                      <Label text="SUBSCRIBER MANAGEMENT" styleClass="title-label" />
+                      <Label text="Click a subscriber to view history" styleClass="subtitle-label" />
                   </VBox>
                </children>
             </HBox>
@@ -42,7 +40,7 @@
 
             <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefHeight="500.0" style="-fx-background-color: transparent; -fx-background: transparent;">
                  <content>
-                    <VBox fx:id="subscribersContainer" alignment="TOP_CENTER" spacing="10.0">
+                    <VBox fx:id="subscribersContainer" alignment="TOP_CENTER" spacing="10.0" styleClass="glass-pane">
                        <padding>
                           <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                        </padding>

@@ -10,7 +10,7 @@
     -fx-background-color: transparent;
 }
 
-.scroll-pane > .viewport {
+.scroll-pane>.viewport {
     -fx-background-color: transparent;
 }
 
@@ -43,22 +43,42 @@
 }
 
 /* Menu/Action Buttons */
+/* Menu/Action Buttons - Premium Filter Style */
 .menu-button,
-.action-icon-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #C5A059;
-    -fx-border-color: #C5A059;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
-    -fx-padding: 8 16;
+.action-icon-button,
+.filter-button {
+    -fx-background-color: linear-gradient(to bottom, #1A1A1A, #2D2D2D);
+    -fx-text-fill: white;
+    -fx-border-color: #D4AF37;
+    -fx-border-width: 1px;
+    -fx-border-radius: 15;
+    -fx-background-radius: 15;
+    -fx-padding: 8 20;
     -fx-cursor: hand;
     -fx-font-weight: bold;
+    -fx-font-family: "Montserrat", sans-serif;
+    -fx-letter-spacing: 1px;
+    /* -fx-text-transform: uppercase; (Not supported in JavaFX CSS directly, handle in FXML or Code) */
 }
 
 .menu-button:hover,
-.action-icon-button:hover {
-    -fx-background-color: #C5A059;
-    -fx-text-fill: #1A1A1A;
+.action-icon-button:hover,
+.filter-button:hover {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.5), 10, 0, 0, 0);
+    /* Outer Glow */
+    -fx-background-color: linear-gradient(to bottom, #2D2D2D, #3D3D3D);
+    -fx-text-fill: #F4C430;
+}
+
+.menu-button:pressed,
+.action-icon-button:pressed,
+.filter-button:pressed {
+    -fx-background-color: #151515;
+    -fx-effect: none;
+    -fx-scale-x: 0.98;
+    -fx-scale-y: 0.98;
 }
 
 /* Charts Styling */
