@@ -287,7 +287,6 @@ public class OrderController {
 
 			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
 			if (isAvailable) {
-				///////////////////////////////////////////////////////////////////////////
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
 						Response.ResponseStatus.SUCCESS, "Table is available.", timeSlots));
 				return true;

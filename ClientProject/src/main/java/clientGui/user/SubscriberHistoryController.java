@@ -116,14 +116,13 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
 
 	@FXML
 	void goBackBtn(ActionEvent event) {
-		if (employee.getRole() != null) {
+		if (employee != null) {
 			SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event, clientUi);
 			if (controller != null) {
 				controller.initData(employee, clientUi, employee.getRole());
 			} else
 				System.out.println("Error in loading Manager options");
 		} else {
-
 			SubscriberOptionController subscriberOptionController = super.loadScreen("user/SubscriberOption", event,
 					clientUi);
 			if (subscriberOptionController != null)
