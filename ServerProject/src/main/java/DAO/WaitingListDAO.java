@@ -79,7 +79,6 @@ public class WaitingListDAO {
     }
 
     public WaitingList getByWaitingId(int waitingId) throws SQLException {
-        // הוספנו JOIN ו-Alias גם כאן
         String sql = "SELECT wl.*, o.order_date AS res_date " +
                      "FROM waiting_list wl " +
                      "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
