@@ -318,7 +318,11 @@ public class OrderController {
 
 			boolean isFull = !isSpaceAvailable(specificTimeToCheck, guests);
 
-			results.add(new TimeSlotStatus(slotStr, isFull));
+			// Calculate capacity for UI logic
+			int totalCapacity = tabledao.countSuitableTables(guests);
+			int currentDiners = orderdao.countActiveOrdersInTimeRange(specificTimeToCheck, guests);
+
+			results.add(new TimeSlotStatus(slotStr, isFull, currentDiners, totalCapacity));
 		}
 
 		return results;
@@ -447,7 +451,7 @@ public class OrderController {
 
 			return;
 		}
-		
+
 		boolean updateTable = tabledao.updateTableStatus(order.getTableNumber(), 0);
 		if (!updateTable) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
