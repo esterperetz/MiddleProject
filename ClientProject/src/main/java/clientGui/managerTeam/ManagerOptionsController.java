@@ -78,6 +78,20 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         clip.widthProperty().bind(tickerPane.widthProperty());
         clip.heightProperty().bind(tickerPane.heightProperty());
         tickerPane.setClip(clip);
+        cbIsSpecial.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                cbIsClosed.setSelected(false);
+            }
+        });
+
+        cbIsClosed.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue) {
+                cbIsSpecial.setSelected(false); 
+                
+                txtManageOpen.clear();
+                txtManageClose.clear();
+            }
+        });
     }
     
     private void initTicker() {
@@ -116,12 +130,10 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         this.clientUi = clientUi;
         this.emp = emp;
         employeeLogic = new EmployeeLogic(this.clientUi);
-//        setButtonVisible(btnViewSubscribers, true);
         if (isManager == Employee.Role.MANAGER) {
             this.isManager = Employee.Role.MANAGER;
             this.isManagerFlag = true;
             
-            // --- Manager Permissions ---
             setButtonVisible(btnViewReports, true);
             setButtonVisible(btnSignUp, true);
             setButtonVisible(btnMonthlyReports, true);
@@ -161,7 +173,6 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     // --- Navigation Methods ---
     @FXML
     void goToSubscriberManagementBtn(ActionEvent event) {
-        // We load the new controller (See Step 4)
         SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event, clientUi);
         if (controller != null) {
             controller.initData(emp, clientUi, isManager);
@@ -238,10 +249,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             setStatus("Please select a date first.", true);
             return;
         }
-        if (!isClosed && (openTimeStr == null || openTimeStr.trim().isEmpty() ||
-                          closeTimeStr == null || closeTimeStr.trim().isEmpty())) {
-            setStatus("Please enter both opening and closing times.", true);
-            return;
+
+        if (!isClosed) { 
+            if (openTimeStr == null || openTimeStr.trim().isEmpty() || 
+                closeTimeStr == null || closeTimeStr.trim().isEmpty()) {
+                
+                setStatus("Cannot update: Time fields are empty!", true);
+                return; 
+            }
         }
 
         try {
@@ -252,6 +267,12 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
                 LocalTime localOpen = LocalTime.parse(openTimeStr, formatter);
                 LocalTime localClose = LocalTime.parse(closeTimeStr, formatter);
+                
+                if (localClose.isBefore(localOpen)) {
+                    setStatus("Closing time cannot be before opening time.", true);
+                    return;
+                }
+                
                 sqlOpenTime = Time.valueOf(localOpen);
                 sqlCloseTime = Time.valueOf(localClose);
             }
@@ -264,15 +285,18 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
             java.sql.Date sqlDate = java.sql.Date.valueOf(date);
             OpeningHours oh;
+            
             if (!isSpecial) {
                 oh = new OpeningHours(sqlDate, null, sqlOpenTime, sqlCloseTime, isClosed);
             } else {
                 oh = new OpeningHours(sqlDate, sqlDate, sqlOpenTime, sqlCloseTime, isClosed);
             }
+            
             employeeLogic.createOpeningHours(oh);
+
         } catch (DateTimeParseException e) {
             e.printStackTrace();
-            setStatus("Invalid time format! Use HH:mm (e.g., 08:00 or 8:00)", true);
+            setStatus("Invalid time format! Use HH:mm (e.g., 08:00)", true);
         } catch (Exception e) {
             e.printStackTrace();
             setStatus("An error occurred during update.", true);
