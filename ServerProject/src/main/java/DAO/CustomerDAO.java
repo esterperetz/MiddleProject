@@ -110,9 +110,30 @@ public class CustomerDAO {
 		return null;
 	}
 
+	public Customer getCustomerByEmailSUBSCRIBER(String customerMail) {
+		String query = "SELECT * FROM Customer WHERE email = ?  customer_type = 'SUBSCRIBER'";
+		Connection con = null;
+		try {
+			con = DBConnection.getInstance().getConnection();
+			try (PreparedStatement ps = con.prepareStatement(query)) {
+				ps.setString(1, customerMail);
+				ResultSet rs = ps.executeQuery();
+
+				if (rs.next()) {
+					return createCustomerFromResultSet(rs);
+				}
+			}
+		} catch (SQLException e) {
+			System.out.println("Error fetching subscriber by email: " + e.getMessage());
+			e.printStackTrace();
+		} finally {
+			DBConnection.getInstance().releaseConnection(con);
+		}
+		return null;
+	}
 	// Fetches a subscriber by their username
 	public Customer getCustomerByEmail(String customerMail) {
-		String query = "SELECT * FROM Customer WHERE email = ? AND customer_type = 'SUBSCRIBER'";
+		String query = "SELECT * FROM Customer WHERE email = ?";
 		Connection con = null;
 		try {
 			con = DBConnection.getInstance().getConnection();

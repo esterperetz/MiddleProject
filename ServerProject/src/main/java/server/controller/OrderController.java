@@ -223,16 +223,15 @@ public class OrderController {
 				} else {
 					dataToUse = order.getCustomer();
 				}
-				finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
+				finalCustomer = customerDao.getCustomerByEmailSUBSCRIBER(dataToUse.getEmail());
 
 				if (finalCustomer == null) {
 					dataToUse.setType(CustomerType.REGULAR);
 					customerDao.createCustomer(dataToUse);
-
 					finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 				}
 			}
-
+			System.out.println(finalCustomer);
 			if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
 				throw new SQLException("Failed to resolve customer ID.");
 			}
@@ -448,6 +447,7 @@ public class OrderController {
 
 			return;
 		}
+		
 		boolean updateTable = tabledao.updateTableStatus(order.getTableNumber(), 0);
 		if (!updateTable) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
