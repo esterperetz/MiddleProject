@@ -36,23 +36,38 @@ import javafx.util.converter.IntegerStringConverter;
 
 public class OrderUi_controller extends MainNavigator implements MessageListener<Object> {
 
-    @FXML private TableView<Order> orderTable;
-    @FXML private DatePicker filterDatePicker;
-    @FXML private ComboBox<String> cmbStatusFilter;
+    @FXML
+    private TableView<Order> orderTable;
+    @FXML
+    private DatePicker filterDatePicker;
+    @FXML
+    private ComboBox<String> cmbStatusFilter;
 
     // --- Table Columns ---
-    @FXML private TableColumn<Order, Integer> Order_numberColumn;
-    @FXML private TableColumn<Order, String> clientNameColumn;
-    @FXML private TableColumn<Order, String> clientPhoneColumn;
-    @FXML private TableColumn<Order, String> clientEmailColumn;
-    @FXML private TableColumn<Order, Integer> customer_idColumn;
-    @FXML private TableColumn<Order, Date> DateColumn;
-    @FXML private TableColumn<Order, Date> arrivalTimeColumn;
-    @FXML private TableColumn<Order, Integer> itemColumn;
-    @FXML private TableColumn<Order, Double> totalPriceColumn;
-    @FXML private TableColumn<Order, Order.OrderStatus> statusColumn;
-    @FXML private TableColumn<Order, Integer> confirmation_codeColumn;
-    @FXML private TableColumn<Order, Date> date_of_placing_orderColumn;
+    @FXML
+    private TableColumn<Order, Integer> Order_numberColumn;
+    @FXML
+    private TableColumn<Order, String> clientNameColumn;
+    @FXML
+    private TableColumn<Order, String> clientPhoneColumn;
+    @FXML
+    private TableColumn<Order, String> clientEmailColumn;
+    @FXML
+    private TableColumn<Order, Integer> customer_idColumn;
+    @FXML
+    private TableColumn<Order, Date> DateColumn;
+    @FXML
+    private TableColumn<Order, Date> arrivalTimeColumn;
+    @FXML
+    private TableColumn<Order, Integer> itemColumn;
+    @FXML
+    private TableColumn<Order, Double> totalPriceColumn;
+    @FXML
+    private TableColumn<Order, Order.OrderStatus> statusColumn;
+    @FXML
+    private TableColumn<Order, Integer> confirmation_codeColumn;
+    @FXML
+    private TableColumn<Order, Date> date_of_placing_orderColumn;
 
     private FilteredList<Order> filteredData;
     private ObservableList<Order> orderData = FXCollections.observableArrayList();
@@ -61,31 +76,54 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     private Employee.Role isManager;
     private Employee emp;
 
-    public OrderUi_controller() {}
+    public OrderUi_controller() {
+    }
+
+    @FXML
+    private javafx.scene.layout.AnchorPane rootPane;
 
     @FXML
     private void initialize() {
+        // Fade In Animation
+        if (rootPane != null) {
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300),
+                    rootPane);
+            fade.setFromValue(0.0);
+            fade.setToValue(1.0);
+            fade.play();
+        }
+
         // Setup Columns
-        Order_numberColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderNumber()));
-        clientNameColumn.setCellValueFactory(cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getName()));
-        clientPhoneColumn.setCellValueFactory(cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getPhoneNumber()));
-        clientEmailColumn.setCellValueFactory(cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getEmail()));
-        customer_idColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomer().getCustomerId()));
+        Order_numberColumn
+                .setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderNumber()));
+        clientNameColumn.setCellValueFactory(
+                cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getName()));
+        clientPhoneColumn.setCellValueFactory(
+                cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getPhoneNumber()));
+        clientEmailColumn.setCellValueFactory(
+                cellData -> new SimpleStringProperty((cellData.getValue()).getCustomer().getEmail()));
+        customer_idColumn.setCellValueFactory(
+                cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getCustomer().getCustomerId()));
         DateColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderDate()));
-        arrivalTimeColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getArrivalTime()));
-        itemColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getNumberOfGuests()));
-        totalPriceColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getTotalPrice()));
-        statusColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderStatus()));
-        confirmation_codeColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getConfirmationCode()));
-        date_of_placing_orderColumn.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getDateOfPlacingOrder()));
+        arrivalTimeColumn
+                .setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getArrivalTime()));
+        itemColumn.setCellValueFactory(
+                cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getNumberOfGuests()));
+        totalPriceColumn
+                .setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getTotalPrice()));
+        statusColumn
+                .setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getOrderStatus()));
+        confirmation_codeColumn.setCellValueFactory(
+                cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getConfirmationCode()));
+        date_of_placing_orderColumn.setCellValueFactory(
+                cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getDateOfPlacingOrder()));
 
         setupEditableColumns();
 
         // Setup Status ComboBox
         if (cmbStatusFilter != null) {
             cmbStatusFilter.setItems(FXCollections.observableArrayList(
-                "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED"
-            ));
+                    "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED"));
             cmbStatusFilter.getSelectionModel().select("ALL");
         }
 
@@ -113,8 +151,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                         orderDate = ((java.sql.Date) order.getOrderDate()).toLocalDate();
                     } else {
                         orderDate = order.getOrderDate().toInstant()
-                                      .atZone(ZoneId.systemDefault())
-                                      .toLocalDate();
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate();
                     }
                     LocalDate selectedDate = filterDatePicker.getValue();
                     LocalDate today = LocalDate.now();
@@ -141,8 +179,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
     @FXML
     private void handleClearFilter(ActionEvent event) {
-        if (filterDatePicker != null) filterDatePicker.setValue(null);
-        if (cmbStatusFilter != null) cmbStatusFilter.getSelectionModel().select("ALL");
+        if (filterDatePicker != null)
+            filterDatePicker.setValue(null);
+        if (cmbStatusFilter != null)
+            cmbStatusFilter.getSelectionModel().select("ALL");
     }
 
     public void initData(Employee emp, ClientUi clientUi, Role isManager) {
@@ -236,7 +276,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
                     // Enum Status
                     String statusStr = (String) row.get("order_status");
-                    if (statusStr != null) o.setOrderStatus(Order.OrderStatus.valueOf(statusStr));
+                    if (statusStr != null)
+                        o.setOrderStatus(Order.OrderStatus.valueOf(statusStr));
 
                     // Dates
                     if (row.get("order_date") != null)
@@ -246,7 +287,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                         o.setArrivalTime(new java.util.Date(((java.sql.Timestamp) row.get("arrival_time")).getTime()));
 
                     if (row.get("date_of_placing_order") != null)
-                        o.setDateOfPlacingOrder(new java.util.Date(((java.sql.Timestamp) row.get("date_of_placing_order")).getTime()));
+                        o.setDateOfPlacingOrder(
+                                new java.util.Date(((java.sql.Timestamp) row.get("date_of_placing_order")).getTime()));
 
                     // Customer Details
                     o.getCustomer().setName((String) row.get("customer_name"));
@@ -328,7 +370,8 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
             }
         } catch (Exception e) {
             e.printStackTrace();
-            Alarm.showAlertWithException("Navigation Error", "Could not load the Update Order screen.", Alert.AlertType.ERROR, e);
+            Alarm.showAlertWithException("Navigation Error", "Could not load the Update Order screen.",
+                    Alert.AlertType.ERROR, e);
         }
     }
 

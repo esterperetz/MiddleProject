@@ -4,6 +4,8 @@
     -fx-background-color: #1A1A1A;
     /* Deep Charcoal/Ebony */
     -fx-font-family: "Montserrat", "Segoe UI", sans-serif;
+    -fx-font-size: 16px;
+    -fx-text-fill: #E1E1E1;
 }
 
 .main-background {
@@ -15,6 +17,7 @@
 /* Semi-transparent dark overlay for readability */
 .overlay-pane {
     -fx-background-color: rgba(26, 26, 26, 0.85);
+    /* Dark Overlay */
 }
 
 .scroll-pane {
@@ -33,11 +36,12 @@
     -fx-font-family: "Playfair Display", "Times New Roman", serif;
     -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 2);
     -fx-padding: 0 0 20 0;
+    -fx-font-weight: bold;
 }
 
 .section-header {
     -fx-text-fill: #C5A059;
-    -fx-font-size: 22px;
+    -fx-font-size: 24px;
     -fx-font-family: "Playfair Display", serif;
     -fx-border-color: transparent transparent #C5A059 transparent;
     -fx-border-width: 0 0 1px 0;
@@ -48,13 +52,13 @@
 .label {
     -fx-text-fill: #ecf0f1;
     /* Off-white for readability */
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
 }
 
 /* Glassmorphism Card Pane with Elevation */
 .card-pane {
-    -fx-background-color: rgba(35, 35, 35, 0.6);
-    /* Semi-transparent dark grey */
+    -fx-background-color: rgba(37, 37, 38, 0.7);
+    /* Transparent Dark Slate */
     -fx-background-radius: 8;
     -fx-border-color: rgba(197, 160, 89, 0.2);
     /* Subtle Gold border */
@@ -67,21 +71,28 @@
 /* Inputs: Dark themed with bottom border */
 .text-field,
 .time-field,
-.time-field-small {
+.time-field-small,
+.date-picker .text-field,
+.combo-box {
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-text-fill: white;
     -fx-prompt-text-fill: derive(white, -50%);
     -fx-background-radius: 4 4 0 0;
     -fx-border-color: transparent transparent #555 transparent;
     -fx-border-width: 0 0 1px 0;
-    -fx-pref-height: 35;
+    -fx-pref-height: 40;
+    -fx-font-size: 16px;
+    -fx-padding: 10;
 }
 
 .text-field:focused,
-.time-field:focused {
+.time-field:focused,
+.date-picker .text-field:focused,
+.combo-box:focused {
     -fx-background-color: rgba(255, 255, 255, 0.08);
-    -fx-border-color: transparent transparent #C5A059 transparent;
-    /* Gold underline on focus */
+    -fx-border-color: transparent transparent #F4C430 transparent;
+    /* Brighter Gold Glow */
+    -fx-effect: dropshadow(three-pass-box, rgba(244, 196, 48, 0.5), 10, 0, 0, 0);
 }
 
 /* Buttons: Elegant, outlined, hover effects */
@@ -89,88 +100,93 @@
 .action-button,
 .menu-button,
 .dashboard-tile-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #C5A059;
+    -fx-background-color: linear-gradient(to bottom, #D4AF37, #C5A059);
+    -fx-text-fill: #1A1A1B;
     -fx-font-family: "Montserrat", sans-serif;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-border-color: #C5A059;
-    -fx-border-radius: 4;
-    -fx-background-radius: 4;
+    -fx-font-size: 15px;
+    -fx-border-color: #F4C430;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
     -fx-cursor: hand;
     -fx-padding: 10 20;
-    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.2), 5, 0, 0, 1);
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 10, 0, 0, 4);
+    /* -fx-text-transform: uppercase; Manual in FXML */
 }
 
 .button:hover,
 .action-button:hover,
 .menu-button:hover,
 .dashboard-tile-button:hover {
-    -fx-background-color: #C5A059;
-    -fx-text-fill: #1A1A1A;
-    /* Ebony text on Gold background */
-    -fx-effect: dropshadow(three-pass-box, rgba(197, 160, 89, 0.4), 15, 0, 0, 2);
+    -fx-background-color: linear-gradient(to bottom, #F4C430, #D4AF37);
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+    -fx-text-fill: #1A1A1B;
+    -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.6), 15, 0, 0, 0);
+    /* Glow */
 }
 
-.button:pressed {
-    -fx-background-color: #a38243;
-    -fx-border-color: #a38243;
-}
-
-/* Tables: Modern, spacious, transparent */
-.table-view {
+/* Secondary Actions */
+.back-button {
     -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-text-fill: #bdc3c7;
+    -fx-border-color: #7f8c8d;
+    -fx-border-width: 1;
 }
 
-.table-view .column-header-background {
-    -fx-background-color: transparent;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: rgba(255, 255, 255, 0.1);
+.back-button:hover {
+    -fx-text-fill: #D4AF37;
+    -fx-border-color: #D4AF37;
+    -fx-background-color: rgba(255, 255, 255, 0.1);
 }
 
-.table-view .column-header .label {
-    -fx-text-fill: #C5A059;
-    -fx-font-family: "Playfair Display", serif;
+/* Ticker Styles */
+.ticker-pane {
+    -fx-background-color: rgba(30, 30, 30, 0.85);
+    -fx-background-radius: 8;
+    -fx-border-color: rgba(212, 175, 55, 0.3);
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.4), 10, 0, 0, 2);
+    -fx-padding: 10;
+}
+
+.ticker-label {
+    -fx-font-family: "JetBrains Mono", "Consolas", monospace;
     -fx-font-weight: bold;
-    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 14px;
+    -fx-text-fill: #D4AF37;
+    -fx-effect: dropshadow(gaussian, rgba(212, 175, 55, 0.4), 5, 0.5, 0, 0);
 }
 
-.table-view .table-cell {
-    -fx-text-fill: #ecf0f1;
-    -fx-alignment: CENTER_LEFT;
-    -fx-border-color: transparent;
-    -fx-padding: 10 5;
-    /* More breathing room */
-}
-
-.table-row-cell {
+/* ListView - White Block Fix */
+.list-view,
+.list-cell {
     -fx-background-color: transparent;
-    -fx-border-width: 0 0 1px 0;
-    -fx-border-color: rgba(255, 255, 255, 0.05);
-    /* Subtle smooth dividers */
-    -fx-pref-height: 40px;
-    /* Increased row height */
+    -fx-text-fill: #E1E1E1;
 }
 
-.table-row-cell:odd {
+.list-cell:filled:selected:focused,
+.list-cell:filled:selected {
+    -fx-background-color: rgba(197, 160, 89, 0.2);
+    -fx-text-fill: white;
+}
+
+.list-cell:even {
     -fx-background-color: rgba(255, 255, 255, 0.02);
 }
 
-.table-row-cell:selected {
-    -fx-background-color: rgba(197, 160, 89, 0.15);
+/* CheckBox Styles */
+.check-box .box {
+    -fx-background-color: #252526;
+    -fx-border-color: #555;
+    -fx-border-radius: 3;
 }
 
-/* Success/Status Labels */
-.status-label {
-    -fx-text-fill: #27ae60;
-    /* Muted Green */
-    -fx-font-weight: bold;
+.check-box:selected .mark {
+    -fx-background-color: #D4AF37;
 }
 
-.text-only-button {
-    -fx-background-color: transparent;
-    -fx-text-fill: #C5A059;
-    -fx-underline: true;
-    -fx-border-width: 0;
+.check-box:selected .box {
+    -fx-background-color: #252526;
+    -fx-border-color: #D4AF37;
 }

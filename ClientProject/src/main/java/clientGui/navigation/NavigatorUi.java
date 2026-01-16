@@ -10,10 +10,22 @@ public class NavigatorUi extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		//MainNavigator main_navigator = new MainNavigator();
+		// Load Luxury Fonts
+		try {
+			// Using getResourceAsStream for safety. Only if files exist.
+			javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/clientGui/fonts/PlayfairDisplay-Bold.ttf"),
+					36);
+			javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/clientGui/fonts/Montserrat-Regular.ttf"),
+					16);
+			javafx.scene.text.Font.loadFont(getClass().getResourceAsStream("/clientGui/fonts/Montserrat-Bold.ttf"), 16);
+		} catch (Exception e) {
+			System.err.println("Warning: Luxury fonts not found in /clientGui/fonts/. Using system defaults.");
+		}
 
-		//main_navigator.setStage(primaryStage);
-//    	String fxmlPath = "/clientGui/navigation/SelectionScreen.fxml";
+		// MainNavigator main_navigator = new MainNavigator();
+
+		// main_navigator.setStage(primaryStage);
+		// String fxmlPath = "/clientGui/navigation/SelectionScreen.fxml";
 		String fxmlPath = "/clientGui/logInServer.fxml";
 		java.net.URL location = getClass().getResource(fxmlPath);
 

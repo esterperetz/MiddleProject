@@ -6,22 +6,30 @@
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="clientGui.LoginController"
-            prefWidth="400.0" prefHeight="200.0">
+            prefWidth="450.0" prefHeight="300.0"
+            styleClass="main-background" stylesheets="@reservation/orderUi.css">
 
     <children>
-        <Label layoutX="40.0" layoutY="40.0" text="Server IP:"/>
+        <VBox alignment="CENTER" spacing="20.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <children>
+                <Label text="Server Connection" styleClass="header-label" style="-fx-font-size: 24px;"/>
+                
+                <VBox alignment="CENTER" spacing="10.0" styleClass="glass-pane" maxWidth="350.0">
+                     <children>
+                        <Label text="Server IP Address:" style="-fx-text-fill: #E1E1E1; -fx-font-size: 14px;"/>
+                        <TextField fx:id="txtIp"
+                                   promptText="e.g. 127.0.0.1"
+                                   styleClass="input-field"
+                                   prefWidth="250.0"/>
+                        <Button text="CONNECT"
+                                onAction="#onConnect"
+                                styleClass="action-button"
+                                prefWidth="150.0"/>
+                     </children>
+                </VBox>
 
-        <TextField fx:id="txtIp"
-                   layoutX="120.0" layoutY="36.0"
-                   prefWidth="200.0"
-                   promptText="e.g. 127.0.0.1"/>
-
-        <Button text="Connect"
-                layoutX="120.0" layoutY="80.0"
-                onAction="#onConnect"/>
-
-        <Label fx:id="lblStatus"
-               layoutX="40.0" layoutY="130.0"
-               prefWidth="300.0"/>
+                <Label fx:id="lblStatus" style="-fx-text-fill: #e74c3c; -fx-font-weight: bold;"/>
+            </children>
+        </VBox>
     </children>
 </AnchorPane>

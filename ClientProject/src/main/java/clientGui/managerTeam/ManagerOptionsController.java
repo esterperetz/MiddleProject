@@ -35,44 +35,73 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 
 public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
- 
+
     // --- Internal Fields ---
     private TranslateTransition currentTransition;
     private Employee.Role isManager;
     private boolean isManagerFlag;
     private ObservableList<String> specialDatesModel;
     private Employee emp;
-    @FXML private Pane tickerPane;
-    @FXML private Label lblTicker;
-    @FXML private javafx.scene.text.TextFlow tfTicker;
+    @FXML
+    private Pane tickerPane;
+    @FXML
+    private Label lblTicker;
+    @FXML
+    private javafx.scene.text.TextFlow tfTicker;
 
-    @FXML private Button btnViewReports;
-    @FXML private Button btnMonthlyReports;
-    @FXML private Button btnViewSubscribers;
-    @FXML private Button btnManageTables; 
-    
-    @FXML private Label lblDashboardTitle;
-    @FXML private Label lblDashboardSubtitle;
-    @FXML private Button btnSignUp;
+    @FXML
+    private Button btnViewReports;
+    @FXML
+    private Button btnMonthlyReports;
+    @FXML
+    private Button btnViewSubscribers;
+    @FXML
+    private Button btnManageTables;
+
+    @FXML
+    private Label lblDashboardTitle;
+    @FXML
+    private Label lblDashboardSubtitle;
+    @FXML
+    private Button btnSignUp;
 
     // --- Schedule Management UI (Right Side) ---
-    @FXML private DatePicker dpManageDate;     
-    @FXML private TextField txtManageOpen;      
-    @FXML private TextField txtManageClose;     
-    @FXML private CheckBox cbIsSpecial;         
-    @FXML private ListView<String> listSpecialDates; 
-    @FXML private Label lblHoursStatus;     
-    @FXML private CheckBox cbIsClosed;
-    
+    @FXML
+    private DatePicker dpManageDate;
+    @FXML
+    private TextField txtManageOpen;
+    @FXML
+    private TextField txtManageClose;
+    @FXML
+    private CheckBox cbIsSpecial;
+    @FXML
+    private ListView<String> listSpecialDates;
+    @FXML
+    private Label lblHoursStatus;
+    @FXML
+    private CheckBox cbIsClosed;
+
     private EmployeeLogic employeeLogic;
     private String specialDate;
     private String listEntry;
 
+    @FXML
+    private ScrollPane rootPane;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Fade In Animation
+        if (rootPane != null) {
+            javafx.animation.FadeTransition fade = new javafx.animation.FadeTransition(javafx.util.Duration.millis(300),
+                    rootPane);
+            fade.setFromValue(0.0);
+            fade.setToValue(1.0);
+            fade.play();
+        }
+
         specialDatesModel = FXCollections.observableArrayList();
         listSpecialDates.setItems(specialDatesModel);
-        
+
         // Ticker mask setup
         javafx.scene.shape.Rectangle clip = new javafx.scene.shape.Rectangle();
         clip.widthProperty().bind(tickerPane.widthProperty());
@@ -86,16 +115,16 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
         cbIsClosed.selectedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue) {
-                cbIsSpecial.setSelected(false); 
-                
+                cbIsSpecial.setSelected(false);
+
                 txtManageOpen.clear();
                 txtManageClose.clear();
             }
         });
     }
-    
+
     private void initTicker() {
-       employeeLogic.getAllOpeningHours();
+        employeeLogic.getAllOpeningHours();
     }
 
     private void startAnimation(double paneWidth) {
@@ -105,7 +134,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         tfTicker.setTranslateX(paneWidth);
         tfTicker.applyCss();
         tfTicker.layout();
-        double contentWidth = tfTicker.prefWidth(-1); 
+        double contentWidth = tfTicker.prefWidth(-1);
         if (contentWidth <= 0) {
             contentWidth = tfTicker.getChildren().stream()
                     .mapToDouble(node -> node.getLayoutBounds().getWidth())
@@ -115,7 +144,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         currentTransition = new TranslateTransition();
         currentTransition.setNode(tfTicker);
         double totalDistance = paneWidth + contentWidth;
-        double speedPixelsPerSecond = 80.0; 
+        double speedPixelsPerSecond = 80.0;
         double durationSeconds = totalDistance / speedPixelsPerSecond;
 
         currentTransition.setDuration(Duration.seconds(durationSeconds));
@@ -133,7 +162,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         if (isManager == Employee.Role.MANAGER) {
             this.isManager = Employee.Role.MANAGER;
             this.isManagerFlag = true;
-            
+
             setButtonVisible(btnViewReports, true);
             setButtonVisible(btnSignUp, true);
             setButtonVisible(btnMonthlyReports, true);
@@ -144,7 +173,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         } else {
             this.isManagerFlag = false;
             this.isManager = Employee.Role.REPRESENTATIVE;
-            
+
             // --- Employee Permissions ---
             setButtonVisible(btnViewReports, false);
             setButtonVisible(btnSignUp, false);
@@ -173,13 +202,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     // --- Navigation Methods ---
     @FXML
     void goToSubscriberManagementBtn(ActionEvent event) {
-        SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event, clientUi);
+        SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event,
+                clientUi);
         if (controller != null) {
             controller.initData(emp, clientUi, isManager);
         } else {
             System.err.println("Error: Could not load SubscriberManagementController.");
         }
     }
+
     @FXML
     void goToTableManagementBtn(ActionEvent event) {
         TableManagementController controller = super.loadScreen("managerTeam/TableManagement", event, clientUi);
@@ -190,29 +221,32 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
-    // ... (Keep existing navigation methods: goToWaitingListBtn, goToOrderDetailsBtn, etc.) ...
     @FXML
     void goToWaitingListBtn(ActionEvent event) {
         WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
-        if (waiting_list != null) waiting_list.initData(emp, this.clientUi, this.isManager);
+        if (waiting_list != null)
+            waiting_list.initData(emp, this.clientUi, this.isManager);
     }
 
     @FXML
     void goToMonthlyReportsBtn(ActionEvent event) {
-         MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
-         if (m != null) m.initData(this.emp, this.clientUi, this.isManager); 
+        MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
+        if (m != null)
+            m.initData(this.emp, this.clientUi, this.isManager);
     }
 
     @FXML
     void goToOrderDetailsBtn(ActionEvent event) {
         OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
-        if (controller != null) controller.initData(emp, this.clientUi, this.isManager);
+        if (controller != null)
+            controller.initData(emp, this.clientUi, this.isManager);
     }
 
     @FXML
     public void goToSignUpEmployee(ActionEvent event) {
         try {
-            RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event, clientUi);
+            RegisterEmployeeController registerEmployee = super.loadScreen("managerTeam/RegisterEmployee", event,
+                    clientUi);
             registerEmployee.initData(emp, this.clientUi, this.isManager);
         } catch (NullPointerException e) {
             System.out.println("Error: the object RegisterEmployeeController is null");
@@ -222,13 +256,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     @FXML
     void goToRegisterSubscriberBtn(ActionEvent event) {
         RegisterSubscriberController r = super.loadScreen("user/RegisterSubscriber", event, clientUi);
-        if(r != null) r.initData(emp, this.clientUi, this.isManager);
+        if (r != null)
+            r.initData(emp, this.clientUi, this.isManager);
     }
 
     @FXML
     void goToReportsBtn(ActionEvent event) {
         ReportsController r = super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
-        if (r != null) r.initData(emp, this.clientUi, this.isManager);
+        if (r != null)
+            r.initData(emp, this.clientUi, this.isManager);
     }
 
     @FXML
@@ -236,7 +272,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         super.loadScreen("navigation/SelectionScreen", event, clientUi);
     }
 
-    // --- Schedule Logic (Keep existing methods: updateScheduleBtn, removeSpecialDateBtn) ---
+    // --- Schedule Logic ---
     @FXML
     void updateScheduleBtn(ActionEvent event) {
         LocalDate date = dpManageDate.getValue();
@@ -250,12 +286,12 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             return;
         }
 
-        if (!isClosed) { 
-            if (openTimeStr == null || openTimeStr.trim().isEmpty() || 
-                closeTimeStr == null || closeTimeStr.trim().isEmpty()) {
-                
+        if (!isClosed) {
+            if (openTimeStr == null || openTimeStr.trim().isEmpty() ||
+                    closeTimeStr == null || closeTimeStr.trim().isEmpty()) {
+
                 setStatus("Cannot update: Time fields are empty!", true);
-                return; 
+                return;
             }
         }
 
@@ -267,12 +303,12 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
                 LocalTime localOpen = LocalTime.parse(openTimeStr, formatter);
                 LocalTime localClose = LocalTime.parse(closeTimeStr, formatter);
-                
+
                 if (localClose.isBefore(localOpen)) {
                     setStatus("Closing time cannot be before opening time.", true);
                     return;
                 }
-                
+
                 sqlOpenTime = Time.valueOf(localOpen);
                 sqlCloseTime = Time.valueOf(localClose);
             }
@@ -280,18 +316,18 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             String dateStr = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
             String typeStr = isSpecial ? "(Special Event)" : "(Updated Hours)";
             String timeDisplay = isClosed ? "[CLOSED]" : sqlOpenTime + " - " + sqlCloseTime;
-            
+
             this.listEntry = String.format("%s: %s %s", dateStr, timeDisplay, typeStr);
 
             java.sql.Date sqlDate = java.sql.Date.valueOf(date);
             OpeningHours oh;
-            
+
             if (!isSpecial) {
                 oh = new OpeningHours(sqlDate, null, sqlOpenTime, sqlCloseTime, isClosed);
             } else {
                 oh = new OpeningHours(sqlDate, sqlDate, sqlOpenTime, sqlCloseTime, isClosed);
             }
-            
+
             employeeLogic.createOpeningHours(oh);
 
         } catch (DateTimeParseException e) {
@@ -307,9 +343,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     void removeSpecialDateBtn(ActionEvent event) {
         String selectedItem = listSpecialDates.getSelectionModel().getSelectedItem();
         if (selectedItem != null) {
-            if(selectedItem.contains("(Special Event)")) {
+            if (selectedItem.contains("(Special Event)")) {
                 String[] parts = selectedItem.split(":");
-                String dateString = parts[0].trim(); 
+                String dateString = parts[0].trim();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
                 LocalDate localDate = LocalDate.parse(dateString, formatter);
                 java.sql.Date dateToDelete = java.sql.Date.valueOf(localDate);
@@ -323,7 +359,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
-    // --- Message Handling (REFACTORED) ---
+    // --- Message Handling ---
 
     @Override
     public void onMessageReceive(Object msg) {
@@ -337,9 +373,6 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         });
     }
 
-    /**
-     * Handles all business hour related responses (Splits the switch case logic).
-     */
     private void handleBusinessHourResponse(Response res) {
         switch (res.getAction()) {
             case GET_ALL:
@@ -361,15 +394,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
     private void handleGetAllResponse(Response res) {
         if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-            List<OpeningHours> listOp = (ArrayList<OpeningHours>)res.getData();
+            List<OpeningHours> listOp = (ArrayList<OpeningHours>) res.getData();
             updateTickerFromList(listOp);
         }
     }
 
     private void handleCreateResponse(Response res) {
         if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-            if(listEntry != null) {
-                specialDatesModel.add(0, listEntry); 
+            if (listEntry != null) {
+                specialDatesModel.add(0, listEntry);
                 setStatus("Schedule updated successfully!", false);
                 txtManageOpen.clear();
                 txtManageClose.clear();
@@ -391,7 +424,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
     private void handleDeleteResponse(Response res) {
         if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-            if(this.specialDate != null) {
+            if (this.specialDate != null) {
                 specialDatesModel.remove(this.specialDate);
                 setStatus("Special date removed.", false);
             } else {
@@ -411,14 +444,22 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
 
     private String getDayShortName(int dayOfWeek) {
         switch (dayOfWeek) {
-            case 1: return "Sun";
-            case 2: return "Mon";
-            case 3: return "Tue";
-            case 4: return "Wed";
-            case 5: return "Thu";
-            case 6: return "Fri";
-            case 7: return "Sat";
-            default: return "Day" + dayOfWeek;
+            case 1:
+                return "Sun";
+            case 2:
+                return "Mon";
+            case 3:
+                return "Tue";
+            case 4:
+                return "Wed";
+            case 5:
+                return "Thu";
+            case 6:
+                return "Fri";
+            case 7:
+                return "Sat";
+            default:
+                return "Day" + dayOfWeek;
         }
     }
 
@@ -427,14 +468,14 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             Platform.runLater(() -> {
                 tfTicker.getChildren().clear();
                 Text t = new Text("No opening hours available.");
-                t.setStyle("-fx-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 14px;");
+                t.setStyle("-fx-fill: #D4AF37; -fx-font-weight: bold; -fx-font-size: 14px;");
                 tfTicker.getChildren().add(t);
             });
             return;
         }
         listOp.sort((o1, o2) -> Integer.compare(o1.getDayOfWeek(), o2.getDayOfWeek()));
         Platform.runLater(() -> {
-            tfTicker.getChildren().clear(); 
+            tfTicker.getChildren().clear();
             for (OpeningHours oh : listOp) {
                 boolean isHoliday = (oh.getSpecialDate() != null);
                 StringBuilder sb = new StringBuilder();
@@ -445,17 +486,20 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 } else {
                     String start = oh.getOpenTime().toString();
                     String end = oh.getCloseTime().toString();
-                    if (start.length() >= 5) start = start.substring(0, 5);
-                    if (end.length() >= 5) end = end.substring(0, 5);
+                    if (start.length() >= 5)
+                        start = start.substring(0, 5);
+                    if (end.length() >= 5)
+                        end = end.substring(0, 5);
                     sb.append(start).append("-").append(end);
                 }
-                if (isHoliday) sb.append(" (HOLIDAY)");
-                sb.append("   •   "); 
+                if (isHoliday)
+                    sb.append(" (HOLIDAY)");
+                sb.append("   •   ");
                 Text textNode = new Text(sb.toString());
                 if (isHoliday) {
                     textNode.setStyle("-fx-fill: #e74c3c; -fx-font-weight: bold; -fx-font-size: 14px;");
                 } else {
-                    textNode.setStyle("-fx-fill: #2c3e50; -fx-font-weight: bold; -fx-font-size: 14px;");
+                    textNode.setStyle("-fx-fill: #D4AF37; -fx-font-weight: bold; -fx-font-size: 14px;");
                 }
                 tfTicker.getChildren().add(textNode);
             }
@@ -463,7 +507,8 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 startAnimation(tickerPane.getWidth());
             } else {
                 tickerPane.widthProperty().addListener((obs, oldVal, newVal) -> {
-                    if (newVal.doubleValue() > 0) startAnimation(newVal.doubleValue());
+                    if (newVal.doubleValue() > 0)
+                        startAnimation(newVal.doubleValue());
                 });
             }
         });
