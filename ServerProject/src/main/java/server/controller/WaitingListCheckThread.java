@@ -97,8 +97,6 @@ public class WaitingListCheckThread extends Thread {
 			System.out.println("The size of lists are different!!");
 			return false;
 		}
-		
-		
 		table_list.sort(Comparator.reverseOrder());//2
 		orders.sort(Comparator.reverseOrder());//2
 		int size = 0;

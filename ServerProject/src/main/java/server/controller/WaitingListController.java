@@ -32,6 +32,9 @@ public class WaitingListController {
 			case GET_ALL_LIST:
 				handleGetAllListWithCustomer(req, client);
 				break;
+			case GET_WAITING_LIST_BY_DATE:
+			    handleGetWaitingListByDate(req, client);
+			    break;
 			case ENTER_WAITING_LIST:
 				handleEnterWaitingList(req, client);
 				break;
@@ -63,12 +66,17 @@ public class WaitingListController {
 	}
 
 	private void handleGetAllListWithCustomer(Request req, ConnectionToClient client) throws SQLException, IOException {
-		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
-		client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
-				Response.ResponseStatus.SUCCESS, null, list));
-		sendListToAllClients();
+		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomersToFilter();
+	    
+	    client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
+	            Response.ResponseStatus.SUCCESS, null, list));	            
+	    sendListToAllClients();
 	}
-
+	private void handleGetWaitingListByDate(Request req, ConnectionToClient client) throws SQLException, IOException {
+		java.sql.Date dateToFilter = (java.sql.Date) req.getPayload();
+	    List<Map<String, Object>> list = waitingListDAO.getWaitingListFromDate(dateToFilter); // <--- השם החדש שלך
+	    client.sendToClient(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST, Response.ResponseStatus.SUCCESS, null, list));
+	}
 	private void handleEnterWaitingList(Request req, ConnectionToClient client) throws SQLException, IOException {
 		WaitingList item = (WaitingList) req.getPayload();
 
@@ -201,7 +209,8 @@ public class WaitingListController {
 	}
 
 	private void sendListToAllClients() throws SQLException {
-		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
+		//List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomers();
+		List<Map<String, Object>> list = waitingListDAO.getAllWaitingListWithCustomersToFilter();
 		Router.sendToAllClients(new Response(ResourceType.WAITING_LIST, ActionType.GET_ALL_LIST,
 				Response.ResponseStatus.SUCCESS, null, list));
 	}
