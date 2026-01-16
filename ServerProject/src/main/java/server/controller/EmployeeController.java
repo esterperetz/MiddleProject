@@ -72,7 +72,6 @@ public class EmployeeController {
 						client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 							Response.ResponseStatus.SUCCESS, "Created Subscriber with id: " + customer.getCustomerId(), customer));
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}

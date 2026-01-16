@@ -58,7 +58,9 @@ public class CustomerController {
 			e.printStackTrace();
 		}
 	}
-
+	
+	
+///need to be checked
 	private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Customer newCub = (Customer) req.getPayload();
 
