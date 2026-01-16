@@ -242,35 +242,42 @@ public class OrderController {
 
 			order.setConfirmationCode(generateUniqueConfirmationCode());
 			order.setOrderStatus(Order.OrderStatus.APPROVED);
+			Order checkedOrder =orderdao.getOrderInTimeWindow(order.getCustomer().getCustomerId(),order.getOrderDate());
+			if (checkedOrder == null) {
+                boolean success = orderdao.createOrder(order);
 
-			boolean success = orderdao.createOrder(order);
+                if (success) {
+                    System.out.println(finalCustomer.toString());
+                    System.out.println(order.toString());
+                    EmailService.sendConfirmation(finalCustomer, order);
+                    System.out.println(EmailService.getContent());
+                    System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
+                    order.setCustomer(finalCustomer);
 
-			if (success) {
-				System.out.println(finalCustomer.toString());
-				System.out.println(order.toString());
-				EmailService.sendConfirmation(finalCustomer, order);
-				System.out.println(EmailService.getContent());
-				System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
-				order.setCustomer(finalCustomer);
-				
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-						"Order created successfully!", order));
-				sendOrdersToAllClients();
-				return true;
-			} else {
-				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-						Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
-				return false;
-			}
+                    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
+                            "Order created successfully!", order));
+                    sendOrdersToAllClients();
+                    return true;
+                } else {
+                    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+                            Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
+                    return false;
+                }
+            } else { 
+                client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+                        Response.ResponseStatus.ERROR, "You already have an order within a 2-hour window.", null));
+                return false;
+            }
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-					Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
-			return false;
-		}
+        } catch (SQLException e) { 
+            e.printStackTrace();
+            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+                    Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
+            return false;
+        }
+		
 	}
-
+	
 	private boolean handleCheckAvailability(Request req, ConnectionToClient client) throws IOException {
 		try {
 			Order requestedOrder = (Order) req.getPayload();
