@@ -3,9 +3,9 @@ package server.controller;
 import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
+import DAO.WaitingListDAO;
 import entities.ActionType;
 import entities.Order;
-import entities.Request;
 import entities.ResourceType;
 import entities.Response;
 
@@ -16,6 +16,7 @@ import entities.Response;
  */
 public class OrderCleanupThread extends Thread {
     private final OrderDAO orderDao = new OrderDAO();
+    private final WaitingListDAO waitingListDao = new WaitingListDAO(); 
     private boolean running = true;
 
     @Override
@@ -38,6 +39,8 @@ public class OrderCleanupThread extends Thread {
         try {
             // Fetch only APPROVED orders
             List<Order> activeOrders = orderDao.getOrdersByStatus(Order.OrderStatus.APPROVED);
+            activeOrders.addAll(orderDao.getOrdersByStatus(Order.OrderStatus.PENDING));
+            
             long now = new Date().getTime();
             boolean hasChanges = false;
 
@@ -52,6 +55,9 @@ public class OrderCleanupThread extends Thread {
                     System.out.println("System: Auto-cancelling late order #" + order.getOrderNumber());
                     EmailService.sendCancelation(order.getCustomer(), order);
                     System.out.println(EmailService.getContent());
+                    if(order.getOrderStatus() == Order.OrderStatus.PENDING) {
+                    	waitingListDao.getWaitingOrderByConfirmationCode(order.getConfirmationCode());
+                    }
                     order.setOrderStatus(Order.OrderStatus.CANCELLED);
                     orderDao.updateOrder(order);
                     hasChanges = true;

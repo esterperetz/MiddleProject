@@ -226,6 +226,21 @@ public class WaitingListDAO {
         }
     }
 
+    public boolean getWaitingOrderByConfirmationCode(int confirmationCode) throws SQLException {
+        String sql = "UPDATE waiting_list SET in_waiting_list = ? WHERE confirmation_code = ?";
+        Connection con = null;
+
+        try {
+            con = DBConnection.getInstance().getConnection();
+            try (PreparedStatement stmt = con.prepareStatement(sql)) {
+            	stmt.setInt(1, 0);
+                stmt.setInt(2, confirmationCode);
+                return stmt.executeUpdate() > 0;
+            }
+        } finally {
+            DBConnection.getInstance().releaseConnection(con);
+        }
+    }
     public boolean exitWaitingList(int waitingId) throws SQLException {
         String sql = "UPDATE waiting_list SET in_waiting_list = ? WHERE waiting_id = ?";
         Connection con = null;
