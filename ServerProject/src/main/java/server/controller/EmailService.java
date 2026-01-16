@@ -40,14 +40,11 @@ public class EmailService {
         String subject = "Confirmation booking in Bistro";
         Email to = new Email(customer.getEmail());
 
-        // פורמטים לעיצוב התאריך והשעה
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
         
-        // יצירת מחרוזת המשלבת תאריך ושעה מתוך orderDate
         String formattedOrderDate = "To be assigned";
         if (order.getOrderDate() != null) {
-            // כאן אנחנו שואבים גם את התאריך וגם את השעה מאותו אובייקט Date
             formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at " + timeFormat.format(order.getOrderDate());
         }
 
@@ -56,7 +53,7 @@ public class EmailService {
                         "Your reservation at BISTRO has been successfully confirmed!\n\n" +
                         "--- Reservation Details ---\n" +
                         "Confirmation Code: %d\n" +
-                        "Scheduled Date & Time: %s\n" + // שינוי הכותרת לתיאור מדויק יותר
+                        "Scheduled Date & Time: %s\n" + 
                         "Arrival Status: %s\n" +
                         "Number of Guests: %d\n" +
                         "Table Number: %s\n\n" +
@@ -66,7 +63,7 @@ public class EmailService {
                         "Farewell, Bistro Team.",
                 customer.getName(),
                 order.getConfirmationCode(),
-                formattedOrderDate, // המשתנה החדש שכולל תאריך + שעה
+                formattedOrderDate, 
                 order.getArrivalTime() != null ? timeFormat.format(order.getArrivalTime()) : "Not arrived yet",
                 order.getNumberOfGuests(),
                 (order.getTableNumber() != null ? order.getTableNumber() : "To be assigned"),
@@ -103,7 +100,6 @@ public class EmailService {
         
         String formattedOrderDate = "To be assigned";
         if (order.getOrderDate() != null) {
-            // כאן אנחנו שואבים גם את התאריך וגם את השעה מאותו אובייקט Date
             formattedOrderDate = dateFormat.format(order.getOrderDate()) + " at " + timeFormat.format(order.getOrderDate());
         }
 
