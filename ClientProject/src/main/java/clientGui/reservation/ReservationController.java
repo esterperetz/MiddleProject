@@ -65,7 +65,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	@FXML
 	public void initialize() {
-		// Setup DatePicker constraints
 		datePicker.setValue(LocalDate.now());
 		datePicker.setDayCellFactory(picker -> new DateCell() {
 			@Override
@@ -80,19 +79,16 @@ public class ReservationController extends MainNavigator implements MessageListe
 			}
 		});
 
-		// Listener: Reload hours when date changes
 		datePicker.valueProperty().addListener((observable, oldDate, newDate) -> {
 			if (newDate != null)
 				loadHours();
 		});
 
-		// Listener: Reload hours/slots when guest count changes (to check capacity)
 		guestsField.focusedProperty().addListener((obs, oldVal, newVal) -> {
 			if (!newVal)
 				loadHours(); // Load on focus lost
 		});
 
-		// Listener: Verify Subscriber ID (Only for Employee usage)
 		subscriberIdField.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
 			if (!isNowFocused && isEmployeeMode) {
 				checkSubscriberId();
@@ -123,14 +119,13 @@ public class ReservationController extends MainNavigator implements MessageListe
 			setupUIForClient();
 		}
 
-		loadHours(); 
+		loadHours();
 	}
-
 
 	private void setupUIForEmployee() {
 		if (subscriberIdField != null) {
 			subscriberIdField.setVisible(true);
-			subscriberIdField.setManaged(true); 
+			subscriberIdField.setManaged(true);
 			subscriberIdField.setEditable(true);
 		}
 
@@ -145,22 +140,21 @@ public class ReservationController extends MainNavigator implements MessageListe
 	private void setupUIForClient() {
 		if (subscriberIdField != null) {
 			subscriberIdField.setVisible(false);
-			subscriberIdField.setManaged(false); 
+			subscriberIdField.setManaged(false);
 		}
 
 		if (lblSubCode != null) {
 			lblSubCode.setVisible(false);
 			lblSubCode.setManaged(false);
 		}
-		System.out.println("hello "+connectedCustomer);
-		
+		System.out.println("hello " + connectedCustomer);
+
 		if (this.isSubscriber == CustomerType.SUBSCRIBER) {
 			System.out.println("in the if 1");
 			this.verifiedSubscriber = connectedCustomer;
 			this.isSubscriberVerified = true;
 			checkSubscriberId();
-			
-			
+
 //			fillAndLockFields(connectedCustomer);
 		} else {
 			enableClientFields();
@@ -203,10 +197,10 @@ public class ReservationController extends MainNavigator implements MessageListe
 		try {
 			System.out.println("in the try");
 			int subCode = this.subCode;
-			if(isEmployeeMode) {
+			if (isEmployeeMode) {
 				subCode = Integer.parseInt(idStr);
 			}
-			userLogic.getSubscriberById(subCode); 
+			userLogic.getSubscriberById(subCode);
 		} catch (NumberFormatException e) {
 			errorLabel.setText("ID must be numbers only");
 		}
@@ -258,9 +252,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 				}
 			}
 
-			
-			Order newOrder = new Order(0, finalResTime, guests, 0, customerForOrder, null, now, null, null, 0.0,
-					null);
+			Order newOrder = new Order(0, finalResTime, guests, 0, customerForOrder, null, now, null, null, 0.0, null);
 			newOrder.setDateOfPlacingOrder(now);
 
 			if (isWaitlistSlot) {
@@ -286,7 +278,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 		}
 	}
 
-	
 	// --- Message Handling ---
 
 	@Override
@@ -316,25 +307,35 @@ public class ReservationController extends MainNavigator implements MessageListe
 	}
 
 	private void handleWaitingListResponse(Response res) {
-		if(res.getAction() == ActionType.ENTER_WAITING_LIST) {
+		if (res.getAction() == ActionType.ENTER_WAITING_LIST) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Waiting List", "Added to waiting list successfuly!", Alert.AlertType.INFORMATION);
-			}
-			else {
+			} else {
 				Alarm.showAlert("Waiting List", res.getMessage_from_server(), Alert.AlertType.ERROR);
 			}
 		}
-		
+
 	}
 
 	// Temp storage for order while waiting for customer creation
-		private Order pendingOrder;
+	private Order pendingOrder;
 
 	private void handleOrderResponse(Response res) {
 		if (res.getAction() == ActionType.CHECK_AVAILABILITY) {
-			if (res.getData() instanceof List) {
-				updateTimeButtons((List<TimeSlotStatus>) res.getData());
+			if (res.getStatus() == ResponseStatus.SUCCESS) {
+				if (res.getData() instanceof List) {
+					updateTimeButtons((List<TimeSlotStatus>) res.getData());
+				}
 			}
+			else if (res.getStatus() == ResponseStatus.ERROR) {
+				Alarm.showAlert("Error", res.getMessage_from_server(), Alert.AlertType.ERROR);
+				guestsField.setText("");
+				loadHours();
+				updateTimeButtons((List<TimeSlotStatus>) res.getData());
+
+			}
+			
+			
 		} else if (res.getAction() == ActionType.CREATE) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				Alarm.showAlert("Success", "Order created successfully!", Alert.AlertType.INFORMATION);
@@ -377,6 +378,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	private void updateTimeButtons(List<TimeSlotStatus> slots) {
 		timeContainer.getChildren().clear();
+		if (slots == null) {
+	        return; 
+	    }
 		for (TimeSlotStatus slot : slots) {
 			Button btn = new Button(slot.getTime());
 			btn.setMinWidth(80);

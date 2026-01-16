@@ -13,33 +13,9 @@ import entities.WaitingList;
 
 public class WaitingListDAO {
 
-//    public List<WaitingList> getAllWaitingList() throws SQLException {
-//        String sql = "SELECT * FROM waiting_list WHERE in_waiting_list = ? ORDER BY enter_time ASC";
-//        Connection con = null;
-//        PreparedStatement stmt = null;
-//        ResultSet rs = null;
-//
-//        try {
-//            con = DBConnection.getInstance().getConnection();
-//            stmt = con.prepareStatement(sql);
-//            stmt.setInt(1, 1);
-//            rs = stmt.executeQuery();
-//
-//            List<WaitingList> list = new ArrayList<>();
-//            while (rs.next()) {
-//                list.add(mapResultSetToWaitingList(rs));
-//            }
-//            return list;
-//        } finally {
-//            closeResources(rs, stmt);
-//            DBConnection.getInstance().releaseConnection(con);
-//        }
-//    }
 	private OrderDAO orderDao = new OrderDAO();
 	
 	public List<WaitingList> getAllWaitingList() throws SQLException {
-	    // שינוי קריטי: o.order_date AS res_date
-	    // זה מכריח את ה-ResultSet לזהות את העמודה בשם res_date
 	    String sql = "SELECT wl.*, o.order_date AS res_date " +
 	                 "FROM waiting_list wl " +
 	                 "JOIN `order` o ON wl.confirmation_code = o.confirmation_code " +
@@ -64,7 +40,7 @@ public class WaitingListDAO {
         List<Map<String, Object>> resultList = new ArrayList<>();
 
         String sql = "SELECT " + " c.subscriber_code, c.email, c.customer_name, c.phone_number, "
-                + " w.waiting_id, w.customer_id, w.enter_time, " + " w.number_of_guests, w.confirmation_code "
+                + " w.waiting_id, w.customer_id, w.enter_time, " + " w.number_of_guests, w.confirmation_code ,w.in_waiting_list "
                 + "FROM Customer c " + "JOIN waiting_list w ON c.customer_id = w.customer_id";
 
         Connection con = null;
@@ -84,9 +60,11 @@ public class WaitingListDAO {
                     row.put("waiting_id", rs.getInt("waiting_id"));
                     row.put("customer_id", rs.getInt("customer_id"));
                     row.put("number_of_guests", rs.getInt("number_of_guests"));
+                    
                     row.put("confirmation_code", rs.getInt("confirmation_code"));
-
+                    
                     row.put("enter_time", rs.getTimestamp("enter_time"));
+                    row.put("in_waiting_list", rs.getInt("in_waiting_list"));
 
                     resultList.add(row);
                 }
@@ -266,7 +244,6 @@ public class WaitingListDAO {
     }
 
     private WaitingList mapResultSetToWaitingList(ResultSet rs) throws SQLException {
-        // ... (שליפת שאר השדות הרגילים נשארת אותו דבר) ...
         WaitingList waitingList = new WaitingList(
                 rs.getInt("waiting_id"),
                 rs.getObject("customer_id") != null ? rs.getInt("customer_id") : null,
@@ -276,16 +253,12 @@ public class WaitingListDAO {
                 null
         );
         waitingList.setInWaitingList(rs.getInt("in_waiting_list"));
-        // --- התיקון: שימוש בכינוי res_date ---
         try {
-            java.sql.Timestamp ts = rs.getTimestamp("res_date"); // השם החדש שהגדרנו בשאילתה
+            java.sql.Timestamp ts = rs.getTimestamp("res_date"); 
             if (ts != null) {
                 waitingList.setReservationDate(new java.util.Date(ts.getTime()));
-                // הדפסת דיבוג שתאשר לך שזה עובד:
-                // System.out.println("DEBUG: Date found for code " + waitingList.getConfirmationCode() + ": " + waitingList.getReservationDate());
             }
         } catch (SQLException e) {
-            // שגיאה זו תקרה רק אם תשתמש בפונקציה הזו משאילתה אחרת שלא כוללת את ה-JOIN
             System.out.println("Warning: 'res_date' missing (Did you forget the JOIN in the SQL query?)");
         }
        
@@ -305,7 +278,6 @@ public class WaitingListDAO {
  // בתוך WaitingListDAO.java
 //for manager reports
     public List<WaitingList> getWaitingListForReport(int month, int year) throws SQLException {
-        // עדכנתי את השאילתה: הוספתי תנאי ש-customer_id לא יהיה NULL
         String sql = "SELECT w.*, c.customer_name, c.phone_number, c.email, c.subscriber_code, c.customer_type " +
                      "FROM waiting_list w " +
                      "LEFT JOIN Customer c ON w.customer_id = c.customer_id " +
@@ -321,9 +293,6 @@ public class WaitingListDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 List<WaitingList> list = new ArrayList<>();
                 while (rs.next()) {
-                    // אין צורך לבדוק כאן אם ה-ID הוא null כי הסינון נעשה ב-SQL
-
-                    // 1. יצירת אובייקט WaitingList
                     WaitingList wl = new WaitingList(
                             rs.getInt("waiting_id"),
                             rs.getInt("customer_id"),
@@ -332,12 +301,9 @@ public class WaitingListDAO {
                             rs.getInt("confirmation_code"),
                             null
                     );
-
-                    // 2. יצירת אובייקט Customer ומילוי הפרטים
                     entities.Customer cust = new entities.Customer();
                     String name = rs.getString("customer_name");
                     
-                    // כעת בטוח שיהיה שם (אלא אם יש בעיה ב-DB שלקוח נמחק), אבל נשאיר את הבדיקה ליתר ביטחון
                     if (name != null) {
                         cust.setName(name);
                         cust.setPhoneNumber(rs.getString("phone_number"));

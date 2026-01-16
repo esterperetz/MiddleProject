@@ -64,6 +64,8 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	private TableColumn<WaitingList, String> colCustomerPhone;
 	@FXML
 	private TableColumn<WaitingList, String> colCustomerEmail;
+	@FXML
+	private TableColumn<WaitingList, String> colStatus;
 
 	// Data lists
 	private ObservableList<WaitingList> waitingListData = FXCollections.observableArrayList();
@@ -93,6 +95,17 @@ public class WaitingListController extends MainNavigator implements Initializabl
 
 		colCustomerEmail.setCellValueFactory(
 				cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getEmail()));
+		colStatus.setCellValueFactory(cellData -> {
+            WaitingList entry = cellData.getValue(); 
+            
+            int statusValue = entry.getInWaitingList(); 
+
+            if (statusValue == 1) {
+                return new SimpleStringProperty("In Waiting List");
+            } else {
+                return new SimpleStringProperty("Off Waitlist"); 
+            }
+        });
 
 		// 1. Wrap the ObservableList in a FilteredList (initially display all data)
 		filteredData = new FilteredList<>(waitingListData, p -> true);
@@ -104,17 +117,14 @@ public class WaitingListController extends MainNavigator implements Initializabl
 		if (filterDate != null) {
 			filterDate.valueProperty().addListener((observable, oldValue, selectedDate) -> {
 				filteredData.setPredicate(item -> {
-					// If no date is selected, display all
 					if (selectedDate == null) {
 						return true;
 					}
 
-					// If the item has no date, hide it
 					if (item.getEnterTime() == null) {
 						return false;
 					}
 
-					// Convert java.util.Date / SQL Timestamp to LocalDate
 					LocalDate itemDate;
 					if (item.getEnterTime() instanceof java.sql.Date) {
 						itemDate = ((java.sql.Date) item.getEnterTime()).toLocalDate();
@@ -124,10 +134,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
 
 					LocalDate today = LocalDate.now();
 
-					// Logic copied from OrderUi:
-					// Show if date is AFTER (or equal) the selected date
 					boolean isAfterSelection = !itemDate.isBefore(selectedDate);
-					// Show if date is BEFORE (or equal) today
 					boolean isBeforeToday = !itemDate.isAfter(today);
 
 					return isAfterSelection && isBeforeToday;
@@ -145,124 +152,122 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	}
 
 	public void onMessageReceive(Object msg) {
-	    Platform.runLater(() -> {
-	        if (msg instanceof Response) {
-	            Response res = (Response) msg;
+		Platform.runLater(() -> {
+			if (msg instanceof Response) {
+				Response res = (Response) msg;
 
-	            if (res.getResource() == ResourceType.WAITING_LIST) {
-	                
-	                switch (res.getAction()) {
-	                    case GET_ALL: 
-	                    case GET_ALL_LIST:
-	                        handleGetAllList(res.getData());
-	                        break;
+				if (res.getResource() == ResourceType.WAITING_LIST) {
 
-	                    case PROMOTE_TO_ORDER:
-	                    case EXIT_WAITING_LIST:
-	                        handleUpdateResponse(res);
-	                        break;
+					switch (res.getAction()) {
+					case GET_ALL:
+					case GET_ALL_LIST:
+						handleGetAllList(res.getData());
+						break;
 
-	                    default:
-	                        break;
-	                }
-	            }
-	        }
-	    });
+					case PROMOTE_TO_ORDER:
+					case EXIT_WAITING_LIST:
+						handleUpdateResponse(res);
+						break;
+
+					default:
+						break;
+					}
+				}
+			}
+		});
 	}
 
-	
 	@SuppressWarnings("unchecked")
 	private void handleGetAllList(Object data) {
-	    if (data instanceof List) {
-	        List<?> list = (List<?>) data;
-	        System.out.println("DEBUG: Rows received: " + list.size());
+		if (data instanceof List) {
+			List<?> list = (List<?>) data;
+			System.out.println("DEBUG: Rows received: " + list.size());
 
-	        waitingListData.clear();
+			waitingListData.clear();
 
-	        if (list.isEmpty()) {
-	            waitingListTable.refresh();
-	            return;
-	        }
+			if (list.isEmpty()) {
+				waitingListTable.refresh();
+				return;
+			}
 
-	        for (Object obj : list) {
-	            if (obj instanceof Map) {
-	                try {
-	                    WaitingList item = parseWaitingListRow((Map<String, Object>) obj);
-	                    if (item != null) {
-	                        waitingListData.add(item);
-	                    }
-	                } catch (Exception e) {
-	                    System.err.println("Error parsing row in WaitingList: " + e.getMessage());
-	                    e.printStackTrace();
-	                }
-	            }
-	        }
-	        waitingListTable.refresh();
-	    }
+			for (Object obj : list) {
+				if (obj instanceof Map) {
+					try {
+						WaitingList item = parseWaitingListRow((Map<String, Object>) obj);
+						if (item != null) {
+							waitingListData.add(item);
+						}
+					} catch (Exception e) {
+						System.err.println("Error parsing row in WaitingList: " + e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}
+			waitingListTable.refresh();
+		}
 	}
 
 	private WaitingList parseWaitingListRow(Map<String, Object> row) {
-	    WaitingList item = new WaitingList();
+		WaitingList item = new WaitingList();
 
-	    if (row.get("waiting_id") != null)
-	        item.setWaitingId(((Number) row.get("waiting_id")).intValue());
+		if (row.get("waiting_id") != null)
+			item.setWaitingId(((Number) row.get("waiting_id")).intValue());
 
-	    if (row.get("customer_id") != null)
-	        item.setCustomerId(((Number) row.get("customer_id")).intValue());
+		if (row.get("customer_id") != null)
+			item.setCustomerId(((Number) row.get("customer_id")).intValue());
 
-	    if (row.get("number_of_guests") != null)
-	        item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
+		if (row.get("number_of_guests") != null)
+			item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
 
-	    if (row.get("confirmation_code") != null)
-	        item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
+		if (row.get("confirmation_code") != null)
+			item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
 
-	    // --- 2. טיפול בתאריך (enter_time) ---
-	    if (row.get("enter_time") != null) {
-	        Object timeObj = row.get("enter_time");
-	        if (timeObj instanceof java.sql.Timestamp) {
-	            item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
-	        } else if (timeObj instanceof java.util.Date) {
-	            item.setEnterTime((java.util.Date) timeObj);
-	        }
-	    }
+		// --- 2. טיפול בתאריך (enter_time) ---
+		if (row.get("enter_time") != null) {
+			Object timeObj = row.get("enter_time");
+			if (timeObj instanceof java.sql.Timestamp) {
+				item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
+			} else if (timeObj instanceof java.util.Date) {
+				item.setEnterTime((java.util.Date) timeObj);
+			}
+		}
 
-	    Customer customer = new Customer();
+		Customer customer = new Customer();
 
-	    if (row.get("customer_id") != null)
-	        customer.setCustomerId(((Number) row.get("customer_id")).intValue());
+		if (row.get("customer_id") != null)
+			customer.setCustomerId(((Number) row.get("customer_id")).intValue());
 
-	    if (row.get("customer_name") != null)
-	        customer.setName((String) row.get("customer_name"));
+		if (row.get("customer_name") != null)
+			customer.setName((String) row.get("customer_name"));
 
-	    if (row.get("email") != null)
-	        customer.setEmail((String) row.get("email"));
+		if (row.get("email") != null)
+			customer.setEmail((String) row.get("email"));
 
-	    if (row.get("phone_number") != null)
-	        customer.setPhoneNumber((String) row.get("phone_number"));
+		if (row.get("phone_number") != null)
+			customer.setPhoneNumber((String) row.get("phone_number"));
 
-	    Object subCode = row.get("subscriber_code");
-	    if (subCode != null) {
-	        customer.setSubscriberCode(((Number) subCode).intValue());
-	    } else {
-	        customer.setSubscriberCode(0);
-	    }
+		Object subCode = row.get("subscriber_code");
+		if (subCode != null) {
+			customer.setSubscriberCode(((Number) subCode).intValue());
+		} else {
+			customer.setSubscriberCode(0);
+		}
 
-	    item.setCustomer(customer);
-	    
-	    return item;
+		item.setCustomer(customer);
+
+		return item;
 	}
 
-	
 	private void handleUpdateResponse(Response res) {
-	    if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-	        waitingListLogic.getAllWaitingListCustomer(); 
-	        
-	        if (res.getMessage_from_server() != null) {
-	            Alarm.showAlert("Success", res.getMessage_from_server(),Alert.AlertType.CONFIRMATION);
-	        }
-	    } else {
-	    	Alarm.showAlert("Error", res.getMessage_from_server(),Alert.AlertType.ERROR);
-	    }
+		if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+			waitingListLogic.getAllWaitingListCustomer();
+
+			if (res.getMessage_from_server() != null) {
+				Alarm.showAlert("Success", res.getMessage_from_server(), Alert.AlertType.CONFIRMATION);
+			}
+		} else {
+			Alarm.showAlert("Error", res.getMessage_from_server(), Alert.AlertType.ERROR);
+		}
 	}
 
 	// Removed the manual handleDateSelect logic since we added a Listener in
@@ -284,7 +289,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	void handleAssignTable(ActionEvent event) {
 		WaitingList selected = waitingListTable.getSelectionModel().getSelectedItem();
 		if (selected == null) {
-			Alarm.showAlert("Selection Error", "Please select a customer to assign.",Alert.AlertType.ERROR);
+			Alarm.showAlert("Selection Error", "Please select a customer to assign.", Alert.AlertType.ERROR);
 			return;
 		}
 		Request req = new Request(ResourceType.WAITING_LIST, ActionType.PROMOTE_TO_ORDER, selected.getWaitingId(),
@@ -296,7 +301,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	void handleRemoveEntry(ActionEvent event) {
 		WaitingList selected = waitingListTable.getSelectionModel().getSelectedItem();
 		if (selected == null) {
-			Alarm.showAlert("Selection Error", "Please select a customer to remove.",Alert.AlertType.ERROR);
+			Alarm.showAlert("Selection Error", "Please select a customer to remove.", Alert.AlertType.ERROR);
 			return;
 		}
 		Request req = new Request(ResourceType.WAITING_LIST, ActionType.EXIT_WAITING_LIST, selected.getWaitingId(),
@@ -313,6 +318,5 @@ public class WaitingListController extends MainNavigator implements Initializabl
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}
 	}
-
 
 }

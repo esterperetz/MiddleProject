@@ -18,6 +18,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
 
+
 <ScrollPane fitToWidth="true" styleClass="main-background"
 	stylesheets="@../managerTeam/EmployeeOption.css"
 	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -99,6 +100,12 @@
 									onAction="#goToOrderDetailsBtn"
 									styleClass="dashboard-tile-button" text="Order Details"
 									wrapText="true" />
+
+								<Button fx:id="btnViewSubscribers" maxWidth="Infinity"
+									onAction="#goToSubscriberManagementBtn"
+									styleClass="dashboard-tile-button" text="View Subscribers"
+									wrapText="true" />
+
 								<Button maxWidth="Infinity"
 									onAction="#goToRegisterSubscriberBtn"
 									styleClass="dashboard-tile-button" text="Register Subscriber"
@@ -107,6 +114,7 @@
 									onAction="#goToTableManagementBtn"
 									styleClass="dashboard-tile-button" text="Manage Tables"
 									wrapText="true" />
+
 								<Button fx:id="btnViewReports" managed="false"
 									maxWidth="Infinity" onAction="#goToReportsBtn"
 									styleClass="dashboard-tile-button, report-button"

@@ -1,101 +1,110 @@
 package clientGui.reservation;
 
-import javafx.scene.control.Button;
-
-import java.io.IOException;
-
+import java.util.List;
 import client.MessageListener;
 import clientGui.ClientUi;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.TableLogic;
+import clientLogic.OrderLogic; // Assuming you have this
 import entities.ActionType;
 import entities.Alarm;
 import entities.Customer;
 import entities.CustomerType;
+import entities.Order;
 import entities.Response;
 import entities.Response.ResponseStatus;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
 
 public class GetTableController extends MainNavigator implements MessageListener<Object> {
+
 	@FXML
 	private TextField txtConformationCode;
-
 	@FXML
 	private Label lblResult;
 	@FXML
 	private Button btnLostCode;
-	
+
+	// New UI Elements
+	@FXML
+	private VBox ordersContainer;
+	@FXML
+	private Label lblYourOrders;
+
 	private Integer subscriberCode;
 	private TableLogic tableLogic;
+	private OrderLogic orderLogic; // New logic for fetching orders
 	private CustomerType isSubscriber;
-
 	private Customer customer;
 
-//	private Integer cusId;
-
-	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subCode,Customer customer) {
+	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subCode, Customer customer) {
 		this.clientUi = clientUi;
 		this.isSubscriber = isSubscriberStatus;
 		this.subscriberCode = subCode;
-		this.tableLogic = new TableLogic(clientUi);
 		this.customer = customer;
-//		this.cusId = cusId;
+
+		this.tableLogic = new TableLogic(clientUi);
+		this.orderLogic = new OrderLogic(clientUi); // Initialize OrderLogic
+
 		System.out.println("Loaded options for subscriber: " + subCode);
+
+		// Logic: Show/Hide list based on subscriber status
+		if (isSubscriber == CustomerType.SUBSCRIBER && customer != null) {
+			lblYourOrders.setVisible(true);
+			ordersContainer.setVisible(true);
+			loadSubscriberOrders();
+		} else {
+			// Hide the bottom part if not a subscriber
+			lblYourOrders.setVisible(false);
+			ordersContainer.setVisible(false);
+			lblYourOrders.setText("Please enter code manually");
+		}
 	}
 
-	/**
-	 * Triggered when the "Check Table" button is clicked.
-	 */
+	private void loadSubscriberOrders() {
+		Order reqOrder = new Order();
+		reqOrder.setCustomer(customer);
+		orderLogic.getSubscriberOrders(subscriberCode);
+	}
+
 	@FXML
 	void checkTableAvailability(ActionEvent event) {
-		String conformationCode = txtConformationCode.getText();
+		processCodeCheck(txtConformationCode.getText());
+	}
 
-		// 1. Input Validation
-		// add if the code incorrect
-		if (conformationCode == null || conformationCode.trim().isEmpty()) {
+	// Helper method to handle both manual and click inputs
+	private void processCodeCheck(String codeStr) {
+		if (codeStr == null || codeStr.trim().isEmpty()) {
 			lblResult.setText("Please enter a valid Order ID.");
-			lblResult.setStyle("-fx-text-fill: #ff6b6b;"); // Red color for error
+			lblResult.setStyle("-fx-text-fill: #ff6b6b;");
 			return;
 		}
 		try {
-			
-			tableLogic.getTable(Integer.parseInt(conformationCode),subscriberCode);
-			System.out.println(" GOOD From check table : " + customer.getCustomerId());
-		}catch(Exception e) {
-			System.out.println(" ERROR From check table : " + customer);
+			int code = Integer.parseInt(codeStr.trim());
+			tableLogic.getTable(code, subscriberCode);
+		} catch (NumberFormatException e) {
+			lblResult.setText("Code must be numbers only.");
 		}
 	}
-	
 
 	@FXML
 	void openLostCodePopup(ActionEvent event) {
-		
 		ForgetCodeController control = super.openPopup("reservation/ForgetCode", "Retrieve Code", clientUi);
 		control.initData(clientUi, isSubscriber, subscriberCode, customer);
 	}
 
-	/**
-	 * Triggered when the "Back" button is clicked. Navigates back to the main
-	 * reservation menu.
-	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		// MainNavigator.loadScene("user/SubscriberOption");
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
 		if (controller != null) {
-			controller.initData(clientUi, isSubscriber, subscriberCode,customer);
-		} else {
-			System.err.println("Error: Could not load ManagerOptionsController.");
+			controller.initData(clientUi, isSubscriber, subscriberCode, customer);
 		}
 	}
 
@@ -111,32 +120,73 @@ public class GetTableController extends MainNavigator implements MessageListener
 				case TABLE:
 					handleTableResponse(res);
 					break;
-
+				case ORDER: // Handle the list of orders coming back
+					handleOrderResponse(res);
+					break;
 				default:
-					System.out.println("Unhandled resource: " + res.getResource());
-
+					break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				Alarm.showAlert("System Error", "An error occurred while processing server response.",
-						Alert.AlertType.ERROR);
 			}
 		});
-
 	}
 
+	// New handler for populating the list
+	private void handleOrderResponse(Response res) {
+		// Assuming ActionType.GET_ORDERS_FOR_ENTRY or similar
+		if (res.getStatus() == ResponseStatus.SUCCESS) {
+			if (res.getAction() == ActionType.GET_USER_ORDERS) {
+				if (res.getData() instanceof List) {
+					List<Order> orders = (List<Order>) res.getData();
+					ordersContainer.getChildren().clear(); // Clear previous
+
+					if (orders.isEmpty()) {
+						Label emptyLbl = new Label("No active reservations found for now.");
+						emptyLbl.setStyle("-fx-text-fill: gray; -fx-font-style: italic;");
+						ordersContainer.getChildren().add(emptyLbl);
+						return;
+					}
+
+					for (Order o : orders) {
+						Button orderBtn = createOrderButton(o);
+						ordersContainer.getChildren().add(orderBtn);
+					}
+				}
+			}
+		}
+	}
 	private void handleTableResponse(Response res) {
-
 		if (res.getAction() == ActionType.GET) {
-
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
 				int tableNumber = ((int) res.getData());
-				Alarm.showAlert("Success", "Your table number is " + tableNumber, Alert.AlertType.INFORMATION);
-			}else
-				Alarm.showAlert("faild", res.getMessage_from_server(), Alert.AlertType.ERROR);
-
-
+				Alarm.showAlert("Welcome!", "Your table number is " + tableNumber, Alert.AlertType.INFORMATION);
+				// Optionally navigate to next screen or clear selection
+			} else {
+				Alarm.showAlert("Failed", res.getMessage_from_server(), Alert.AlertType.ERROR);
+			}
 		}
 	}
 
+	private Button createOrderButton(Order o) {
+		// Design the button text
+		String btnText = String.format("Time: %s | Guests: %d\nCode: %d", o.getOrderDate().toString().substring(11, 16), // Extract
+																															// HH:MM
+				o.getNumberOfGuests(), o.getConfirmationCode());
+
+		Button btn = new Button(btnText);
+		btn.setPrefWidth(280);
+		btn.setPrefHeight(60);
+		btn.setStyle(
+				"-fx-background-color: #ecf0f1; -fx-border-color: #bdc3c7; -fx-border-radius: 5; -fx-background-radius: 5; -fx-text-alignment: LEFT;");
+		btn.getStyleClass().add("order-card-button"); 
+
+		btn.setOnAction(e -> {
+			processCodeCheck(String.valueOf(o.getConfirmationCode())); 
+		});
+
+		return btn;
+	}
+
+	
 }

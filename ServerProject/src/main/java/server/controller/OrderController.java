@@ -2,6 +2,7 @@ package server.controller;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import DAO.TableDAO;
 import DAO.BusinessHourDAO;
 import DAO.CustomerDAO;
 import entities.*;
+import entities.Order.OrderStatus;
 import ocsf.server.ConnectionToClient;
 import java.io.IOException;
 
@@ -29,14 +31,6 @@ public class OrderController {
 
 	}
 
-	public void test() throws IOException {
-		Order order = new Order();
-		order.setDateOfPlacingOrder(java.sql.Date.valueOf(LocalDate.now()));
-		order.getArrivalTime();
-		order.setNumberOfGuests(5);
-		Request req = new Request(ResourceType.ORDER, ActionType.GET_AVAILABLE_TIME, null, order);
-		handle(req, null, null);
-	}
 
 	public void handle(Request req, ConnectionToClient client, List<ConnectionToClient> clients) throws IOException {
 		if (req.getResource() != ResourceType.ORDER) {
@@ -59,6 +53,9 @@ public class OrderController {
 			case GET_AVAILABLE_TIME:
 				Order order = (Order) req.getPayload();
 				checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
+				break;
+			case GET_USER_ORDERS:
+				handleGetSubscriberApprovedOrders(req, client);
 				break;
 			case GET_BY_CODE:
 				handleGetByCode(req, client);
@@ -135,6 +132,21 @@ public class OrderController {
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
 
+	private void handleGetSubscriberApprovedOrders(Request req, ConnectionToClient client)
+			throws SQLException, IOException {
+		int subscriberCode = (int) req.getId();
+
+		List<Order> orders = orderdao.getAllOrdersApproved(subscriberCode);
+		if (orders != null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS,
+					Response.ResponseStatus.SUCCESS, null, orders));
+			return;
+		}
+		client.sendToClient(new Response(req.getResource(), ActionType.GET_USER_ORDERS, Response.ResponseStatus.ERROR,
+				"Error: No orders for subscriber ", null));
+
+	}
+
 	private void handleGetAllBySubscriberId(Request req, ConnectionToClient client) throws SQLException, IOException {
 		if (req.getId() == null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
@@ -143,8 +155,14 @@ public class OrderController {
 		}
 		Customer cusId = customerDao.getCustomerBySubscriberCode(req.getId());
 		List<Order> subOrders = orderdao.getOrdersByCustomerId(cusId.getCustomerId());
+		if (subOrders != null) {
+			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
+					Response.ResponseStatus.SUCCESS, null, subOrders));
+			return;
+		}
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
-				Response.ResponseStatus.SUCCESS, null, subOrders));
+				Response.ResponseStatus.ERROR, "Can not find any history", null));
+
 	}
 
 	private void handleGetById(Request req, ConnectionToClient client) throws SQLException, IOException {
@@ -173,31 +191,14 @@ public class OrderController {
 			guestData = order.getCustomer();
 		}
 
-//		int guests = order.getNumberOfGuests();
-//		int miniTableSeats = tabledao.getSmallestCapacityTable().getNumberOfSeats();
-//		int minGuestsThreshold = (guests > miniTableSeats) ? miniTableSeats + 1 : 1;
-//
-//		int totalTables = tabledao.countSuitableTables(guests);
-//
-//		int conflictingOrders = orderdao.countActiveOrdersInTimeRange(order.getOrderDate(), minGuestsThreshold);
-//
-//		if (totalTables - conflictingOrders <= 0) {
-//			List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
-//			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
-//					"The restaurant is full at this time.", alternatives));
-//			return false;
-//		}
-		///////////////////////////////////////////////////////
 		int guests = order.getNumberOfGuests();
 
-		// השינוי: שימוש בפונקציה החדשה
 		if (!isSpaceAvailable(order.getOrderDate(), guests)) {
 			List<TimeSlotStatus> alternatives = checkAvailability(order.getOrderDate(), guests);
 			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
 					"The restaurant is full at this time.", alternatives));
 			return false;
 		}
-////////////////////////////////////////////////////////////////////////
 		Customer finalCustomer = null;
 		Integer subCode = order.getCustomer().getSubscriberCode();
 
@@ -277,17 +278,14 @@ public class OrderController {
 			java.util.Date orderDate = requestedOrder.getOrderDate();
 			int guests = requestedOrder.getNumberOfGuests();
 
-			///////////////////////////////////////////////////////
 			if (tabledao.countSuitableTables(guests) == 0) {
-			    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
-			            Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
-			    return false;
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
+						Response.ResponseStatus.ERROR, "No table exists for " + guests + " guests.", null));
+				return false;
 			}
-
 			boolean isAvailable = isSpaceAvailable(orderDate, guests);
 
 			List<TimeSlotStatus> timeSlots = checkAvailability(orderDate, guests);
-
 			if (isAvailable) {
 				///////////////////////////////////////////////////////////////////////////
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CHECK_AVAILABILITY,
@@ -311,22 +309,19 @@ public class OrderController {
 		List<TimeSlotStatus> results = new ArrayList<>();
 
 		List<String> allSlots = getAvailabilityOptions(date);
-		System.out.println("hereeee "+allSlots);
 		if (allSlots == null)
 			return new ArrayList<>();
 
 		LocalDate localDate = new java.sql.Date(date.getTime()).toLocalDate();
 		for (String slotStr : allSlots) {
 
-		    LocalTime timeSlot = LocalTime.parse(slotStr);
-		    LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
-		    java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
+			LocalTime timeSlot = LocalTime.parse(slotStr);
+			LocalDateTime ldt = LocalDateTime.of(localDate, timeSlot);
+			java.sql.Timestamp specificTimeToCheck = java.sql.Timestamp.valueOf(ldt);
 
-		    // השינוי: בדיקה פשוטה מול הפונקציה החדשה
-		    // שימו לב לסימן הקריאה (!) בהתחלה - אם אין מקום, אז זה מלא
-		    boolean isFull = !isSpaceAvailable(specificTimeToCheck, guests);
-		    
-		    results.add(new TimeSlotStatus(slotStr, isFull));
+			boolean isFull = !isSpaceAvailable(specificTimeToCheck, guests);
+
+			results.add(new TimeSlotStatus(slotStr, isFull));
 		}
 
 		return results;
@@ -342,7 +337,6 @@ public class OrderController {
 		}
 		OpeningHours dayHours = businessHourDao.getHoursForDate(dateOrder);
 		List<String> options = new ArrayList<>();
-		System.out.println();
 		if (dayHours == null || dayHours.isClosed()) {
 			System.out.println("Restaurant is closed.");
 			return null;
@@ -365,6 +359,69 @@ public class OrderController {
 		}
 
 		return options;
+	}
+
+	private boolean isSpaceAvailable(java.util.Date date, int guests) throws SQLException {
+		int totalTablesForMe = tabledao.countSuitableTables(guests);
+		int activeOrdersForMe = orderdao.countActiveOrdersInTimeRange(date, guests);
+
+		if (totalTablesForMe - activeOrdersForMe <= 0) {
+			return false;
+		}
+
+		List<Integer> allSizes = tabledao.getAllTableCapacities();
+		if (allSizes != null) {
+			for (int size : allSizes) {
+				if (size >= guests)
+					continue;
+
+				int totalAtThisSize = tabledao.countSuitableTables(size);
+
+				int activeAtThisSize = orderdao.countActiveOrdersInTimeRange(date, size);
+
+				int demand = activeAtThisSize + 1;
+
+				if (totalAtThisSize < demand) {
+					return false;
+				}
+			}
+		}
+		if (guests != 0) {
+			List<Integer> table_list = tabledao.getAllTableCapacities();
+			List<Integer> orders = orderdao.getActiveOrdersInTimeRange(date);
+			List<Integer> futerOrder = new ArrayList<>();
+			orders.add(guests);
+			if (!isValidOrder(table_list, orders, futerOrder)) {
+				return false;
+			}
+			orders.remove(orders.size() - 1);
+		}
+
+		return true;
+
+	}
+
+	private boolean isValidOrder(List<Integer> table_list, List<Integer> orders, List<Integer> futerOrder) {
+		if (table_list.size() < orders.size()) {
+			System.out.println("The size of lists are different!!");
+			return false;
+		}
+
+		table_list.sort(Comparator.reverseOrder());// 2
+		orders.sort(Comparator.reverseOrder());// 2
+		int size = 0;
+		for (int i = 0; i < orders.size(); i++) {
+			if (!(table_list.get(size) >= orders.get(i))) {
+				return false;
+			}
+
+			size++;// 1//2
+			if (size >= table_list.size()) {
+				break;
+			}
+		}
+
+		return true;
 	}
 
 	private void handleUpdate(Request req, ConnectionToClient client) throws SQLException, IOException {
@@ -416,7 +473,7 @@ public class OrderController {
 			}
 		}
 
-		if (orderdao.deleteOrder(req.getId())) {
+		if (orderdao.updateOrderStatus(req.getId(), OrderStatus.CANCELLED)) {
 			/// need to get email from customer table
 
 			Customer customer = customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId());
@@ -576,33 +633,6 @@ public class OrderController {
 			existingOrder = orderdao.getOrderByConfirmationCode(newCode);
 		} while (existingOrder != null);
 		return newCode;
-	}
-	private boolean isSpaceAvailable(java.util.Date date, int guests) throws SQLException {
-	    int totalTablesForMe = tabledao.countSuitableTables(guests);
-	    int activeOrdersForMe = orderdao.countActiveOrdersInTimeRange(date, guests);
-
-	    if (totalTablesForMe - activeOrdersForMe <= 0) {
-	        return false;
-	    }
-
-	    List<Integer> allSizes = tabledao.getAllTableCapacities();
-	    if (allSizes != null) {
-	        for (int size : allSizes) {
-	            if (size >= guests) continue;
-
-	            int totalAtThisSize = tabledao.countSuitableTables(size);
-	            
-	            int activeAtThisSize = orderdao.countActiveOrdersInTimeRange(date, size);
-	            
-	            int demand = activeAtThisSize + 1;
-
-	            if (totalAtThisSize < demand) {
-	                return false;
-	            }
-	        }
-	    }
-	    
-	    return true; 
 	}
 
 }

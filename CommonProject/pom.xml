@@ -5,7 +5,7 @@
   <artifactId>CommonProject</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <build>
-  
+  	
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>

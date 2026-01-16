@@ -23,10 +23,8 @@ public class CustomerDAO {
 
 				Integer subCode = customer.getSubscriberCode();
 				if (subCode == null || subCode == 0) {
-					// אם זה null (לקוח רגיל), אומרים למסד הנתונים לשים NULL
 					ps.setNull(1, java.sql.Types.INTEGER);
 				} else {
-					// אם יש מספר, מכניסים אותו
 					ps.setInt(1, subCode);
 				}
 				ps.setString(2, customer.getName());
@@ -114,7 +112,7 @@ public class CustomerDAO {
 
 	// Fetches a subscriber by their username
 	public Customer getCustomerByEmail(String customerMail) {
-		String query = "SELECT * FROM Customer WHERE email = ?";
+		String query = "SELECT * FROM Customer WHERE email = ? AND customer_type = 'SUBSCRIBER'";
 		Connection con = null;
 		try {
 			con = DBConnection.getInstance().getConnection();
@@ -168,7 +166,7 @@ public class CustomerDAO {
 	// Returns a list of all subscribers in the system
 	public ArrayList<Customer> getAllCustomers() {
 		ArrayList<Customer> subscribers = new ArrayList<>();
-		String query = "SELECT * FROM Customer WHERE customer_type = SUBSCRIBER";
+		String query = "SELECT * FROM Customer WHERE customer_type = 'SUBSCRIBER'";
 		Connection con = null;
 		try {
 			con = DBConnection.getInstance().getConnection();
