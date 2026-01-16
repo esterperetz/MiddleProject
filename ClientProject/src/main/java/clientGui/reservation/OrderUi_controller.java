@@ -123,7 +123,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         // Setup Status ComboBox
         if (cmbStatusFilter != null) {
             cmbStatusFilter.setItems(FXCollections.observableArrayList(
-                    "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED"));
+                    "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED","PAID"));
             cmbStatusFilter.getSelectionModel().select("ALL");
         }
 

@@ -63,6 +63,7 @@ public class TableController {
 		List<Table> tables = tableDAO.getAllTables();
 		client.sendToClient(new Response(ResourceType.TABLE, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS,
 				"get all tables", tables));
+		sendTablesToAllClients();
 	}
 
 	private void handleGetTable(Request req, ConnectionToClient client) throws IOException, SQLException {
@@ -132,6 +133,7 @@ public class TableController {
 		if (tableDAO.addTable(newTable)) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 					"Success: Table added.", newTable));
+			sendTablesToAllClients();
 
 		} else {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.ERROR,
@@ -151,6 +153,7 @@ public class TableController {
 		if (tableDAO.updateTable(updateTable)) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 					"Success: Table updated.", updateTable));
+			sendTablesToAllClients();
 
 		} else {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.ERROR,
@@ -169,6 +172,7 @@ public class TableController {
 		if (tableDAO.deleteTable(req.getId())) {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 					"Success: Table deleted.", req.getId()));
+			sendTablesToAllClients();
 		} else {
 			client.sendToClient(new Response(ResourceType.TABLE, ActionType.CREATE, Response.ResponseStatus.ERROR,
 					"Error: Failed to delete table.", null));
@@ -176,9 +180,9 @@ public class TableController {
 		}
 	}
 
-//    private void sendTablesToAllClients() throws SQLException, IOException {
-//        List<Table> tables = tableDAO.getAllTables();
-//        Request updateMsg = new Request(ResourceType.TABLE, ActionType.GET_ALL, null, tables);
-//        Router.sendToAllClients(updateMsg);
-//    }
+    private void sendTablesToAllClients() throws SQLException, IOException {
+        List<Table> tables = tableDAO.getAllTables();
+        Request updateMsg = new Request(ResourceType.TABLE, ActionType.GET_ALL, null, tables);
+        Router.sendToAllClients(updateMsg);
+    }
 }

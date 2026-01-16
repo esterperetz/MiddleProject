@@ -99,6 +99,7 @@ public class CustomerController {
 		List<Customer> list = CustomerDAO.getAllCustomers();
 		client.sendToClient(
 				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+		sendOrdersToAllClients();
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
@@ -112,5 +113,11 @@ public class CustomerController {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
 					"Error: Failed to update subscriber.", null));
 		}
+	}
+	
+	private void sendOrdersToAllClients() {
+		List<Customer> list = CustomerDAO.getAllCustomers();
+		Router.sendToAllClients(
+				new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
 	}
 }

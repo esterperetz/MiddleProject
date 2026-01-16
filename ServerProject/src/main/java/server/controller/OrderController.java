@@ -230,7 +230,6 @@ public class OrderController {
 					finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 				}
 			}
-			System.out.println(finalCustomer);
 			if (finalCustomer == null || finalCustomer.getCustomerId() == null) {
 				throw new SQLException("Failed to resolve customer ID.");
 			}
@@ -253,8 +252,10 @@ public class OrderController {
 				System.out.println(EmailService.getContent());
 				System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
 				order.setCustomer(finalCustomer);
+				
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
 						"Order created successfully!", order));
+				sendOrdersToAllClients();
 				return true;
 			} else {
 				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,

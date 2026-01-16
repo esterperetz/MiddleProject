@@ -1,7 +1,6 @@
 package clientGui.user;
 
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -9,8 +8,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 import client.MessageListener;
-import clientGui.ClientUi;
-import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.managerTeam.SubscriberManagementController;
 import clientGui.navigation.MainNavigator;
 import clientLogic.OrderLogic;
@@ -18,7 +15,6 @@ import entities.ActionType;
 import entities.Customer;
 import entities.CustomerType;
 import entities.Employee;
-import entities.Employee.Role;
 import entities.Order;
 import entities.Response;
 import javafx.application.Platform;
