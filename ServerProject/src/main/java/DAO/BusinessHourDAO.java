@@ -165,13 +165,6 @@ public class BusinessHourDAO {
     
 
     private OpeningHours mapResultSetToOpeningHours(ResultSet rs) throws SQLException {
-    	System.out.println(new OpeningHours(
-                rs.getInt("id"),
-                (Integer) rs.getObject("day_of_week"),
-                rs.getDate("special_date"),
-                rs.getTime("open_time"),
-                rs.getTime("close_time"),
-                rs.getBoolean("is_closed")).toString());
         return new OpeningHours(
                 rs.getInt("id"),
                 (Integer) rs.getObject("day_of_week"),
