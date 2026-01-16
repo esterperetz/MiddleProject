@@ -111,7 +111,7 @@ public class CustomerDAO {
 	}
 
 	public Customer getCustomerByEmailSUBSCRIBER(String customerMail) {
-		String query = "SELECT * FROM Customer WHERE email = ?  customer_type = 'SUBSCRIBER'";
+		String query = "SELECT * FROM Customer WHERE email = ?  AND customer_type = 'SUBSCRIBER'";
 		Connection con = null;
 		try {
 			con = DBConnection.getInstance().getConnection();
