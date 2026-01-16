@@ -1,5 +1,6 @@
 package server.controller;
 
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import DAO.OrderDAO;
@@ -66,6 +67,22 @@ public class OrderCleanupThread extends Thread {
         } catch (Exception e) {
             System.err.println("Cleanup Thread Error: " + e.getMessage());
         }
+    }
+    
+    private void EmailService() throws SQLException {
+    	try {
+    		List<Order> seatedOrders = orderDao.getOrdersByStatus(Order.OrderStatus.SEATED);
+    		long now = new Date().getTime();
+    		for (Order order : seatedOrders) { 
+    			
+    	}
+
+        	
+        }
+    	finally {
+    		
+    	}
+
     }
     
 
