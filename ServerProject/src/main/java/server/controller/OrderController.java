@@ -429,9 +429,10 @@ public class OrderController {
 		if (orderdao.updateOrder(updatedOrder)) {
 			/// need to get email from customer table
 			Customer customer = customerDao.getCustomerByCustomerId(updatedOrder.getCustomer().getCustomerId());
-			if (customer != null)
-				EmailService.sendConfirmation(customer, updatedOrder);
-			System.out.println(EmailService.getContent());
+			if (customer != null && updatedOrder.getOrderStatus() == OrderStatus.CANCELLED) {
+				EmailService.sendCancelation(customer, updatedOrder);
+				System.out.println(EmailService.getContent());
+			}
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Order updated.", updatedOrder));
 			sendOrdersToAllClients();

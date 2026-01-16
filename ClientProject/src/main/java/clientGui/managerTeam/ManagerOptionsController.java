@@ -292,7 +292,7 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 this.specialDate = selectedItem;
                 employeeLogic.cancelOpeningHours(dateToDelete);
             } else {
-                setStatus("could remove please select special date!", true);
+                setStatus("could not remove please select special date!", true);
             }
         } else {
             setStatus("Select an item to remove", true);
