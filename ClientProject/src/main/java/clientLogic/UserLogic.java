@@ -30,6 +30,9 @@ public class UserLogic {
 		client.sendRequest(req);
 	}
 	
+	public void CheckQRcode(String code) {
+		
+	}
 
 	
 	

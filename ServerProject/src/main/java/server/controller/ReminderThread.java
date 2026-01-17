@@ -51,6 +51,7 @@ public class ReminderThread extends Thread {
                 // Send actual email via EmailService
             	 
                 EmailService.sendReminder(order);
+                System.out.println(EmailService.getContent());
                 System.out.println("[ReminderThread] Sent reminder to order: " + order.getOrderNumber());
 
                 // Mark as reminded in DB so we don't send again

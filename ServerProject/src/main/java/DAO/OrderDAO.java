@@ -192,6 +192,35 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
+	
+	public Order getOrderInTimeWindow(int customerId, Date checkDate) throws SQLException {
+	    
+	    Timestamp sqlTimestamp = new Timestamp(checkDate.getTime());
+
+	    String sql = "SELECT * FROM `order` WHERE customer_id = ? " +
+	                 "AND order_date >= DATE_SUB(?, INTERVAL 2 HOUR) " +
+	                 "AND order_date <= DATE_ADD(?, INTERVAL 2 HOUR) " +
+	                 "AND order_status = 'APPROVED'" +
+	                 "LIMIT 1";
+
+	    Connection con = DBConnection.getInstance().getConnection();
+	    try (PreparedStatement stmt = con.prepareStatement(sql)) {
+	        
+	        stmt.setInt(1, customerId);
+	        
+	        stmt.setTimestamp(2, sqlTimestamp); 
+	        stmt.setTimestamp(3, sqlTimestamp); 
+
+	        try (ResultSet rs = stmt.executeQuery()) {
+	            if (rs.next()) {
+	                return mapResultSetToOrder(rs);
+	            }
+	            return null;
+	        }
+	    } finally {
+	        DBConnection.getInstance().releaseConnection(con);
+	    }
+	}
 
 	public int countConflictingOrders(Date requestedDate, int guests) throws SQLException {
 		java.sql.Timestamp newStart = new java.sql.Timestamp(requestedDate.getTime());
@@ -744,7 +773,6 @@ public class OrderDAO {
 			DBConnection.getInstance().releaseConnection(con);
 		}
 	}
-
 
 
 	public List<Integer> getActiveOrderSizes(Date requestedDate) throws SQLException {

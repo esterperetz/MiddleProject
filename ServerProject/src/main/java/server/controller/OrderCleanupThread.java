@@ -52,18 +52,27 @@ public class OrderCleanupThread extends Thread {
             for (Order order : activeOrders) {
                 long orderTime = order.getOrderDate().getTime();
                 long diffInMinutes = (now - orderTime) / 60000;
-
-                // 15-minute late rule enforcement [cite: 32]
+                
                 if (diffInMinutes > 15) {
                     System.out.println("System: Auto-cancelling late order #" + order.getOrderNumber());
-                    EmailService.sendCancelation(order.getCustomer(), order);
-                    System.out.println(EmailService.getContent());
+                    order.setCustomer(customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId())); 
+                
                     if (order.getOrderStatus() == Order.OrderStatus.PENDING) {
-                        waitingListDao.getWaitingOrderByConfirmationCode(order.getConfirmationCode());
+                        boolean isTrue = waitingListDao.getWaitingOrderByConfirmationCode(order.getConfirmationCode());
+                        if (isTrue) {
+                        	EmailService.sendCancelation(order.getCustomer(), order);
+                            System.out.println(EmailService.getContent());
+
+                        }
+
+                    }else {
+                        EmailService.sendCancelation(order.getCustomer(), order);
+                        System.out.println(EmailService.getContent());
+                        order.setOrderStatus(Order.OrderStatus.CANCELLED);
+                        orderDao.updateOrder(order);
+                        hasChanges = true;
                     }
-                    order.setOrderStatus(Order.OrderStatus.CANCELLED);
-                    orderDao.updateOrder(order);
-                    hasChanges = true;
+                  
                 }
             }
 
@@ -112,7 +121,7 @@ public class OrderCleanupThread extends Thread {
                             order.setTotalPrice(finalPrice);
                             order.setLeavingTime(new Date());
                             EmailService.sendReceipt(fullCustomer, order);
-
+                            System.out.println(EmailService.getContent());
                             hasChanges = true;
                         }
                     }

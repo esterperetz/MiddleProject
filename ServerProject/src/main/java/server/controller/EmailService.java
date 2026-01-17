@@ -1,9 +1,6 @@
 package server.controller;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.client.j2se.MatrixToImageWriter;
-import com.google.zxing.common.BitMatrix;
-import com.google.zxing.qrcode.QRCodeWriter;
+
 import com.sendgrid.*;
 import com.sendgrid.helpers.mail.Mail;
 import com.sendgrid.helpers.mail.objects.Attachments;
@@ -13,11 +10,9 @@ import com.sendgrid.helpers.mail.objects.Email;
 import entities.Customer;
 import entities.Employee;
 import entities.Order;
-
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Base64;
+
 
 public class EmailService {
     private static String plainTextBody;
@@ -36,7 +31,11 @@ public class EmailService {
     }
 
     public static void sendConfirmation(Customer customer, Order order) {
-
+    	
+    	if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            System.err.println("Error: Cannot send email. Customer email is missing.");
+            return; 
+        }
         String subject = "Confirmation booking in Bistro";
         Email to = new Email(customer.getEmail());
 
@@ -81,7 +80,7 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Your mail has been sent successfully!");
+                System.out.println("Your mail has been sent succsesfully! to "+ customer.getEmail());
             } else {
                 System.out.println("Error in Sending: " + response.getBody());
             }
@@ -91,10 +90,14 @@ public class EmailService {
     }
 
     public static void sendCancelation(Customer customer, Order order) {
-
+    	
+    	if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            System.err.println("Error: Cannot send email. Customer email is missing.");
+            return; 
+        }
         String subject = "Cancelation booking in Bistro";
         Email to = new Email(customer.getEmail());
-
+        
         // תוכן המייל
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
@@ -131,7 +134,7 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Your mail has been sent succsesfully!");
+                System.out.println("Your mail has been sent succsesfully! to "+ customer.getEmail());
             } else {
                 System.out.println("Error in Sending: " + response.getBody());
             }
@@ -140,10 +143,14 @@ public class EmailService {
         }
     }
 
-    public static void sendEmail(String customerEmail, Employee employee) {
-
+    public static void sendEmail(String employeeEmail, Employee employee) {
+    	
+    	if (employee == null || employee.getEmail() == null || employee.getEmail().trim().isEmpty()) {
+            System.err.println("Error: Cannot send email. Customer email is missing.");
+            return; 
+        }
         String subject = "account creation in Bistro System";
-        Email to = new Email(customerEmail);
+        Email to = new Email(employeeEmail);
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
@@ -172,7 +179,7 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Your mail has been sent succsesfully!");
+                System.out.println("Your mail has been sent succsesfully! to "+ employeeEmail);
             } else {
                 System.out.println("Error in Sending: " + response.getBody());
             }
@@ -183,11 +190,15 @@ public class EmailService {
     }
 
     public static void sendEmailToSubscriber(Customer customer) {
-
+    	
+    	if (customer == null || customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
+            System.err.println("Error: Cannot send email. Customer email is missing.");
+            return; 
+        }
         String subject = "Subscriber creation in Bistro System";
         Email to = new Email(customer.getEmail());
 
-        String qrCodeBase64 = generateQRCodeBase64(String.valueOf(customer.getSubscriberCode()));
+        String qrCodeBase64 = QRcodeScanner.generateQRCodeBase64(String.valueOf(customer.getSubscriberCode()));
 
         String htmlBody = String.format(
                 "<div style='font-family: Arial, sans-serif;'>" +
@@ -235,7 +246,7 @@ public class EmailService {
             Response response = sg.api(request);
 
             if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-                System.out.println("Your mail has been sent successfully!");
+                System.out.println("Your mail has been sent succsesfully! to "+ customer.getEmail());
             } else {
                 System.out.println("Error in Sending: " + response.getBody());
             }
@@ -244,20 +255,7 @@ public class EmailService {
         }
     }
 
-    private static String generateQRCodeBase64(String text) {
-        try {
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, 200, 200);
-
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
-
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-        } catch (Exception e) {
-            System.err.println("Could not generate QR code: " + e.getMessage());
-            return null;
-        }
-    }
+  
 
     public static String getContent() {
         return plainTextBody;
