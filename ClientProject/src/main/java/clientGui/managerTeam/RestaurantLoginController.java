@@ -9,9 +9,6 @@ import entities.Employee;
 import entities.Employee.Role;
 import entities.Response;
 import javafx.application.Platform;
-
-// <--- השינוי החשוב
-
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.PasswordField;
@@ -19,6 +16,10 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the Restaurant Employee Login screen.
+ * Handles employee authentication for accessing internal management systems.
+ */
 public class RestaurantLoginController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
@@ -32,7 +33,10 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 	private Role isManager;
 	private Employee emp;
 
-	// if clicking in X add that server will knows and disccount this client.
+	/**
+	 * Initializes the controller.
+	 * Sets up a listener to disconnect the client if the window is closed.
+	 */
 	@FXML
 	public void initialize() {
 		Platform.runLater(() -> {
@@ -40,22 +44,31 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 				Stage stage = (Stage) usernameField.getScene().getWindow();
 				stage.setOnCloseRequest(event -> {
 					clientUi.disconnectClient();
-
 				});
 			}
 		});
 	}
 
-	public void initData(Employee emp ,ClientUi c, Employee.Role isManager) {
-	    	this.emp = emp;
-	        this.clientUi = c;
-	        this.isManager = isManager;
-	        
-	        // Initial load of data from server
-	     
-	    }
-	    
+	/**
+	 * Initializes the controller with necessary data.
+	 * 
+	 * @param emp       The employee object (if applicable)
+	 * @param c         The client UI instance
+	 * @param isManager The role of the employee
+	 */
+	public void initData(Employee emp, ClientUi c, Employee.Role isManager) {
+		this.emp = emp;
+		this.clientUi = c;
+		this.isManager = isManager;
+	}
 
+	/**
+	 * Handles the login action.
+	 * Collects username and password, creates an Employee object, and sends a login
+	 * request to the server.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void performLogin(ActionEvent event) {
 		try {
@@ -74,51 +87,49 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 		} catch (Exception e) {
 			System.out.println("Please enter valid input!");
 		}
-
 	}
 
+	/**
+	 * Navigates back to the Selection Screen.
+	 */
 	@FXML
 	void goBack(ActionEvent event) {
-		// וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
 		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 	}
 
+	/**
+	 * Handles messages received from the server.
+	 * Processes login responses, redirects to the appropriate dashboard
+	 * (Manager/Employee),
+	 * or prompts for password setup if it's a first-time login.
+	 */
 	@Override
 	public void onMessageReceive(Object msg) {
-		// TODO Auto-generated method stub
 		try {
-
 			if (msg instanceof Response) {
 				Response response = (Response) msg;
 				Platform.runLater(() -> {
-
 					if (response.getStatus().name().equals("SUCCESS")) {
-						Alarm.showAlert("Login Succsesfully!", "Navigating to Manager Options...",
+						Alarm.showAlert("Login Successfully!", "Navigating to Manager Options...",
 								AlertType.INFORMATION);
-						// check if manager or regular worker
 						try {
-							// Response r=(Response)msg;
 							Employee emp = (Employee) response.getData();
-							// System.out.println(""+e.getRole());
+							// Check if this is a first-time login (placeholder password)
 							if (emp.getPassword().equals("newEmployee1234")) {
-
 								SetEmployeePasswordController controller = super.loadScreen(
 										"managerTeam/SetEmployeePassword", currentEvent, clientUi);
-								controller.initData(emp,clientUi, emp.getRole());
-
+								controller.initData(emp, clientUi, emp.getRole());
 							} else {
 								if (emp.getRole().name().equals("MANAGER")) {
 									isManager = Employee.Role.MANAGER;
 								} else if (emp.getRole().name().equals("REPRESENTATIVE")) {
 									isManager = Employee.Role.REPRESENTATIVE;
-
 								}
+
 								ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 										currentEvent, clientUi);
 
-								// 2. אתחול הנתונים במסך החדש
 								if (controller != null) {
-//									controller.AnotherinitData(emp.getUserName());
 									controller.initData(emp, clientUi, isManager);
 								} else {
 									System.err.println("Failed to load ManagerOptionsController. Check FXML path.");
@@ -131,13 +142,11 @@ public class RestaurantLoginController extends MainNavigator implements MessageL
 					} else {
 						Alarm.showAlert("Incorrect Input", "Your username or password is invalid!", AlertType.ERROR);
 					}
-
 				});
 				if (msg instanceof String && "quit".equals(msg)) {
 					clientUi.disconnectClient();
 					return;
 				}
-
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

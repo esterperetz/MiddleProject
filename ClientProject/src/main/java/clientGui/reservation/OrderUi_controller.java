@@ -34,6 +34,10 @@ import javafx.stage.Stage;
 import javafx.util.converter.DateStringConverter;
 import javafx.util.converter.IntegerStringConverter;
 
+/**
+ * Controller for the Order Management UI.
+ * Allows managers/employees to view, filter, add, update, and delete orders.
+ */
 public class OrderUi_controller extends MainNavigator implements MessageListener<Object> {
 
     @FXML
@@ -82,6 +86,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     @FXML
     private javafx.scene.layout.AnchorPane rootPane;
 
+    /**
+     * Initializes the controller.
+     * Sets up table columns, filters, and animations.
+     */
     @FXML
     private void initialize() {
         // Fade In Animation
@@ -153,6 +161,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
+    /**
+     * Updates the table filter based on selected date and status.
+     */
     private void updateFilter() {
         filteredData.setPredicate(order -> {
             // --- 1. Date Filter (Local) ---
@@ -198,6 +209,11 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
+    /**
+     * Clears applied filters and resets the table.
+     * 
+     * @param event The action event
+     */
     @FXML
     private void handleClearFilter(ActionEvent event) {
         if (filterDatePicker != null)
@@ -206,6 +222,14 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
             cmbStatusFilter.getSelectionModel().select("ALL");
     }
 
+    /**
+     * Initializes the controller with necessary data and requests all orders from
+     * server.
+     * 
+     * @param emp       The logged-in employee
+     * @param clientUi  The client UI instance
+     * @param isManager The role of the employee
+     */
     public void initData(Employee emp, ClientUi clientUi, Role isManager) {
         this.emp = emp;
         this.clientUi = clientUi;
@@ -227,6 +251,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         });
     }
 
+    /**
+     * Requests a fresh list of orders from the server.
+     */
     public void refreshTableData() {
         System.out.println("LOG: Refreshing Order Table data from server.");
         orderLogic.getAllOrders();
@@ -258,10 +285,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                 break;
             case CREATE:
             case UPDATE:
-            case DELETE:   
+            case DELETE:
                 break;
             case REGISTER_SUBSCRIBER:
-            	handleRegisterResponse(res.getMessage_from_server());
+                handleRegisterResponse(res.getMessage_from_server());
             case GET_BY_ID:
                 System.out.println("Received order: " + res.getData());
                 break;
@@ -272,12 +299,12 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     }
 
     private void handleRegisterResponse(String data) {
-    	
-			Alarm.showAlert("From Server", data , Alert.AlertType.INFORMATION);
-		
-	}
 
-	/**
+        Alarm.showAlert("From Server", data, Alert.AlertType.INFORMATION);
+
+    }
+
+    /**
      * Logic for parsing the list of orders from the server.
      */
     @SuppressWarnings("unchecked")
@@ -365,6 +392,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
 
     // --- Button Actions ---
 
+    /**
+     * Navigates to the Add Order screen.
+     */
     @FXML
     private void handleAddOrder(ActionEvent event) {
         try {
@@ -381,6 +411,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
+    /**
+     * Navigates to the Update Order screen for the selected order.
+     */
     @FXML
     private void handleUpdateOrder(ActionEvent event) {
         Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
@@ -403,6 +436,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
+    /**
+     * Deletes the selected order.
+     */
     @FXML
     private void handleDeleteOrder() {
         Order selectedOrder = orderTable.getSelectionModel().getSelectedItem();
@@ -413,6 +449,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
+    /**
+     * Sets up editable columns for direct inline editing.
+     */
     private void setupEditableColumns() {
         DateColumn.setCellFactory(TextFieldTableCell.forTableColumn(new DateStringConverter()));
         itemColumn.setCellFactory(TextFieldTableCell.forTableColumn(new IntegerStringConverter()));
@@ -424,6 +463,9 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         });
     }
 
+    /**
+     * Navigates back to the Employee Options screen.
+     */
     @FXML
     void handleBackBtn(ActionEvent event) {
         ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);

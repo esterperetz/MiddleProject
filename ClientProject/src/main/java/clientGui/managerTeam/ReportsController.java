@@ -21,6 +21,11 @@ import javafx.scene.chart.AreaChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.ComboBox;
 
+/**
+ * Controller for the General Reports display.
+ * Shows charts for activity times, daily order trends, and other statistical
+ * data.
+ */
 public class ReportsController extends MainNavigator implements MessageListener<Object> {
 
     @FXML
@@ -35,6 +40,11 @@ public class ReportsController extends MainNavigator implements MessageListener<
     private ClientUi clientUi;
     private Employee emp;
 
+    /**
+     * Initializes the controller.
+     * Sets up the charts (disabling animations for performance) and populates the
+     * date combo boxes.
+     */
     @FXML
     public void initialize() {
         // Disable animations for performance/stability
@@ -58,6 +68,13 @@ public class ReportsController extends MainNavigator implements MessageListener<
         }
     }
 
+    /**
+     * Initializes the controller with the current session data.
+     * 
+     * @param emp  The logged-in employee
+     * @param c    The client UI instance
+     * @param role The role of the current user
+     */
     public void initData(Employee emp, ClientUi c, Employee.Role role) {
         this.clientUi = c;
         this.role = role;
@@ -74,11 +91,17 @@ public class ReportsController extends MainNavigator implements MessageListener<
         sendRequest();
     }
 
+    /**
+     * Refreshes the reports based on the selected month/year.
+     */
     @FXML
     void refreshReportsBtn(ActionEvent e) {
         sendRequest();
     }
 
+    /**
+     * Sends a request to the server to fetch report data for the selected period.
+     */
     private void sendRequest() {
         if (comboMonth == null || comboYear == null)
             return;
@@ -86,6 +109,10 @@ public class ReportsController extends MainNavigator implements MessageListener<
         clientUi.sendRequest(new Request(ResourceType.REPORT, ActionType.GET_MONTHLY_REPORT, null, filter));
     }
 
+    /**
+     * Handles the asynchronous response from the server containing report data.
+     * Updates the charts with the new data.
+     */
     @Override
     @SuppressWarnings("unchecked")
     public void onMessageReceive(Object msg) {
@@ -110,6 +137,9 @@ public class ReportsController extends MainNavigator implements MessageListener<
         }
     }
 
+    /**
+     * Updates the "Time of Day" chart.
+     */
     private void updateTimeChart(Map<Integer, Integer> arr, Map<Integer, Integer> dep, Map<Integer, Integer> canc) {
         if (barChartTimes == null)
             return;
@@ -117,9 +147,9 @@ public class ReportsController extends MainNavigator implements MessageListener<
         barChartTimes.getData().clear();
 
         // Visual Feedback: If all maps are empty or null
-        boolean noData = (arr == null || arr.isEmpty()) && 
-                         (dep == null || dep.isEmpty()) && 
-                         (canc == null || canc.isEmpty());
+        boolean noData = (arr == null || arr.isEmpty()) &&
+                (dep == null || dep.isEmpty()) &&
+                (canc == null || canc.isEmpty());
 
         if (noData) {
             barChartTimes.setTitle("No details available for this period");
@@ -151,6 +181,9 @@ public class ReportsController extends MainNavigator implements MessageListener<
         barChartTimes.getData().addAll(s1, s2, s3);
     }
 
+    /**
+     * Updates the "Orders Trend" chart.
+     */
     private void updateTrendsChart(Map<String, Integer> daily) {
         if (lineChartOrders == null)
             return;
@@ -169,14 +202,12 @@ public class ReportsController extends MainNavigator implements MessageListener<
         lineChartOrders.getData().add(s);
     }
 
+    /**
+     * Navigates back to the Employee Options screen.
+     */
     @FXML
     void goBackBtn(ActionEvent e) {
         // Assuming ManagerOptionsController exists and handles initData
-        // We use super.loadScreen which returns MainNavigator, so we cast to
-        // ManagerOptionsController
-        // Correct usage depends on the actual return type of loadScreen being generic
-        // or overridden
-        // But based on user code it seemed to work.
         ManagerOptionsController c = super.loadScreen("managerTeam/EmployeeOption", e, clientUi);
         if (c != null)
             c.initData(this.emp, clientUi, role);

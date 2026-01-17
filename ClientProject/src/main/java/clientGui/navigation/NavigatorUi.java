@@ -6,6 +6,11 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
+/**
+ * Main application entry point for the Client UI.
+ * Handles loading custom fonts, setting up the primary stage, and launching the
+ * initial login screen.
+ */
 public class NavigatorUi extends Application {
 
 	@Override
@@ -22,17 +27,13 @@ public class NavigatorUi extends Application {
 			System.err.println("Warning: Luxury fonts not found in /clientGui/fonts/. Using system defaults.");
 		}
 
-		// MainNavigator main_navigator = new MainNavigator();
-
-		// main_navigator.setStage(primaryStage);
-		// String fxmlPath = "/clientGui/navigation/SelectionScreen.fxml";
 		String fxmlPath = "/clientGui/logInServer.fxml";
 		java.net.URL location = getClass().getResource(fxmlPath);
 
-		// בדיקה האם הקובץ נמצא לפני שמנסים לטעון
+		// Check if the FXML file exists before attempting to load
 		if (location == null) {
 			System.err.println("ERROR: Could not find FXML at: " + fxmlPath);
-			// ניסיון גיבוי - אולי בלי הסלאש הראשון?
+			// Backup attempt
 			location = getClass().getResource("/clientGui/logInServer.fxml");
 		}
 
@@ -41,22 +42,18 @@ public class NavigatorUi extends Application {
 		}
 
 		try {
-			// 1. הטעינה שעשית (מביאה את ה-Root)
 			FXMLLoader loader = new FXMLLoader(getClass().getResource("/clientGui/logInServer.fxml"));
 			Parent root = loader.load();
 
-			// 2. יצירת ה-Scene (הדף) שמכיל את ה-Root
 			Scene scene = new Scene(root);
 
-			// 3. הגדרת החלון (Stage) והצגתו
-			// הערה: וודא שיש לך גישה ל-primaryStage.
-			// אם אתה בתוך ה-start(), השתמש במשתנה שקיבלת:
+			// Set up the primary stage
 			primaryStage.setScene(scene);
-			primaryStage.setTitle("BISTRO System"); // כותרת לחלון
-			primaryStage.show(); // <--- הפקודה הכי חשובה! בלעדיה לא רואים כלום
+			primaryStage.setTitle("BISTRO System");
+			primaryStage.show();
 
 		} catch (Exception e) {
-			e.printStackTrace(); // חובה כדי לראות אם יש שגיאות נסתרות
+			e.printStackTrace(); // Keep stack trace for debugging
 		}
 
 	}

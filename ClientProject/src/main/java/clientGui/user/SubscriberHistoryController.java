@@ -30,6 +30,9 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+/**
+ * Controller for viewing a subscriber's order history.
+ */
 public class SubscriberHistoryController extends MainNavigator implements MessageListener<Object>, Initializable {
 
     @FXML
@@ -46,7 +49,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
     private TableColumn<OrderHistoryItem, String> colStatus;
     @FXML
     private DatePicker filterDatePicker;
-    
+
     private ObservableList<OrderHistoryItem> fullDataList = FXCollections.observableArrayList();
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private OrderLogic orderLogic;
@@ -55,6 +58,9 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
     private Employee employee;
     private Customer customer;
 
+    /**
+     * Initializes the table columns and filter listener.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         colOrderId.setCellValueFactory(new PropertyValueFactory<>("orderId"));
@@ -62,12 +68,20 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
         colTime.setCellValueFactory(new PropertyValueFactory<>("time"));
         colTotal.setCellValueFactory(new PropertyValueFactory<>("total"));
         colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
-        
+
         filterDatePicker.valueProperty().addListener((observable, oldValue, newValue) -> {
             handleDateFilter(null);
         });
     }
 
+    /**
+     * Initializes data for the controller and requests history from the server.
+     * 
+     * @param subscriberId The ID of the subscriber
+     * @param isSubscriber The customer type
+     * @param employee     The employee object (if accessed by an employee)
+     * @param customer     The customer object
+     */
     public void initData(int subscriberId, CustomerType isSubscriber, Employee employee, Customer customer) {
         this.isSubscriber = isSubscriber;
         this.currentSubscriberId = subscriberId;
@@ -117,6 +131,11 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
         }
     }
 
+    /**
+     * Navigates back.
+     * 
+     * @param event The action event
+     */
     @FXML
     void goBackBtn(ActionEvent event) {
         if (employee != null) {
@@ -128,11 +147,11 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
                 System.out.println("Error in loading Manager options");
         } else {
             SubscriberOptionController subscriberOptionController = super.loadScreen("user/SubscriberOption", event,
-					clientUi);
-			if (subscriberOptionController != null)
-				subscriberOptionController.initData(clientUi, isSubscriber, currentSubscriberId, customer);
-			else
-				System.err.println("Error loading subscriber option");
+                    clientUi);
+            if (subscriberOptionController != null)
+                subscriberOptionController.initData(clientUi, isSubscriber, currentSubscriberId, customer);
+            else
+                System.err.println("Error loading subscriber option");
         }
     }
 
@@ -178,31 +197,35 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
                     orderDate = o.getOrderDate();
                     totalPrice = o.getTotalPrice();
                     status = (o.getOrderStatus() != null) ? o.getOrderStatus().toString() : "UNKNOWN";
-                }
-                else if (obj instanceof Map) {
+                } else if (obj instanceof Map) {
                     Map<String, Object> row = (Map<String, Object>) obj;
-                    
-                    if (row.get("orderNumber") != null) orderId = (Integer) row.get("orderNumber");
-                    else if (row.get("order_number") != null) orderId = (Integer) row.get("order_number");
-                    
+
+                    if (row.get("orderNumber") != null)
+                        orderId = (Integer) row.get("orderNumber");
+                    else if (row.get("order_number") != null)
+                        orderId = (Integer) row.get("order_number");
+
                     Object dateObj = row.get("orderDate");
-                    if (dateObj == null) dateObj = row.get("order_date");
-                    
+                    if (dateObj == null)
+                        dateObj = row.get("order_date");
+
                     if (dateObj instanceof java.sql.Timestamp) {
                         orderDate = new Date(((java.sql.Timestamp) dateObj).getTime());
                     } else if (dateObj instanceof Date) {
                         orderDate = (Date) dateObj;
                     }
-                    
+
                     Object priceObj = row.get("totalPrice");
-                    if (priceObj == null) priceObj = row.get("total_price");
-                    
+                    if (priceObj == null)
+                        priceObj = row.get("total_price");
+
                     if (priceObj instanceof Number) {
                         totalPrice = ((Number) priceObj).doubleValue();
                     }
-                    
+
                     Object statusObj = row.get("orderStatus");
-                    if (statusObj == null) statusObj = row.get("order_status");
+                    if (statusObj == null)
+                        statusObj = row.get("order_status");
                     status = (statusObj != null) ? statusObj.toString() : "UNKNOWN";
                 }
 
@@ -211,7 +234,7 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
                     String dateStr = localDate.format(formatter);
                     String timeStr = orderDate.toInstant().atZone(ZoneId.systemDefault()).format(timeFormatter);
                     String priceStr = String.format("%.2f ₪", totalPrice);
-                    
+
                     fullDataList.add(new OrderHistoryItem(orderId, dateStr, timeStr, priceStr, status));
                 }
 
@@ -228,7 +251,9 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
         }
     }
 
-    // --- OrderHistoryItem Class ---
+    /**
+     * Inner class representing a row in the history table.
+     */
     public static class OrderHistoryItem {
         private int orderId;
         private String date;
@@ -244,10 +269,24 @@ public class SubscriberHistoryController extends MainNavigator implements Messag
             this.status = status;
         }
 
-        public int getOrderId() { return orderId; }
-        public String getDate() { return date; }
-        public String getTime() { return time; }
-        public String getTotal() { return total; }
-        public String getStatus() { return status; }
+        public int getOrderId() {
+            return orderId;
+        }
+
+        public String getDate() {
+            return date;
+        }
+
+        public String getTime() {
+            return time;
+        }
+
+        public String getTotal() {
+            return total;
+        }
+
+        public String getStatus() {
+            return status;
+        }
     }
 }

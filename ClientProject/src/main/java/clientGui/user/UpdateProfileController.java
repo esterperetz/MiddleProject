@@ -14,6 +14,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import entities.Alarm;
 
+/**
+ * Controller for the Update Profile screen.
+ * Allows subscribers to update their personal information.
+ */
 public class UpdateProfileController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
@@ -30,6 +34,12 @@ public class UpdateProfileController extends MainNavigator implements MessageLis
 	private UserLogic userLogic;
 	private ActionEvent currentEvent;
 
+	/**
+	 * Initializes the controller with the customer's data.
+	 * 
+	 * @param clientUi The client UI instance
+	 * @param customer The customer object to be updated
+	 */
 	public void initData(ClientUi clientUi, Customer customer) {
 		this.clientUi = clientUi;
 		this.customer = customer;
@@ -42,6 +52,12 @@ public class UpdateProfileController extends MainNavigator implements MessageLis
 		}
 	}
 
+	/**
+	 * Saves the changes made to the profile.
+	 * Validates input and sends an update request to the server.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void saveChanges(ActionEvent event) {
 		String fName = txtFirstName.getText();
@@ -61,22 +77,28 @@ public class UpdateProfileController extends MainNavigator implements MessageLis
 		userLogic.updateSubscriber(customer);
 	}
 
+	/**
+	 * Navigates back to the Subscriber Option screen.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void goBack(ActionEvent event) {
 		SubscriberOptionController controller = (SubscriberOptionController) super.loadScreen("user/SubscriberOption",
 				event, clientUi);
 
 		if (controller != null) {
-			controller.initData(clientUi, CustomerType.SUBSCRIBER,customer.getSubscriberCode(), customer);
+			controller.initData(clientUi, CustomerType.SUBSCRIBER, customer.getSubscriberCode(), customer);
 		}
 	}
+
 	@Override
 	public void onMessageReceive(Object msg) {
 		try {
 			if (msg instanceof Response) {
 				Response res = (Response) msg;
 				boolean isSuccess = res.getStatus().name().equals("SUCCESS");
-				
+
 				Platform.runLater(() -> {
 					if (isSuccess) {
 						if (res.getData() instanceof Customer) {

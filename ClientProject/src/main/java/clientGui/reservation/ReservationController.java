@@ -22,6 +22,14 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
+/**
+ * Controller class for handling the Reservation screen.
+ * 
+ * Allows customers (both regular and subscribers) and employees to create new
+ * table reservations.
+ * Handles date selection, guest count validation, checking availability, and
+ * creating requests.
+ */
 public class ReservationController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
@@ -64,6 +72,12 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	private ActionEvent currentEvent;
 
+	/**
+	 * Initializes the controller class.
+	 * Sets up the date picker to disable past dates and dates more than a month
+	 * ahead.
+	 * Adds listeners for interactive fields to trigger availability checks.
+	 */
 	@FXML
 	public void initialize() {
 		datePicker.setValue(LocalDate.now());
@@ -98,7 +112,13 @@ public class ReservationController extends MainNavigator implements MessageListe
 	}
 
 	/**
-	 * Unified Init Data. Can be called by Employee Dashboard OR Customer Dashboard.
+	 * Unified Initialization Method. Can be called by Employee Dashboard OR
+	 * Customer Dashboard.
+	 * 
+	 * @param clientUi     The main client UI instance.
+	 * @param isSubscriber Enum indicating if the user is a subscriber or regular.
+	 * @param subCode      The subscriber code (if applicable).
+	 * @param user         The logged-in user object (can be Employee or Customer).
 	 */
 	public void initData(ClientUi clientUi, CustomerType isSubscriber, Integer subCode, Object user) {
 		this.clientUi = clientUi;
@@ -123,6 +143,10 @@ public class ReservationController extends MainNavigator implements MessageListe
 		loadHours();
 	}
 
+	/**
+	 * Configures UI elements specifically for Employee mode.
+	 * Enables manually entering a subscriber ID.
+	 */
 	private void setupUIForEmployee() {
 		if (subscriberIdField != null) {
 			subscriberIdField.setVisible(true);
@@ -138,35 +162,44 @@ public class ReservationController extends MainNavigator implements MessageListe
 		enableClientFields();
 	}
 
+	/**
+	 * Configures UI elements specifically for Client (Customer) mode.
+	 * Hides employee-specific fields like subscriber ID manual entry.
+	 * Pre-fills customer details if they are already logged in.
+	 */
 	private void setupUIForClient() {
-	    if (subscriberIdField != null) {
-	        subscriberIdField.setVisible(false);
-	        subscriberIdField.setManaged(false);
-	    }
+		if (subscriberIdField != null) {
+			subscriberIdField.setVisible(false);
+			subscriberIdField.setManaged(false);
+		}
 
-	    if (lblSubCode != null) {
-	        lblSubCode.setVisible(false);
-	        lblSubCode.setManaged(false);
-	    }
+		if (lblSubCode != null) {
+			lblSubCode.setVisible(false);
+			lblSubCode.setManaged(false);
+		}
 
-	    if (this.isSubscriber == CustomerType.SUBSCRIBER && connectedCustomer != null) {
-	        this.verifiedSubscriber = connectedCustomer;
-	        this.isSubscriberVerified = true;
+		if (this.isSubscriber == CustomerType.SUBSCRIBER && connectedCustomer != null) {
+			this.verifiedSubscriber = connectedCustomer;
+			this.isSubscriberVerified = true;
 
-	        fillAndLockFields(connectedCustomer); 
-	        
-	    } else {
-	        if (connectedCustomer != null) {
-	            nameField.setText(connectedCustomer.getName());
-	            phoneField.setText(connectedCustomer.getPhoneNumber());
-	            emailField.setText(connectedCustomer.getEmail());
-	        }
-	        enableClientFields();
-	    }
+			fillAndLockFields(connectedCustomer);
+
+		} else {
+			if (connectedCustomer != null) {
+				nameField.setText(connectedCustomer.getName());
+				phoneField.setText(connectedCustomer.getPhoneNumber());
+				emailField.setText(connectedCustomer.getEmail());
+			}
+			enableClientFields();
+		}
 	}
 
 	// --- Logic Methods ---
 
+	/**
+	 * Loads available opening hours for the selected date and guest count.
+	 * Sends a request to the server to check availability.
+	 */
 	private void loadHours() {
 		timeContainer.getChildren().clear();
 		selectedTime = null;
@@ -188,28 +221,39 @@ public class ReservationController extends MainNavigator implements MessageListe
 		orderLogic.checkAvailability(checkReq);
 	}
 
+	/**
+	 * Verifies if the entered Subscriber ID exists in the system (Employee mode
+	 * only).
+	 */
 	private void checkSubscriberId() {
-	    String idStr = subscriberIdField.getText().trim();
+		String idStr = subscriberIdField.getText().trim();
 
-	    if (idStr.isEmpty()) {
-	        isSubscriberVerified = false;
-	        verifiedSubscriber = null;
-	        enableClientFields(); 
-	        errorLabel.setText("");
-	        return;
-	    }
+		if (idStr.isEmpty()) {
+			isSubscriberVerified = false;
+			verifiedSubscriber = null;
+			enableClientFields();
+			errorLabel.setText("");
+			return;
+		}
 
-	    try {
-	        int subCode = this.subCode;
-	        if (isEmployeeMode) {
-	            subCode = Integer.parseInt(idStr);
-	        }
-	        userLogic.getSubscriberById(subCode);
-	    } catch (NumberFormatException e) {
-	        errorLabel.setText("ID must be numbers only");
-	    }
+		try {
+			int subCode = this.subCode;
+			if (isEmployeeMode) {
+				subCode = Integer.parseInt(idStr);
+			}
+			userLogic.getSubscriberById(subCode);
+		} catch (NumberFormatException e) {
+			errorLabel.setText("ID must be numbers only");
+		}
 	}
 
+	/**
+	 * Handles the submission of a new reservation.
+	 * Validates input fields, checks capacity, creates the order object, and sends
+	 * it to the server.
+	 * 
+	 * @param event The ActionEvent from the submit button.
+	 */
 	@FXML
 	void submitReservation(ActionEvent event) {
 		this.currentEvent = event;
@@ -267,7 +311,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 						ManagerOptionsController m = super.loadScreen("managerTeam/EmployeeOption", event,
 								this.clientUi);
 						if (m != null)
-							m.initData(connectedEmployee,clientUi, connectedEmployee.getRole());
+							m.initData(connectedEmployee, clientUi, connectedEmployee.getRole());
 						else
 							System.out.println(
 									"Error  move to to screen  fromReservationController to ManagerOptionsController after get order to waitingList");
@@ -308,16 +352,16 @@ public class ReservationController extends MainNavigator implements MessageListe
 		Platform.runLater(() -> {
 			try {
 				switch (res.getResource()) {
-				case ORDER:
-					handleOrderResponse(res);
-					break;
-				case CUSTOMER:
-					handleCustomerResponse(res);
-					break;
-				case WAITING_LIST:
-					handleWaitingListResponse(res);
-				default:
-					break;
+					case ORDER:
+						handleOrderResponse(res);
+						break;
+					case CUSTOMER:
+						handleCustomerResponse(res);
+						break;
+					case WAITING_LIST:
+						handleWaitingListResponse(res);
+					default:
+						break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -325,6 +369,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 		});
 	}
 
+	/**
+	 * Handles responses related to Waiting List actions.
+	 */
 	private void handleWaitingListResponse(Response res) {
 		if (res.getAction() == ActionType.ENTER_WAITING_LIST) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
@@ -339,6 +386,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 	// Temp storage for order while waiting for customer creation
 	private Order pendingOrder;
 
+	/**
+	 * Handles responses related to Order actions (Availability check, Create).
+	 */
 	private void handleOrderResponse(Response res) {
 		if (res.getAction() == ActionType.CHECK_AVAILABILITY) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
@@ -363,6 +413,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 		}
 	}
 
+	/**
+	 * Handles responses related to Customer actions (Verification, Registration).
+	 */
 	private void handleCustomerResponse(Response res) {
 		System.out.println("HERE");
 		if (res.getAction() == ActionType.GET_BY_ID) {
@@ -383,13 +436,13 @@ public class ReservationController extends MainNavigator implements MessageListe
 		} else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
 			// Logic for when Employee creates a new user, then we immediately place the
 			// order
-		
+
 			if (res.getStatus() == ResponseStatus.SUCCESS && pendingOrder != null) {
 				Customer createdCus = (Customer) res.getData();
 				pendingOrder.getCustomer().setCustomerId(createdCus.getCustomerId());
 				orderLogic.createOrder(pendingOrder);
 				pendingOrder = null; // Clear
-			}else {
+			} else {
 				Alarm.showAlert("Server Message", res.getMessage_from_server(), Alert.AlertType.INFORMATION);
 			}
 		}
@@ -397,6 +450,11 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	// --- Helper UI Methods ---
 
+	/**
+	 * Updates the time slot buttons based on availability data from the server.
+	 * 
+	 * @param slots List of time slots with status (available, full/waiting list).
+	 */
 	private void updateTimeButtons(List<TimeSlotStatus> slots) {
 		timeContainer.getChildren().clear();
 		if (slots == null) {
@@ -420,6 +478,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 		}
 	}
 
+	/**
+	 * Visual logic when a time slot is selected.
+	 */
 	private void selectTime(Button btn, String time, boolean isWaitlist) {
 		if (selectedButton != null)
 			selectedButton.setStyle(""); // Reset previous
@@ -434,6 +495,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 			errorLabel.setText("");
 	}
 
+	/**
+	 * Fills client fields with customer data and makes them uneditable.
+	 */
 	private void fillAndLockFields(Customer cus) {
 		nameField.setText(cus.getName());
 		phoneField.setText(cus.getPhoneNumber());
@@ -450,6 +514,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 		emailField.setStyle(locked);
 	}
 
+	/**
+	 * Clears client fields and makes them editable (for manual entry).
+	 */
 	private void enableClientFields() {
 		if (!nameField.isEditable()) {
 			nameField.clear();
@@ -465,6 +532,9 @@ public class ReservationController extends MainNavigator implements MessageListe
 		emailField.setStyle("");
 	}
 
+	/**
+	 * Navigate back to the previous screen based on the current user role.
+	 */
 	@FXML
 	void goBack(ActionEvent event) {
 		if (isEmployeeMode) {

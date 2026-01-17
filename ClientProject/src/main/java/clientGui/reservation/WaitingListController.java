@@ -36,6 +36,10 @@ import java.util.ResourceBundle;
 
 import client.MessageListener;
 
+/**
+ * Controller for the Waiting List UI.
+ * Allows managers/employees to view and manage customers in the waiting list.
+ */
 public class WaitingListController extends MainNavigator implements Initializable, MessageListener<Object> {
 
 	@FXML
@@ -67,50 +71,66 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	@FXML
 	private TableColumn<WaitingList, String> colStatus;
 	@FXML
-    private TableColumn<WaitingList, Date> colReservationDate;
+	private TableColumn<WaitingList, Date> colReservationDate;
 	// Data lists
 	private ObservableList<WaitingList> waitingListData = FXCollections.observableArrayList();
 	private FilteredList<WaitingList> filteredData; // Added FilteredList
 
 	private WaitingListLogic waitingListLogic;
 
+	/**
+	 * Initializes the controller.
+	 * Sets up table columns and data listeners.
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-		colReservationDate.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getReservationDate()));
+		colReservationDate
+				.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getReservationDate()));
 
-        colWaitingId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getWaitingId()));
-        colCustomerId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
-        colGuests.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
-        colEnterTime.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEnterTime()));
-        colConfirmationCode.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
-        colCustomerName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getName()));
-        colCustomerPhone.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getPhoneNumber()));
-        colCustomerEmail.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getEmail()));
-        
-        colStatus.setCellValueFactory(cellData -> {
-            WaitingList entry = cellData.getValue(); 
-            int statusValue = entry.getInWaitingList(); 
-            if (statusValue == 1) {
-                return new SimpleStringProperty("In Waiting List");
-            } else {
-                return new SimpleStringProperty("Off Waitlist"); 
-            }
-        });
+		colWaitingId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getWaitingId()));
+		colCustomerId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
+		colGuests.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
+		colEnterTime.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEnterTime()));
+		colConfirmationCode.setCellValueFactory(
+				cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
+		colCustomerName
+				.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getName()));
+		colCustomerPhone.setCellValueFactory(
+				cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getPhoneNumber()));
+		colCustomerEmail.setCellValueFactory(
+				cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getEmail()));
 
-        filteredData = new FilteredList<>(waitingListData, p -> true);
-        waitingListTable.setItems(filteredData);
+		colStatus.setCellValueFactory(cellData -> {
+			WaitingList entry = cellData.getValue();
+			int statusValue = entry.getInWaitingList();
+			if (statusValue == 1) {
+				return new SimpleStringProperty("In Waiting List");
+			} else {
+				return new SimpleStringProperty("Off Waitlist");
+			}
+		});
 
-        if (filterDate != null) {
-            filterDate.valueProperty().addListener((observable, oldValue, selectedDate) -> {
-                if (selectedDate == null) {
-                    waitingListLogic.getAllWaitingListCustomer();
-                } else {
-                    waitingListLogic.getWaitingListByDate(selectedDate);
-                }
-            });
-        }
+		filteredData = new FilteredList<>(waitingListData, p -> true);
+		waitingListTable.setItems(filteredData);
+
+		if (filterDate != null) {
+			filterDate.valueProperty().addListener((observable, oldValue, selectedDate) -> {
+				if (selectedDate == null) {
+					waitingListLogic.getAllWaitingListCustomer();
+				} else {
+					waitingListLogic.getWaitingListByDate(selectedDate);
+				}
+			});
+		}
 	}
 
+	/**
+	 * Initializes the controller with necessary data.
+	 * 
+	 * @param emp       The logged-in employee
+	 * @param clientUi  The client UI instance
+	 * @param isManager The role of the employee
+	 */
 	public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
 		this.emp = emp;
 		this.clientUi = clientUi;
@@ -119,6 +139,7 @@ public class WaitingListController extends MainNavigator implements Initializabl
 		waitingListLogic.getAllWaitingListCustomer();
 	}
 
+	@Override
 	public void onMessageReceive(Object msg) {
 		Platform.runLater(() -> {
 			if (msg instanceof Response) {
@@ -127,18 +148,18 @@ public class WaitingListController extends MainNavigator implements Initializabl
 				if (res.getResource() == ResourceType.WAITING_LIST) {
 
 					switch (res.getAction()) {
-					case GET_ALL:
-					case GET_ALL_LIST:
-						handleGetAllList(res.getData());
-						break;
+						case GET_ALL:
+						case GET_ALL_LIST:
+							handleGetAllList(res.getData());
+							break;
 
-					case PROMOTE_TO_ORDER:
-					case EXIT_WAITING_LIST:
-						handleUpdateResponse(res);
-						break;
+						case PROMOTE_TO_ORDER:
+						case EXIT_WAITING_LIST:
+							handleUpdateResponse(res);
+							break;
 
-					default:
-						break;
+						default:
+							break;
 					}
 				}
 			}
@@ -176,64 +197,63 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	}
 
 	private WaitingList parseWaitingListRow(Map<String, Object> row) {
-        WaitingList item = new WaitingList();
+		WaitingList item = new WaitingList();
 
-        if (row.get("waiting_id") != null)
-            item.setWaitingId(((Number) row.get("waiting_id")).intValue());
+		if (row.get("waiting_id") != null)
+			item.setWaitingId(((Number) row.get("waiting_id")).intValue());
 
-        if (row.get("customer_id") != null)
-            item.setCustomerId(((Number) row.get("customer_id")).intValue());
+		if (row.get("customer_id") != null)
+			item.setCustomerId(((Number) row.get("customer_id")).intValue());
 
-        if (row.get("number_of_guests") != null)
-            item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
+		if (row.get("number_of_guests") != null)
+			item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
 
-        if (row.get("confirmation_code") != null)
-            item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
+		if (row.get("confirmation_code") != null)
+			item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
 
-        if (row.get("enter_time") != null) {
-            Object timeObj = row.get("enter_time");
-            if (timeObj instanceof java.sql.Timestamp) {
-                item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
-            } else if (timeObj instanceof java.util.Date) {
-                item.setEnterTime((java.util.Date) timeObj);
-            }
-        }
-        
-        
-        if (row.get("reservation_date") != null) {
-            Object resDateObj = row.get("reservation_date");
-            if (resDateObj instanceof java.sql.Timestamp) {
-                item.setReservationDate(new java.util.Date(((java.sql.Timestamp) resDateObj).getTime()));
-            } else if (resDateObj instanceof java.util.Date) {
-                item.setReservationDate((java.util.Date) resDateObj);
-            }
-        }
+		if (row.get("enter_time") != null) {
+			Object timeObj = row.get("enter_time");
+			if (timeObj instanceof java.sql.Timestamp) {
+				item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
+			} else if (timeObj instanceof java.util.Date) {
+				item.setEnterTime((java.util.Date) timeObj);
+			}
+		}
 
-        Customer customer = new Customer();
-        if (row.get("customer_id") != null)
-            customer.setCustomerId(((Number) row.get("customer_id")).intValue());
-        if (row.get("customer_name") != null)
-            customer.setName((String) row.get("customer_name"));
-        if (row.get("email") != null)
-            customer.setEmail((String) row.get("email"));
-        if (row.get("phone_number") != null)
-            customer.setPhoneNumber((String) row.get("phone_number"));
+		if (row.get("reservation_date") != null) {
+			Object resDateObj = row.get("reservation_date");
+			if (resDateObj instanceof java.sql.Timestamp) {
+				item.setReservationDate(new java.util.Date(((java.sql.Timestamp) resDateObj).getTime()));
+			} else if (resDateObj instanceof java.util.Date) {
+				item.setReservationDate((java.util.Date) resDateObj);
+			}
+		}
 
-        Object subCode = row.get("subscriber_code");
-        if (subCode != null) {
-            customer.setSubscriberCode(((Number) subCode).intValue());
-        } else {
-            customer.setSubscriberCode(0);
-        }
+		Customer customer = new Customer();
+		if (row.get("customer_id") != null)
+			customer.setCustomerId(((Number) row.get("customer_id")).intValue());
+		if (row.get("customer_name") != null)
+			customer.setName((String) row.get("customer_name"));
+		if (row.get("email") != null)
+			customer.setEmail((String) row.get("email"));
+		if (row.get("phone_number") != null)
+			customer.setPhoneNumber((String) row.get("phone_number"));
 
-        if (row.get("in_waiting_list") != null) {
-             item.setInWaitingList(((Number) row.get("in_waiting_list")).intValue());
-        }
+		Object subCode = row.get("subscriber_code");
+		if (subCode != null) {
+			customer.setSubscriberCode(((Number) subCode).intValue());
+		} else {
+			customer.setSubscriberCode(0);
+		}
 
-        item.setCustomer(customer);
+		if (row.get("in_waiting_list") != null) {
+			item.setInWaitingList(((Number) row.get("in_waiting_list")).intValue());
+		}
 
-        return item;
-    }
+		item.setCustomer(customer);
+
+		return item;
+	}
 
 	private void handleUpdateResponse(Response res) {
 		if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
@@ -262,6 +282,11 @@ public class WaitingListController extends MainNavigator implements Initializabl
 		filterDate.setValue(null);
 	}
 
+	/**
+	 * Assigns the selected customer to a table.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void handleAssignTable(ActionEvent event) {
 		WaitingList selected = waitingListTable.getSelectionModel().getSelectedItem();
@@ -274,6 +299,11 @@ public class WaitingListController extends MainNavigator implements Initializabl
 		clientUi.sendRequest(req);
 	}
 
+	/**
+	 * Removes the selected customer from the waiting list.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void handleRemoveEntry(ActionEvent event) {
 		WaitingList selected = waitingListTable.getSelectionModel().getSelectedItem();
@@ -286,6 +316,11 @@ public class WaitingListController extends MainNavigator implements Initializabl
 		clientUi.sendRequest(req);
 	}
 
+	/**
+	 * Navigates back to the Employee Options screen.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void handleBackBtn(ActionEvent event) {
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);

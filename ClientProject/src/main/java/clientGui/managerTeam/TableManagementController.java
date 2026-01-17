@@ -26,6 +26,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 
+/**
+ * Controller for managing restaurant tables.
+ * Allows adding, updating, and deleting tables, as well as viewing their
+ * current status.
+ */
 public class TableManagementController extends MainNavigator implements Initializable, MessageListener<Object> {
 
     @FXML
@@ -47,6 +52,11 @@ public class TableManagementController extends MainNavigator implements Initiali
     private TableLogic tableLogic;
     private ObservableList<Table> tableList = FXCollections.observableArrayList();
 
+    /**
+     * Initializes the controller.
+     * Sets up table columns and adds a listener to populate fields when a table is
+     * selected.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         colTableNumber.setCellValueFactory(new PropertyValueFactory<>("tableNumber"));
@@ -72,6 +82,12 @@ public class TableManagementController extends MainNavigator implements Initiali
         });
     }
 
+    /**
+     * Initializes the controller with necessary data.
+     * 
+     * @param emp      The logged-in employee
+     * @param clientUi The client UI instance
+     */
     public void initData(Employee emp, ClientUi clientUi) {
         this.emp = emp;
         this.clientUi = clientUi;
@@ -80,10 +96,17 @@ public class TableManagementController extends MainNavigator implements Initiali
         refreshTable();
     }
 
+    /**
+     * Sends a request to fetch all tables from the server.
+     */
     private void refreshTable() {
         tableLogic.getAllTables();
     }
 
+    /**
+     * Handles adding a new table.
+     * Validates input and sends a create request to the server.
+     */
     @FXML
     void handleAddTable(ActionEvent event) {
         try {
@@ -98,6 +121,10 @@ public class TableManagementController extends MainNavigator implements Initiali
         }
     }
 
+    /**
+     * Handles updating an existing table.
+     * Updates the number of seats for the selected table.
+     */
     @FXML
     void handleUpdateTable(ActionEvent event) {
         try {
@@ -123,6 +150,10 @@ public class TableManagementController extends MainNavigator implements Initiali
         }
     }
 
+    /**
+     * Handles deleting a table.
+     * Sends a delete request for the selected table.
+     */
     @FXML
     void handleDeleteTable(ActionEvent event) {
         Table selected = tablesUserId.getSelectionModel().getSelectedItem();
@@ -133,11 +164,17 @@ public class TableManagementController extends MainNavigator implements Initiali
         }
     }
 
+    /**
+     * Clears the input fields and deselects any table.
+     */
     @FXML
     void handleClearBtn(ActionEvent event) {
         clearFields();
     }
 
+    /**
+     * Navigates back to the Employee Options screen.
+     */
     @FXML
     void handleBackBtn(ActionEvent event) {
         // clientUi.removeListener(this);
@@ -151,6 +188,10 @@ public class TableManagementController extends MainNavigator implements Initiali
         entities.Alarm.showAlert(title, content, Alert.AlertType.INFORMATION);
     }
 
+    /**
+     * Handles responses from the server.
+     * Updates the table list or displays success/error alerts.
+     */
     @Override
     public void onMessageReceive(Object msg) {
         Platform.runLater(() -> {

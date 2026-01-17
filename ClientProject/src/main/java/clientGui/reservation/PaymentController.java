@@ -24,6 +24,10 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import javafx.scene.Node;
 
+/**
+ * Controller for the Payment Screen.
+ * Handles credit card payment processing and updates order status.
+ */
 public class PaymentController extends MainNavigator implements MessageListener<Object>, Initializable {
 
 	@FXML
@@ -47,6 +51,11 @@ public class PaymentController extends MainNavigator implements MessageListener<
 	private Customer customer;
 	private ActionEvent currentEvent;
 
+	/**
+	 * Initializes the controller.
+	 * Sets up a close request handler to disconnect the client when the window is
+	 * closed.
+	 */
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 		Platform.runLater(() -> {
@@ -65,6 +74,16 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		this.tableId = tableId;
 	}
 
+	/**
+	 * Initializes the controller with order and payment details.
+	 * 
+	 * @param order         The order object
+	 * @param originalTotal The total amount to pay
+	 * @param subId         The subscriber ID
+	 * @param isSubscriber  The customer type
+	 * @param tableId       The table ID
+	 * @param customer      The customer object
+	 */
 	public void initData(Order order, double originalTotal, int subId, CustomerType isSubscriber, int tableId,
 			Customer customer) {
 		this.tableId = tableId;
@@ -76,6 +95,12 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		this.customer = customer;
 	}
 
+	/**
+	 * Handles payments processing.
+	 * Validates payment inputs and sends payment request to server.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void processPayment(ActionEvent event) {
 		lblError.setVisible(false);
@@ -107,6 +132,11 @@ public class PaymentController extends MainNavigator implements MessageListener<
 
 	}
 
+	/**
+	 * Cancels the payment and returns to the Bill screen.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void cancel(ActionEvent event) {
 		BillController billController = super.loadScreen("reservation/Bill", event, clientUi);
@@ -126,6 +156,10 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		stage.close();
 	}
 
+	/**
+	 * Handles server responses.
+	 * Processes the result of the payment/checkout operation.
+	 */
 	@Override
 	public void onMessageReceive(Object msg) {
 		if (!(msg instanceof Response))
@@ -135,11 +169,11 @@ public class PaymentController extends MainNavigator implements MessageListener<
 		Platform.runLater(() -> {
 			try {
 				switch (res.getResource()) {
-				case ORDER:
-					handleOrderResponse(res);
-					break;
-				default:
-					break;
+					case ORDER:
+						handleOrderResponse(res);
+						break;
+					default:
+						break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

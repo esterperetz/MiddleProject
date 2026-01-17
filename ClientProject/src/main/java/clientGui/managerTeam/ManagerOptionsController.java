@@ -34,6 +34,13 @@ import java.util.List;
 import java.util.ResourceBundle;
 import client.MessageListener;
 
+/**
+ * Controller for the Manager/Employee Dashboard.
+ * 
+ * Provides access to various management functions based on the employee's role.
+ * Handles restaurant schedule management (Opening Hours) and displays a
+ * scrolling ticker.
+ */
 public class ManagerOptionsController extends MainNavigator implements Initializable, MessageListener<Object> {
 
     // --- Internal Fields ---
@@ -123,10 +130,18 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         });
     }
 
+    /**
+     * Initializes the ticker by fetching all opening hours.
+     */
     private void initTicker() {
         employeeLogic.getAllOpeningHours();
     }
 
+    /**
+     * Starts the scrolling animation for the opening hours ticker.
+     * 
+     * @param paneWidth Width of the ticker pane
+     */
     private void startAnimation(double paneWidth) {
         if (currentTransition != null) {
             currentTransition.stop();
@@ -155,6 +170,15 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         currentTransition.play();
     }
 
+    /**
+     * Initializes the controller with the logged-in employee's data.
+     * Configures button visibility based on the employee's role (Manager vs.
+     * Representative).
+     * 
+     * @param emp       The logged-in employee
+     * @param clientUi  The client UI instance
+     * @param isManager The role of the employee
+     */
     public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
         this.clientUi = clientUi;
         this.emp = emp;
@@ -200,6 +224,10 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
     }
 
     // --- Navigation Methods ---
+
+    /**
+     * Navigates to the Subscriber Management screen.
+     */
     @FXML
     void goToSubscriberManagementBtn(ActionEvent event) {
         SubscriberManagementController controller = super.loadScreen("managerTeam/SubscriberManagement", event,
@@ -211,6 +239,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
+    /**
+     * Navigates to the Table Management screen.
+     */
     @FXML
     void goToTableManagementBtn(ActionEvent event) {
         TableManagementController controller = super.loadScreen("managerTeam/TableManagement", event, clientUi);
@@ -221,6 +252,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
+    /**
+     * Navigates to the Waiting List screen.
+     */
     @FXML
     void goToWaitingListBtn(ActionEvent event) {
         WaitingListController waiting_list = super.loadScreen("reservation/WaitingList", event, clientUi);
@@ -228,6 +262,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             waiting_list.initData(emp, this.clientUi, this.isManager);
     }
 
+    /**
+     * Navigates to the Monthly Reports screen.
+     */
     @FXML
     void goToMonthlyReportsBtn(ActionEvent event) {
         MonthlyReportsController m = super.loadScreen("managerTeam/MonthlyReports", event, clientUi);
@@ -235,6 +272,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             m.initData(this.emp, this.clientUi, this.isManager);
     }
 
+    /**
+     * Navigates to the Order creation screen.
+     */
     @FXML
     void goToOrderDetailsBtn(ActionEvent event) {
         OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, clientUi);
@@ -242,6 +282,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             controller.initData(emp, this.clientUi, this.isManager);
     }
 
+    /**
+     * Navigates to the Register Employee screen.
+     */
     @FXML
     public void goToSignUpEmployee(ActionEvent event) {
         try {
@@ -253,6 +296,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
+    /**
+     * Navigates to the Register Subscriber screen.
+     */
     @FXML
     void goToRegisterSubscriberBtn(ActionEvent event) {
         RegisterSubscriberController r = super.loadScreen("user/RegisterSubscriber", event, clientUi);
@@ -260,6 +306,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             r.initData(emp, this.clientUi, this.isManager);
     }
 
+    /**
+     * Navigates to the General Reports screen.
+     */
     @FXML
     void goToReportsBtn(ActionEvent event) {
         ReportsController r = super.loadScreen("managerTeam/ReportsScreen", event, clientUi);
@@ -267,12 +316,20 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
             r.initData(emp, this.clientUi, this.isManager);
     }
 
+    /**
+     * Navigates back to the Selection Screen (Logout).
+     */
     @FXML
     void goBackBtn(ActionEvent event) {
         super.loadScreen("navigation/SelectionScreen", event, clientUi);
     }
 
     // --- Schedule Logic ---
+
+    /**
+     * Updates the schedule (Opening Hours) for a selected date.
+     * Validates input and sends a create/update request to the server.
+     */
     @FXML
     void updateScheduleBtn(ActionEvent event) {
         LocalDate date = dpManageDate.getValue();
@@ -304,11 +361,6 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 LocalTime localOpen = LocalTime.parse(openTimeStr, formatter);
                 LocalTime localClose = LocalTime.parse(closeTimeStr, formatter);
 
-//                if (localClose.isBefore(localOpen)) {
-//                    setStatus("Closing time cannot be before opening time.", true);
-//                    return;
-//                }
-
                 sqlOpenTime = Time.valueOf(localOpen);
                 sqlCloseTime = Time.valueOf(localClose);
             }
@@ -339,6 +391,9 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
         }
     }
 
+    /**
+     * Removes the selected Special Date from the list and database.
+     */
     @FXML
     void removeSpecialDateBtn(ActionEvent event) {
         String selectedItem = listSpecialDates.getSelectionModel().getSelectedItem();

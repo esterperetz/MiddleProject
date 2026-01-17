@@ -9,12 +9,16 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import java.io.IOException;
 
+/**
+ * Base class for all controllers that handle screen navigation.
+ * Manages loading FXML screens, injecting dependencies (ClientUi), and handling
+ * stage transitions.
+ */
 public class MainNavigator implements BaseController {
-	
+
 	private Stage mainStage;
 	protected ClientUi clientUi;
 
-	
 	@Override
 	public void setMainNavigator(MainNavigator navigator) {
 
@@ -37,103 +41,117 @@ public class MainNavigator implements BaseController {
 		return this.clientUi;
 	}
 
-	
+	/**
+	 * Loads a new screen (FXML) into the current stage or a new one.
+	 * Initializes the controller with the ClientUi instance and sets up listeners.
+	 * 
+	 * @param <T>      The type of the controller
+	 * @param fxmlPath The relative path to the FXML file (without .fxml extension)
+	 * @param event    The event that triggered this navigation (used to find the
+	 *                 current stage)
+	 * @param c        The ClientUi instance
+	 * @return The controller of the loaded screen
+	 */
 	@SuppressWarnings("unchecked")
-	public <T> T loadScreen(String fxmlPath, javafx.event.ActionEvent event,ClientUi c) {
+	public <T> T loadScreen(String fxmlPath, javafx.event.ActionEvent event, ClientUi c) {
 		try {
-			
+
 			FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
 			Parent root = loader.load();
-			
-			//add init  data here
 
+			// Get and setup the controller
 			T controller = loader.getController();
 			System.out.println(controller.getClass().toString());
 			if (controller instanceof MainNavigator) {
 				BaseController base = (BaseController) controller;
-				
+
 				base.setClientUi(c);
 				base.setMainNavigator(this);
 			}
-			
-			
+
+			// Handle MessageListener registration
 			if (controller instanceof MessageListener) {
-	            c.removeAllListeners(); 
-	            c.addListener((MessageListener<Object>) controller);
-	            System.out.println("DEBUG: Cleared old listeners and added new listener: " + controller.getClass().getSimpleName());
-	        }
-
-
-			System.out.println(this.clientUi);
-			
-			Stage stage = (event != null && event.getSource() instanceof javafx.scene.Node) 
-			                ? (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow() 
-			                : this.mainStage;
-
-			
-			if (stage == null) {
-			    System.err.println("Error: Stage is null. Cannot load screen.");
-			    return null;
+				c.removeAllListeners();
+				c.addListener((MessageListener<Object>) controller);
+				System.out.println("DEBUG: Cleared old listeners and added new listener: "
+						+ controller.getClass().getSimpleName());
 			}
 
-						this.mainStage = stage;
+			System.out.println(this.clientUi);
+
+			// Determine target stage
+			Stage stage = (event != null && event.getSource() instanceof javafx.scene.Node)
+					? (Stage) ((javafx.scene.Node) event.getSource()).getScene().getWindow()
+					: this.mainStage;
+
+			if (stage == null) {
+				System.err.println("Error: Stage is null. Cannot load screen.");
+				return null;
+			}
+
+			this.mainStage = stage;
 			stage.setScene(new Scene(root));
 			stage.show();
-		
 
-			return controller; 
+			return controller;
 
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error loading screen: " + fxmlPath);
 			return null;
 		}
-		
 	}
-	
+
+	/**
+	 * Opens a new popup window with the specified FXML.
+	 * 
+	 * @param <T>      The type of the controller
+	 * @param fxmlPath The relative path to the FXML file
+	 * @param title    The title of the popup window
+	 * @param c        The ClientUi instance
+	 * @return The controller of the loaded popup
+	 */
 	@SuppressWarnings("unchecked")
 	public <T> T openPopup(String fxmlPath, String title, ClientUi c) {
-	    try {
-	        
-	        FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
-	        Parent root = loader.load();
+		try {
 
-	        T controller = loader.getController();
+			FXMLLoader loader = new FXMLLoader(MainNavigator.class.getResource("/clientGui/" + fxmlPath + ".fxml"));
+			Parent root = loader.load();
 
-	        
-	        if (controller instanceof MainNavigator) {
-	            BaseController base = (BaseController) controller;
-	            base.setClientUi(c);
-	            base.setMainNavigator(this); 
-	        }
+			T controller = loader.getController();
 
-	        
-	        if (controller instanceof MessageListener) {
-	            c.addListener((MessageListener<Object>) controller);
-	            System.out.println("DEBUG: Added Popup listener: " + controller.getClass().getSimpleName());
-	        }
+			if (controller instanceof MainNavigator) {
+				BaseController base = (BaseController) controller;
+				base.setClientUi(c);
+				base.setMainNavigator(this);
+			}
 
-	        // 4. יצירת Stage חדש ונפרד
-	        Stage popupStage = new Stage();
-	        popupStage.setTitle(title);
-	        popupStage.setScene(new Scene(root));
+			if (controller instanceof MessageListener) {
+				c.addListener((MessageListener<Object>) controller);
+				System.out.println("DEBUG: Added Popup listener: " + controller.getClass().getSimpleName());
+			}
 
-	        popupStage.setOnHidden(e -> {
-	            if (controller instanceof MessageListener) {
-	                
-	                c.removeListener((MessageListener<Object>) controller); 
-	                System.out.println("Popup closed and listener removed");
-	            }
-	        });
+			// Create a new Stage for the popup
+			Stage popupStage = new Stage();
+			popupStage.setTitle(title);
+			popupStage.setScene(new Scene(root));
 
-	        popupStage.show(); 
+			// Clean up listeners when popup closes
+			popupStage.setOnHidden(e -> {
+				if (controller instanceof MessageListener) {
+					c.removeListener((MessageListener<Object>) controller);
+					System.out.println("Popup closed and listener removed");
+				}
+			});
 
-	        return controller;
+			popupStage.show();
 
-	    } catch (IOException e) {
-	        e.printStackTrace();
-	        System.err.println("Error loading popup: " + fxmlPath);
-	        return null;
-	    }
+			return controller;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.err.println("Error loading popup: " + fxmlPath);
+			return null;
+		}
 	}
 }

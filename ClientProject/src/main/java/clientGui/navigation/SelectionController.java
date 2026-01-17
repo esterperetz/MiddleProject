@@ -26,9 +26,13 @@ import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class SelectionController extends MainNavigator implements  MessageListener<Object>,Initializable{
-	//private ClientUi clientUi;
- 
+/**
+ * Controller for the main Selection Screen.
+ * Allows the user to choose their login type: Restaurant Representative,
+ * Subscriber, or Casual Customer.
+ */
+public class SelectionController extends MainNavigator implements MessageListener<Object>, Initializable {
+
     @FXML
     private Button rep_of_the_res;
 
@@ -37,95 +41,82 @@ public class SelectionController extends MainNavigator implements  MessageListen
 
     @FXML
     private Button casual_customer;
-	
-	
-    
-    @Override
-	public void initialize(URL location, ResourceBundle resources) {
-		Platform.runLater(() -> {
-			if (casual_customer.getScene() != null && casual_customer.getScene().getWindow() != null) {
-				Stage stage = (Stage) casual_customer.getScene().getWindow();
-				stage.setOnCloseRequest(event -> {
-					clientUi.disconnectClient();
 
-				});
-			}
-		});
-		
-	}
-    
+    /**
+     * Initializes the controller.
+     * Sets up a close request handler to disconnect the client when the window is
+     * closed.
+     */
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        Platform.runLater(() -> {
+            if (casual_customer.getScene() != null && casual_customer.getScene().getWindow() != null) {
+                Stage stage = (Stage) casual_customer.getScene().getWindow();
+                stage.setOnCloseRequest(event -> {
+                    clientUi.disconnectClient();
+
+                });
+            }
+        });
+    }
+
+    /**
+     * Navigates to the Restaurant Login screen.
+     * 
+     * @param event The action event
+     */
     @FXML
     void pressRepresentorOfTheResturant(ActionEvent event) {
         System.out.println("Navigating to Restaurant Representative screen...");
-        
-        RestaurantLoginController controller = super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
+
+        RestaurantLoginController controller = super.loadScreen("managerTeam/RestaurantLogin", event, clientUi);
         if (controller != null) {
-            controller.initData(new Employee(),clientUi, null);
+            controller.initData(new Employee(), clientUi, null);
         }
     }
 
+    /**
+     * Navigates to the Subscriber Login screen.
+     * 
+     * @param event The action event
+     */
     @FXML
     void pressSubscriber(ActionEvent event) {
         System.out.println("Navigating to Subscriber screen...");
-        SubscriberLoginController controller = super.loadScreen("user/SubscriberLogin", event,clientUi);
+        SubscriberLoginController controller = super.loadScreen("user/SubscriberLogin", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, CustomerType.SUBSCRIBER, 0,new Customer());
+            controller.initData(clientUi, CustomerType.SUBSCRIBER, 0, new Customer());
         }
     }
 
+    /**
+     * Navigates to the Casual Customer options screen.
+     * 
+     * @param event The action event
+     */
     @FXML
     void pressCasualCustomer(ActionEvent event) {
         System.out.println("Navigating to Casual Customer screen...");
         SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
         if (controller != null) {
-            controller.initData(clientUi, CustomerType.REGULAR, 0,new Customer());
+            controller.initData(clientUi, CustomerType.REGULAR, 0, new Customer());
         }
     }
-    
-    /**
-     * Initializes this controller with an existing ClientUi and server IP.
-     * Registers this controller as a listener server.
-     *
-     * @param clientUi The client UI used for server communication.
-     * 
-     */
- 
 
-	@Override
-	public void onMessageReceive(Object msg) {
-		Platform.runLater(() -> {
+    /**
+     * Handles incoming messages from the server.
+     * Log disconnect messages.
+     */
+    @Override
+    public void onMessageReceive(Object msg) {
+        Platform.runLater(() -> {
             if (msg instanceof String) {
                 String message = (String) msg;
                 if (message.contains("Disconnecting")) {
                     System.out.println("Server connection lost");
-                    // כאן אפשר להוסיף טיפול בניתוק אם צריך
+                    // Can add disconnection handling here if needed
                 }
             }
         });
-		
-	}
-
-	
-
-/*
-	@Override
-	public void setClientUi(ClientUi clientUi) {
-		// TODO Auto-generated method stub
-		this.clientUi = clientUi;
-		 // נרשמים להאזנה כדי לטפל במקרי ניתוק מהשרת (אם רוצים)
-        clientUi.addListener(this);
-
-        // שימוש בכפתור קיים כדי לקבל את החלון ולטפל בסגירה
-        Platform.runLater(() -> {
-            if (subscriber.getScene() != null) {
-                Stage stage = (Stage) subscriber.getScene().getWindow();
-                stage.setOnCloseRequest(event -> {
-                    System.out.println("Closing client...");
-                    clientUi.disconnectClient();
-                    System.exit(0);
-                });
-            }
-        });
-	}
-	*/
+    }
 }

@@ -23,6 +23,10 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 
+/**
+ * Controller for retrieving a table using a confirmation code.
+ * Also displays active orders for subscribers.
+ */
 public class GetTableController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
@@ -44,6 +48,14 @@ public class GetTableController extends MainNavigator implements MessageListener
 	private CustomerType isSubscriber;
 	private Customer customer;
 
+	/**
+	 * Initializes the controller with customer and session data.
+	 * 
+	 * @param clientUi           The client UI instance
+	 * @param isSubscriberStatus The customer type
+	 * @param subCode            The subscriber code
+	 * @param customer           The customer object
+	 */
 	public void initData(ClientUi clientUi, CustomerType isSubscriberStatus, Integer subCode, Customer customer) {
 		this.clientUi = clientUi;
 		this.isSubscriber = isSubscriberStatus;
@@ -68,18 +80,31 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 	}
 
+	/**
+	 * Loads active orders for the subscriber.
+	 */
 	private void loadSubscriberOrders() {
 		Order reqOrder = new Order();
 		reqOrder.setCustomer(customer);
 		orderLogic.getSubscriberOrders(subscriberCode);
 	}
 
+	/**
+	 * Handles the "Get Table" button click.
+	 * Validates the confirmation code and attempts to retrieve the table.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void checkTableAvailability(ActionEvent event) {
 		processCodeCheck(txtConformationCode.getText());
 	}
 
-	// Helper method to handle both manual and click inputs
+	/**
+	 * Processes the table retrieval request using the provided confirmation code.
+	 * 
+	 * @param codeStr The confirmation code as a string
+	 */
 	private void processCodeCheck(String codeStr) {
 		if (codeStr == null || codeStr.trim().isEmpty()) {
 			lblResult.setText("Please enter a valid Order ID.");
@@ -94,12 +119,22 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 	}
 
+	/**
+	 * Opens a popup to help the user retrieve a lost confirmation code.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void openLostCodePopup(ActionEvent event) {
 		ForgetCodeController control = super.openPopup("reservation/ForgetCode", "Retrieve Code", clientUi);
 		control.initData(clientUi, isSubscriber, subscriberCode, customer);
 	}
 
+	/**
+	 * Navigates back to the Subscriber Option screen.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void goBack(ActionEvent event) {
 		SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, clientUi);
@@ -108,6 +143,10 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 	}
 
+	/**
+	 * Handles messages from the server.
+	 * Processes table retrieval responses and lists of orders.
+	 */
 	@Override
 	public void onMessageReceive(Object msg) {
 		if (!(msg instanceof Response))
@@ -132,7 +171,9 @@ public class GetTableController extends MainNavigator implements MessageListener
 		});
 	}
 
-	// New handler for populating the list
+	/**
+	 * Handles the response containing a list of subscriber orders.
+	 */
 	private void handleOrderResponse(Response res) {
 		// Assuming ActionType.GET_ORDERS_FOR_ENTRY or similar
 		if (res.getStatus() == ResponseStatus.SUCCESS) {
@@ -157,6 +198,10 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 	}
 
+	/**
+	 * Handles the response for table retrieval.
+	 * Displays the table number if successful.
+	 */
 	private void handleTableResponse(Response res) {
 		if (res.getAction() == ActionType.GET) {
 			if (res.getStatus() == ResponseStatus.SUCCESS) {
@@ -169,6 +214,13 @@ public class GetTableController extends MainNavigator implements MessageListener
 		}
 	}
 
+	/**
+	 * Creates a button for each order in the list.
+	 * Clicking the button automatically fills in the confirmation code.
+	 * 
+	 * @param o The order object
+	 * @return The created button
+	 */
 	private Button createOrderButton(Order o) {
 		// Design the button text
 		String btnText = String.format("Time: %s | Guests: %d\nCode: %d", o.getOrderDate().toString().substring(11, 16), // Extract

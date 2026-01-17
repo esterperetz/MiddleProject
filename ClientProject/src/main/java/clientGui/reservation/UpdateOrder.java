@@ -27,25 +27,25 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 
 /**
- * * Controller for the "Update Order" window. Shows the selected order data and
- * sends the updated order to the server.
+ * Controller for the "Update Order" window.
+ * Shows the selected order data and sends the updated order to the server.
  */
 public class UpdateOrder extends MainNavigator implements Initializable {
 
 	@FXML
-	private TextField orderIdField; // במקום txtId
+	private TextField orderIdField;
 	@FXML
 	private TextField subscriberIdField;
 	@FXML
-	private TextField clientNameField; // במקום txtName
+	private TextField clientNameField;
 	@FXML
 	private TextField phoneField;
 	@FXML
 	private TextField emailField;
 	@FXML
-	private TextField guestsField; // במקום txtName
+	private TextField guestsField;
 	@FXML
-	private DatePicker datePicker; // במקום txtName1
+	private DatePicker datePicker;
 	@FXML
 	private TextField timeField; // HH:mm
 	@FXML
@@ -75,61 +75,59 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 	 * @param orderLogic     The logic object for server communication.
 	 * @param mainController The reference to the main UI controller for data
 	 *                       refresh.
+	 * @param isManager      The role of the employee
+	 * @param emp            The employee object
 	 */
 	public void initData(Order order, OrderLogic orderLogic, OrderUi_controller mainController,
-			Employee.Role isManager,Employee emp) { // FIXED SIGNATURE
+			Employee.Role isManager, Employee emp) {
 		this.emp = emp;
 		this.isManager = isManager;
-//		this.employeeName = employeeName;
+		// this.employeeName = employeeName;
 		this.o = order;
 		this.ol = orderLogic;
 		this.mainController = mainController; // Store main controller reference
 		orderIdField.setText(String.valueOf(o.getOrderNumber()));
 
-		if (o.getCustomer().getCustomerId() != null && o.getCustomer().getSubscriberCode() != null && o.getCustomer().getSubscriberCode() != 0) {
-			// אם זה מנוי: מציגים ID ונועלים את שדות הלקוח
+		if (o.getCustomer().getCustomerId() != null && o.getCustomer().getSubscriberCode() != null
+				&& o.getCustomer().getSubscriberCode() != 0) {
+			// If subscriber: display ID and lock client fields
 			subscriberIdField.setText(String.valueOf(o.getCustomer().getSubscriberCode()));
-			setClientFieldsEditable(false); // נעילה
-		}
-//			else if (o.getCustomerId() != null && o.getCustomerId() != 0) {
-//			subscriberIdField.setText(String.valueOf(o.getCustomerId()));
-//			setClientFieldsEditable(false); //
-//		} 
-		else {
-			// אם זה לקוח מזדמן: משאירים ריק ומאפשרים עריכה
+			setClientFieldsEditable(false); // Lock
+		} else {
+			// If casual customer: leave empty and allow editing
 			subscriberIdField.setText("");
-			setClientFieldsEditable(true); // פתיחה
+			setClientFieldsEditable(true); // Unlock
 		}
 
-		// 2. מילוי פרטי לקוח (Strings)
+		// 2. Fill client details (Strings)
 		clientNameField.setText(o.getCustomer().getName());
 		phoneField.setText(o.getCustomer().getPhoneNumber());
 		emailField.setText(o.getCustomer().getEmail());
 
-		// 3. מילוי מספרים
+		// 3. Fill numbers
 		guestsField.setText(String.valueOf(o.getNumberOfGuests()));
 		priceField.setText(String.valueOf(o.getTotalPrice()));
 
-		// 4. מילוי סטטוס (ComboBox)
+		// 4. Fill status (ComboBox)
 		if (o.getOrderStatus() != null) {
 			statusComboBox.setValue(o.getOrderStatus());
 		}
 
-		// 5. טיפול מיוחד בתאריך ושעה (Order Date)
-		// אנחנו מפרקים את ה-Date של ג'אווה ל-LocalDate (לתאריכון) ו-LocalTime (לשדה
-		// השעה)
+		// 5. Special handling for Order Date
+		// We split Java's Date into LocalDate (for DatePicker) and LocalTime (for Time
+		// Field)
 		if (o.getOrderDate() != null) {
-			// המרה מ-Date ל-LocalDateTime
+			// Convert Date to LocalDateTime
 			java.time.LocalDateTime ldt = o.getOrderDate().toInstant().atZone(java.time.ZoneId.systemDefault())
 					.toLocalDateTime();
 
-			datePicker.setValue(ldt.toLocalDate()); // הצגת התאריך
+			datePicker.setValue(ldt.toLocalDate()); // Display Date
 
-			// הצגת השעה בפורמט HH:mm (למשל 14:30)
+			// Display Time in HH:mm format (e.g., 14:30)
 			timeField.setText(String.format("%02d:%02d", ldt.getHour(), ldt.getMinute()));
 		}
 
-		// 6. טיפול בשעת הגעה (Arrival Time)
+		// 6. Handling Arrival Time
 		if (o.getArrivalTime() != null) {
 			java.time.LocalDateTime arrivalLdt = order.getArrivalTime().toInstant()
 					.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
@@ -138,13 +136,18 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		}
 	}
 
+	/**
+	 * Sets the editability of client fields.
+	 * 
+	 * @param isEditable true to enable editing, false to disable
+	 */
 	private void setClientFieldsEditable(boolean isEditable) {
-		// הגדרת מצב עריכה
+		// Set editable state
 		clientNameField.setEditable(isEditable);
 		phoneField.setEditable(isEditable);
 		emailField.setEditable(isEditable);
 
-		// שינוי עיצוב ויזואלי (אפור אם נעול, לבן אם פתוח)
+		// Change visual style (gray if locked, white if open)
 		String style = isEditable ? "-fx-background-color: white; -fx-background-radius: 5;"
 				: "-fx-background-color: #e0e0e0; -fx-background-radius: 5;";
 
@@ -157,18 +160,28 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 		this.o = o1;
 	}
 
+	/**
+	 * Cancels the update operation and returns to the Order UI.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	private void handleCancel(ActionEvent event) {
 		OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 		if (controller != null) {
-			controller.initData(emp,clientUi,this.isManager);
+			controller.initData(emp, clientUi, this.isManager);
 		} else {
-			Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
-			// System.err.println("Error: Could not load OrderUi_controllerr.");
+			Alarm.showAlert("Error Loading", "Could not load OrderUi_controller", AlertType.ERROR);
 		}
 	}
 
+	/**
+	 * Handles the "Update" button click.
+	 * Validates input and sends the updated order to the server.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	private void handleUpdate(ActionEvent event) {
 		try {
@@ -178,7 +191,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				return;
 			}
 
-			// 2. איסוף נתונים מהשדות שלך
+			// 2. Collect data from fields
 			String name = clientNameField.getText();
 			String phone = phoneField.getText();
 			String email = emailField.getText();
@@ -191,10 +204,10 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			}
 
 			LocalDate localDate = datePicker.getValue();
-			LocalTime localTime = LocalTime.parse(timeField.getText()); // מצפה ל-HH:mm
+			LocalTime localTime = LocalTime.parse(timeField.getText()); // Expecting HH:mm
 			Date newOrderDate = Date.from(localDate.atTime(localTime).atZone(ZoneId.systemDefault()).toInstant());
 
-			Date newArrivalTime = o.getArrivalTime(); // ברירת מחדל: הישן
+			Date newArrivalTime = o.getArrivalTime(); // Default: Old value
 			if (!arrivalTimeField.getText().isEmpty()) {
 				LocalTime arrivalT = LocalTime.parse(arrivalTimeField.getText());
 				newArrivalTime = Date.from(localDate.atTime(arrivalT).atZone(ZoneId.systemDefault()).toInstant());
@@ -206,34 +219,33 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 				Alarm.showAlert(header, context, Alert.AlertType.ERROR);
 			} else {
 				Customer updatedCustomer = o.getCustomer();
-		        if (updatedCustomer == null) {
-		            updatedCustomer = new Customer(); 
-		        }
-		        updatedCustomer.setName(name);       
-		        updatedCustomer.setPhoneNumber(phone); 
-		        updatedCustomer.setEmail(email);
+				if (updatedCustomer == null) {
+					updatedCustomer = new Customer();
+				}
+				updatedCustomer.setName(name);
+				updatedCustomer.setPhoneNumber(phone);
+				updatedCustomer.setEmail(email);
 				Order updatedOrder = new Order(o.getOrderNumber(),
-						newOrderDate, 
+						newOrderDate,
 						guests,
 						o.getConfirmationCode(),
 						updatedCustomer,
 						null, o.getDateOfPlacingOrder(),
-						newArrivalTime, 
-						null, price, 
-						status 
-				);
+						newArrivalTime,
+						null, price,
+						status);
 
 				ol.updateOrder(updatedOrder);
 				OrderUi_controller controller = super.loadScreen("reservation/orderUi", event, this.clientUi);
 
 				if (controller != null) {
-					controller.initData(emp,clientUi,this.isManager);
+					controller.initData(emp, clientUi, this.isManager);
 				} else {
-					Alarm.showAlert("Error Loading", "Could not load OrderUi_controllerr", AlertType.ERROR);
+					Alarm.showAlert("Error Loading", "Could not load OrderUi_controller", AlertType.ERROR);
 				}
-				// רענון הטבלה במסך הראשי (אם העברנו אותו ב-initData)
+				// Refresh table in main screen (if passed in initData)
 				if (mainController != null) {
-					mainController.refreshTableData(); // הנחה שיש פונקציה כזו שקוראת ל-GET_ALL
+					mainController.refreshTableData(); // Assuming this function calls GET_ALL
 				}
 			}
 
@@ -241,7 +253,7 @@ public class UpdateOrder extends MainNavigator implements Initializable {
 			String header = "Format Error";
 			String context = "Check that Guests and Price are valid numbers.";
 			Alarm.showAlertWithException(header, context, Alert.AlertType.ERROR, e);
-		} catch (Exception e) { // תופס גם שגיאות תאריך (DateTimeParseException)
+		} catch (Exception e) { // Catches Date/Time parsing errors as well
 			String header = "Error";
 			String context = "Check time format (HH:mm) or connection.";
 			Alarm.showAlertWithException(header, context, Alert.AlertType.ERROR, e);

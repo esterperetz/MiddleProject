@@ -15,6 +15,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
+/**
+ * Controller for the Subscriber Login screen.
+ * Handles authentication of subscribers via their code.
+ */
 public class SubscriberLoginController extends MainNavigator implements MessageListener<Object> {
 
 	@FXML
@@ -25,6 +29,10 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	private Integer subId;
 	private Customer customer;
 
+	/**
+	 * Initializes the controller.
+	 * Sets up a listener to disconnect the client when the window is closed.
+	 */
 	@FXML
 	public void initialize() {
 		Platform.runLater(() -> {
@@ -38,6 +46,12 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		});
 	}
 
+	/**
+	 * Handles the login attempt.
+	 * Validates the subscriber code and sends a request to the server.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void performLogin(ActionEvent event) {
 		String subscriber_Code = SubscriberCode.getText().trim();
@@ -64,46 +78,54 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 	@Override
 	public void onMessageReceive(Object msg) {
-	    Platform.runLater(() -> {
-	        try {
-	            if (msg instanceof Response) {
-	                Response res = (Response) msg;
+		Platform.runLater(() -> {
+			try {
+				if (msg instanceof Response) {
+					Response res = (Response) msg;
 
-	                if (res.getResource() == entities.ResourceType.CUSTOMER) {
-	                    
-	                    switch (res.getAction()) {
-	                        case GET_BY_ID:
-	                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-	                                if (res.getData() instanceof Customer) {
-	                                    System.out.println(res.getStatus().name());
-	                                    this.customer = (Customer) res.getData();
+					if (res.getResource() == entities.ResourceType.CUSTOMER) {
 
-	                                    SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
-	                                            currentEvent, clientUi);
-	                                    if (controller != null) {
-	                                        controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode, customer);
-	                                    }
-	                                }
-	                            } else {
-	                                Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
-	                            }
-	                            break;
+						switch (res.getAction()) {
+							case GET_BY_ID:
+								if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+									if (res.getData() instanceof Customer) {
+										System.out.println(res.getStatus().name());
+										this.customer = (Customer) res.getData();
 
-	                        default:
-	                            break;
-	                    }
-	                }
-	            }
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    });
+										SubscriberOptionController controller = super.loadScreen(
+												"user/SubscriberOption",
+												currentEvent, clientUi);
+										if (controller != null) {
+											controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode,
+													customer);
+										}
+									}
+								} else {
+									Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code",
+											Alert.AlertType.ERROR);
+								}
+								break;
+
+							default:
+								break;
+						}
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
 	}
 
 	public void move() {
 
 	}
 
+	/**
+	 * Opens the barcode scanner simulation.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void openScanner(ActionEvent event) {
 		BarcodeScannerController controller = super.loadScreen("user/BarcodeScanner", event, clientUi);
@@ -113,13 +135,25 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		}
 	}
 
+	/**
+	 * Navigates back to the Selection Screen.
+	 * 
+	 * @param event The action event
+	 */
 	@FXML
 	void goBack(ActionEvent event) {
-
-		// וודא שגם הקובץ SelectionScreen.fxml נמצא באותה תיקייה
+		// Verify that SelectionScreen.fxml is in the correct folder
 		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 	}
 
+	/**
+	 * Initializes the controller with session data.
+	 * 
+	 * @param clientUi     The client UI instance
+	 * @param isSubscriber The customer type
+	 * @param subId        The subscriber ID
+	 * @param customer     The customer object
+	 */
 	public void initData(ClientUi clientUi, CustomerType isSubscriber, Integer subId, Customer customer) {
 		this.isSubscriber = isSubscriber;
 		this.subId = subId;

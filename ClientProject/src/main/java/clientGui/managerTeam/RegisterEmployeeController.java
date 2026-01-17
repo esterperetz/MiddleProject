@@ -23,6 +23,10 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 
+/**
+ * Controller for registering new employees.
+ * Allows a Manager to create a new employee account with specific roles.
+ */
 public class RegisterEmployeeController extends MainNavigator implements Initializable, MessageListener<Object> {
 	@FXML
 	private TextField txtUsername;
@@ -45,20 +49,29 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 	private String employeeName;
 
 	private Employee emp;
+
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		selectRole.getItems().setAll(Role.values());
 	}
 
-	public void initData(Employee emp,ClientUi clientUi, Employee.Role isManager) {
+	/**
+	 * Initializes the controller with the current session data.
+	 * 
+	 * @param emp       The logged-in employee
+	 * @param clientUi  The client UI instance
+	 * @param isManager The role of the current user
+	 */
+	public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
 		this.emp = emp;
 		this.clientUi = clientUi;
 		this.isManager = isManager;
-//		this.employeeName=employeeName;
+		// this.employeeName=employeeName;
 	}
 
 	/**
 	 * Handles the registration process when "Register Now" is clicked.
+	 * Validates input and sends a request to create a new employee.
 	 */
 	@FXML
 	void handleRegisterBtn(ActionEvent event) {
@@ -84,15 +97,18 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 		}
 		try {
 			EmployeeLogic employee = new EmployeeLogic(clientUi);
-			employee.registerEmployee(new Employee(username, "newEmployee1234",phone, email, role)); // CHANGED FROM
-																										// 123456 TO 0
-																										// (AUTO INC)
+			employee.registerEmployee(new Employee(username, "newEmployee1234", phone, email, role)); // Auto-increment
+																										// ID
 		} catch (Exception e) {
-			System.out.println("employee register ");
+			System.out.println("Error during employee registration: " + e.getMessage());
 		}
 
 	}
 
+	/**
+	 * Handles server responses.
+	 * If registration is successful, navigates back to the manager options.
+	 */
 	@Override
 	public void onMessageReceive(Object msg) {
 		try {
@@ -102,22 +118,22 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 				if (res.getAction().name().equals("REGISTER_EMPLOYEE")
 						&& res.getStatus().name().equals("SUCCESS")) {
 					Platform.runLater(() -> {
-						// will send a mail to the employee to make his own password
+						// The server sends a mail to the employee with password instructions
 						System.out.println(res.getMessage_from_server());
 						ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption",
 								currentEvent, clientUi);
 						if (controller != null) {
-//							controller.AnotherinitData(employeeName);
-							controller.initData(emp,clientUi, isManager);
+							// controller.AnotherinitData(employeeName);
+							controller.initData(emp, clientUi, isManager);
 						}
 					});
 				} else if (res.getStatus().name().equals("ERROR")) {
 					Platform.runLater(() -> lblMessage.setText(res.getMessage_from_server()));
 				}
 			} else
-				System.out.println("nothing works");
+				System.out.println("Unknown message received");
 		} catch (Exception e) {
-			System.out.println("two ");
+			System.out.println("Error processing response");
 		}
 
 	}
@@ -127,11 +143,11 @@ public class RegisterEmployeeController extends MainNavigator implements Initial
 	 */
 	@FXML
 	void handleBackBtn(ActionEvent event) {
-		// Fixed: Navigate back to SelectionScreen instead of Manager Dashboard
+		// Navigate back to SelectionScreen instead of Manager Dashboard
 		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
 		try {
-			controller.initData(emp,clientUi, this.isManager);
-			
+			controller.initData(emp, clientUi, this.isManager);
+
 		} catch (NullPointerException e) {
 			System.err.println("Error: Could not load ManagerOptionsController.");
 		}

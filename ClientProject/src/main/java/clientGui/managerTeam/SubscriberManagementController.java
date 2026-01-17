@@ -27,6 +27,11 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.MouseButton;
 
+/**
+ * Controller for managing subscribers.
+ * Displays a table of all registered subscribers and allows navigation to their
+ * history.
+ */
 public class SubscriberManagementController extends MainNavigator implements Initializable, MessageListener<Object> {
 
     // --- FXML Elements for Table ---
@@ -48,12 +53,17 @@ public class SubscriberManagementController extends MainNavigator implements Ini
     private Employee connectedEmployee;
     private Employee.Role role;
     private UserLogic userLogic;
-    
+
     private ObservableList<Customer> subscriberList = FXCollections.observableArrayList();
 
+    /**
+     * Initializes the controller.
+     * Sets up the table columns and adds a double-click listener to open subscriber
+     * history.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        colId.setCellValueFactory(new PropertyValueFactory<>("subscriberCode")); 
+        colId.setCellValueFactory(new PropertyValueFactory<>("subscriberCode"));
         colName.setCellValueFactory(new PropertyValueFactory<>("name"));
         colPhone.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
         colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
@@ -64,8 +74,8 @@ public class SubscriberManagementController extends MainNavigator implements Ini
         subscriberTable.setRowFactory(tv -> {
             javafx.scene.control.TableRow<Customer> row = new javafx.scene.control.TableRow<>();
             row.setOnMouseClicked(mouseEvent -> {
-                if (!row.isEmpty() && mouseEvent.getButton() == MouseButton.PRIMARY 
-                     && mouseEvent.getClickCount() == 2) {
+                if (!row.isEmpty() && mouseEvent.getButton() == MouseButton.PRIMARY
+                        && mouseEvent.getClickCount() == 2) {
                     Customer clickedRow = row.getItem();
                     ActionEvent fakeEvent = new ActionEvent(subscriberTable, null);
                     openSubscriberHistory(clickedRow, fakeEvent);
@@ -75,6 +85,13 @@ public class SubscriberManagementController extends MainNavigator implements Ini
         });
     }
 
+    /**
+     * Initializes the controller with necessary data.
+     * 
+     * @param emp      The logged-in employee
+     * @param clientUi The client UI instance
+     * @param role     The role of the employee
+     */
     public void initData(Employee emp, ClientUi clientUi, Employee.Role role) {
         this.clientUi = clientUi;
         this.connectedEmployee = emp;
@@ -84,16 +101,23 @@ public class SubscriberManagementController extends MainNavigator implements Ini
         refreshSubscribers();
     }
 
+    /**
+     * Refreshes the subscriber list by sending a request to the server.
+     */
     private void refreshSubscribers() {
         userLogic.getAllSubscribers();
     }
 
+    /**
+     * Handles responses from the server.
+     * Updates the subscriber table with the fetched data.
+     */
     @Override
     public void onMessageReceive(Object msg) {
         Platform.runLater(() -> {
             if (msg instanceof Response) {
                 Response res = (Response) msg;
-                
+
                 if (res.getResource() == ResourceType.CUSTOMER) {
                     switch (res.getAction()) {
                         case GET_ALL:
@@ -101,7 +125,7 @@ public class SubscriberManagementController extends MainNavigator implements Ini
                                 if (res.getData() instanceof List) {
                                     List<Customer> data = (List<Customer>) res.getData();
                                     subscriberList.setAll(data);
-                                    
+
                                 }
                             }
                             break;
@@ -124,19 +148,27 @@ public class SubscriberManagementController extends MainNavigator implements Ini
         });
     }
 
-    
+    /**
+     * Opens the Subscriber History screen for the selected customer.
+     * 
+     * @param selectedCustomer The customer to view history for
+     * @param event            The action event
+     */
     private void openSubscriberHistory(Customer selectedCustomer, ActionEvent event) {
         SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory", event, clientUi);
-        
-        if(subHistoryController != null) {
+
+        if (subHistoryController != null) {
             int subId = selectedCustomer.getSubscriberCode();
-            
-            CustomerType type = CustomerType.SUBSCRIBER; 
-            
+
+            CustomerType type = CustomerType.SUBSCRIBER;
+
             subHistoryController.initData(subId, type, connectedEmployee, selectedCustomer);
         }
     }
 
+    /**
+     * Navigates back to the Employee Options screen.
+     */
     @FXML
     void goBackBtn(ActionEvent event) {
         ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
