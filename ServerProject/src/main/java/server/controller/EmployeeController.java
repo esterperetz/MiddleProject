@@ -2,6 +2,7 @@ package server.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
 import DAO.CustomerDAO;
 import DAO.EmployeeDAO;
@@ -65,8 +66,9 @@ public class EmployeeController {
      * * 
      * * @param req    The request containing the Customer object.
      * @param client The client connection.
+     * @throws SQLException 
      */
-    private void processRegisterSubscriber(Request req, ConnectionToClient client) {
+    private void processRegisterSubscriber(Request req, ConnectionToClient client) throws SQLException {
         int code;
         boolean isUnique = false;
         Customer customer = (Customer) req.getPayload();
@@ -99,6 +101,7 @@ public class EmployeeController {
                 System.out.println(EmailService.getContent());
                 client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
                         Response.ResponseStatus.SUCCESS, "Created Subscriber with id: " + customer.getCustomerId(), customer));
+                sendCustomerToAllClients();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -194,4 +197,10 @@ public class EmployeeController {
                     "Error: Failed to update subsEmployeecriber.", null));
         }
     }
+    private void sendCustomerToAllClients() throws SQLException, IOException {
+		List<Customer> list = customerDAO.getAllCustomers();
+		Router.sendToAllClients(
+				new Response(ResourceType.CUSTOMER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+
+	}
 }
