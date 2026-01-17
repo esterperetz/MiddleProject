@@ -86,16 +86,16 @@ public class CustomerController {
      */
     private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
         Customer newCub = (Customer) req.getPayload();
-
-        // Updated to camelCase
+        try {
         Customer existing = CustomerDAO.getCustomerByEmail(newCub.getEmail());
-        if (newCub.getType() == CustomerType.SUBSCRIBER && existing != null) {
-            client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-                    Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
+        if ((newCub.getType() == CustomerType.SUBSCRIBER ||  newCub.getType() == CustomerType.REGULAR) && existing != null) {
+            client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
+                    Response.ResponseStatus.ERROR, "Error: Email already exists, if you are a subscriber please enter sub id.", null));
             return;
         }
 
         boolean success = CustomerDAO.createCustomer(newCub);
+        
         if (success) {
             // Updated to camelCase
             client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
@@ -104,6 +104,11 @@ public class CustomerController {
             client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
                     Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
         }
+        }catch(Exception e) {
+        	 client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
+                     Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
+        }
+        
     }
 
     /**
