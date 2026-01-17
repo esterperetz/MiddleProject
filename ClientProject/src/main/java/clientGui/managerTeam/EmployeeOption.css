@@ -278,3 +278,39 @@
     -fx-border-width: 1px;
     -fx-border-radius: 3px;
 }
+
+/* DatePicker Input Field Styling */
+.date-picker {
+    -fx-background-color: transparent;
+}
+
+.date-picker .text-field {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+    /* Dark background matching other inputs */
+    -fx-text-fill: #E1E1E1;
+    -fx-prompt-text-fill: derive(#E1E1E1, -50%);
+    -fx-border-color: transparent transparent #555 transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-effect: null;
+    /* Remove default glow/shadow if any */
+}
+
+.date-picker .text-field:focused {
+    -fx-background-color: rgba(255, 255, 255, 0.08);
+    -fx-border-color: transparent transparent #F4C430 transparent;
+}
+
+.date-picker .arrow-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+}
+
+.date-picker .arrow-button .arrow {
+    -fx-background-color: #D4AF37;
+    /* Gold arrow */
+}
+
+.date-picker .arrow-button:hover .arrow {
+    -fx-background-color: #F4C430;
+    /* Brighter gold on hover */
+}
