@@ -46,6 +46,8 @@ public class CustomerController {
 			case UPDATE:
 				updateSubscriber(req, client);
 				break;
+			case CHECK_QR_CODE:
+				break;
 
 			default:
 				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,

@@ -25,13 +25,15 @@ public class UserLogic {
 	}
 	
 	public void createCustomer(Customer customer) {
-		System.out.println("in create client");
+
 		Request req = new Request(ResourceType.CUSTOMER, ActionType.REGISTER_CUSTOMER, null, customer);
 		client.sendRequest(req);
 	}
 	
 	public void CheckQRcode(String code) {
 		
+		Request req = new Request(ResourceType.CUSTOMER, ActionType.CHECK_QR_CODE, null, code);
+		client.sendRequest(req);
 	}
 
 	
