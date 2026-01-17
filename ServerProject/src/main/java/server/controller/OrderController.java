@@ -40,55 +40,57 @@ public class OrderController {
 
 		try {
 			switch (req.getAction()) {
-				case GET_ALL:
-					handleGetAll(req, client);
-					break;
-				case GET_ALL_BY_SUBSCRIBER_ID:
-					handleGetAllBySubscriberId(req, client);
-					break;
-				case GET_BY_ID:
-					handleGetById(req, client);
-					break;
-				case GET_AVAILABLE_TIME:
-					Order order = (Order) req.getPayload();
-					checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
-					break;
-				case GET_USER_ORDERS:
-					handleGetSubscriberApprovedOrders(req, client);
-					break;
-				case GET_BY_CODE:
-					handleGetByCode(req, client);
-					break;
-				case CREATE:
-					handleCreate(req, client);
-					break;
-				case UPDATE:
-					handleUpdate(req, client);
-					break;
-				case UPDATE_CHECKOUT:
-					handelUpdateCheckOut(req, client);
-					break;
-				case DELETE:
-					handleDelete(req, client);
-					break;
-				case CHECK_AVAILABILITY:
-					handleCheckAvailability(req, client);
-					break;
-				case IDENTIFY_AT_TERMINAL:
-					handleIdentifyAtTerminal(req, client);
-					break;
-				case PAY_BILL:
-					handlePayBill(req, client);
-					break;
-				case SEND_EMAIL:
-					handleSendEmail(req, client);
-					break;
-				case RESEND_CONFIRMATION:
-					handleResendConfirmation(req, client);
-					break;
-				default:
-					client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
-							"Unsupported action: " + req.getAction(), null));
+			case GET_ALL:
+				handleGetAll(req, client);
+				break;
+			case GET_ALL_BY_SUBSCRIBER_ID:
+				handleGetAllBySubscriberId(req, client);
+				break;
+			case GET_BY_ID:
+				handleGetById(req, client);
+				break;
+			case GET_AVAILABLE_TIME:
+				Order order = (Order) req.getPayload();
+				checkAvailability(order.getDateOfPlacingOrder(), order.getNumberOfGuests());
+				break;
+			case GET_USER_ORDERS:
+				handleGetSubscriberApprovedOrders(req, client);
+				break;
+			case GET_BY_CODE:
+				handleGetByCode(req, client);
+				break;
+			case CREATE:
+				handleCreate(req, client);
+				break;
+			case UPDATE:
+				handleUpdate(req, client);
+				break;
+			case UPDATE_CHECKOUT:
+				handelUpdateCheckOut(req, client);
+				break;
+			case DELETE:
+				handleDelete(req, client);
+				break;
+			case CHECK_AVAILABILITY:
+				handleCheckAvailability(req, client);
+				break;
+			case IDENTIFY_AT_TERMINAL:
+				handleIdentifyAtTerminal(req, client);
+				break;
+			case PAY_BILL:
+				handlePayBill(req, client);
+				break;
+			case SEND_EMAIL:
+				handleSendEmail(req, client);
+				break;
+			case RESEND_CONFIRMATION:
+				handleResendConfirmation(req, client);
+				break;
+			
+				
+			default:
+				client.sendToClient(new Response(null, null, Response.ResponseStatus.ERROR,
+						"Unsupported action: " + req.getAction(), null));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -242,42 +244,43 @@ public class OrderController {
 
 			order.setConfirmationCode(generateUniqueConfirmationCode());
 			order.setOrderStatus(Order.OrderStatus.APPROVED);
-			Order checkedOrder =orderdao.getOrderInTimeWindow(order.getCustomer().getCustomerId(),order.getOrderDate());
+			Order checkedOrder = orderdao.getOrderInTimeWindow(order.getCustomer().getCustomerId(),
+					order.getOrderDate());
 			if (checkedOrder == null) {
-                boolean success = orderdao.createOrder(order);
+				boolean success = orderdao.createOrder(order);
 
-                if (success) {
-                    System.out.println(finalCustomer.toString());
-                    System.out.println(order.toString());
-                    EmailService.sendConfirmation(finalCustomer, order);
-                    System.out.println(EmailService.getContent());
-                    System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
-                    order.setCustomer(finalCustomer);
+				if (success) {
+					System.out.println(finalCustomer.toString());
+					System.out.println(order.toString());
+					EmailService.sendConfirmation(finalCustomer, order);
+					System.out.println(EmailService.getContent());
+					System.out.println("FROM SERVER CUS ID: " + finalCustomer.getCustomerId());
+					order.setCustomer(finalCustomer);
 
-                    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.SUCCESS,
-                            "Order created successfully!", order));
-                    sendOrdersToAllClients();
-                    return true;
-                } else {
-                    client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-                            Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
-                    return false;
-                }
-            } else { 
-                client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-                        Response.ResponseStatus.ERROR, "You already have an order within a 2-hour window.", null));
-                return false;
-            }
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+							Response.ResponseStatus.SUCCESS, "Order created successfully!", order));
+					sendOrdersToAllClients();
+					return true;
+				} else {
+					client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+							Response.ResponseStatus.DATABASE_ERROR, "Failed to save order in database.", null));
+					return false;
+				}
+			} else {
+				client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE, Response.ResponseStatus.ERROR,
+						"You already have an order within a 2-hour window.", null));
+				return false;
+			}
 
-        } catch (SQLException e) { 
-            e.printStackTrace();
-            client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
-                    Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
-            return false;
-        }
-		
+		} catch (SQLException e) {
+			e.printStackTrace();
+			client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
+					Response.ResponseStatus.DATABASE_ERROR, "DB Error: " + e.getMessage(), null));
+			return false;
+		}
+
 	}
-	
+
 	private boolean handleCheckAvailability(Request req, ConnectionToClient client) throws IOException {
 		try {
 			Order requestedOrder = (Order) req.getPayload();
@@ -637,6 +640,8 @@ public class OrderController {
 					Response.ResponseStatus.ERROR, "No upcoming approved order found for this contact.", null));
 		}
 	}
+
+	
 
 	private void sendOrdersToAllClients() {
 		List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();

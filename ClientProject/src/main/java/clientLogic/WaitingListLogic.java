@@ -27,5 +27,10 @@ public class WaitingListLogic {
 		Request req = new Request(ResourceType.WAITING_LIST, ActionType.ENTER_WAITING_LIST, null, waitingList);
 		client.sendRequest(req);
 	}
+	public void getWaitingListByDate(java.time.LocalDate date) {
+	    java.sql.Date sqlDate = java.sql.Date.valueOf(date);	    
+	    Request req = new Request(ResourceType.WAITING_LIST, ActionType.GET_WAITING_LIST_BY_DATE, null, sqlDate);	    
+	    client.sendRequest(req);
+	}
 
 }

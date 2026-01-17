@@ -66,7 +66,8 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	private TableColumn<WaitingList, String> colCustomerEmail;
 	@FXML
 	private TableColumn<WaitingList, String> colStatus;
-
+	@FXML
+    private TableColumn<WaitingList, Date> colReservationDate;
 	// Data lists
 	private ObservableList<WaitingList> waitingListData = FXCollections.observableArrayList();
 	private FilteredList<WaitingList> filteredData; // Added FilteredList
@@ -75,31 +76,20 @@ public class WaitingListController extends MainNavigator implements Initializabl
 
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
+		colReservationDate.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getReservationDate()));
 
-		colWaitingId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getWaitingId()));
-
-		colCustomerId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
-
-		colGuests.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
-
-		colEnterTime.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEnterTime()));
-
-		colConfirmationCode.setCellValueFactory(
-				cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
-
-		colCustomerName
-				.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getName()));
-
-		colCustomerPhone.setCellValueFactory(
-				cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getPhoneNumber()));
-
-		colCustomerEmail.setCellValueFactory(
-				cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getEmail()));
-		colStatus.setCellValueFactory(cellData -> {
+        colWaitingId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getWaitingId()));
+        colCustomerId.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getCustomerId()));
+        colGuests.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getNumberOfGuests()));
+        colEnterTime.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getEnterTime()));
+        colConfirmationCode.setCellValueFactory(cellData -> new ReadOnlyObjectWrapper<>(cellData.getValue().getConfirmationCode()));
+        colCustomerName.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getName()));
+        colCustomerPhone.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getPhoneNumber()));
+        colCustomerEmail.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getCustomer().getEmail()));
+        
+        colStatus.setCellValueFactory(cellData -> {
             WaitingList entry = cellData.getValue(); 
-            
             int statusValue = entry.getInWaitingList(); 
-
             if (statusValue == 1) {
                 return new SimpleStringProperty("In Waiting List");
             } else {
@@ -107,40 +97,18 @@ public class WaitingListController extends MainNavigator implements Initializabl
             }
         });
 
-		// 1. Wrap the ObservableList in a FilteredList (initially display all data)
-		filteredData = new FilteredList<>(waitingListData, p -> true);
+        filteredData = new FilteredList<>(waitingListData, p -> true);
+        waitingListTable.setItems(filteredData);
 
-		// 2. Set the SortedList/FilteredList to the TableView
-		waitingListTable.setItems(filteredData);
-
-		// 3. Add Listener to the DatePicker
-		if (filterDate != null) {
-			filterDate.valueProperty().addListener((observable, oldValue, selectedDate) -> {
-				filteredData.setPredicate(item -> {
-					if (selectedDate == null) {
-						return true;
-					}
-
-					if (item.getEnterTime() == null) {
-						return false;
-					}
-
-					LocalDate itemDate;
-					if (item.getEnterTime() instanceof java.sql.Date) {
-						itemDate = ((java.sql.Date) item.getEnterTime()).toLocalDate();
-					} else {
-						itemDate = item.getEnterTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-					}
-
-					LocalDate today = LocalDate.now();
-
-					boolean isAfterSelection = !itemDate.isBefore(selectedDate);
-					boolean isBeforeToday = !itemDate.isAfter(today);
-
-					return isAfterSelection && isBeforeToday;
-				});
-			});
-		}
+        if (filterDate != null) {
+            filterDate.valueProperty().addListener((observable, oldValue, selectedDate) -> {
+                if (selectedDate == null) {
+                    waitingListLogic.getAllWaitingListCustomer();
+                } else {
+                    waitingListLogic.getWaitingListByDate(selectedDate);
+                }
+            });
+        }
 	}
 
 	public void initData(Employee emp, ClientUi clientUi, Employee.Role isManager) {
@@ -208,55 +176,64 @@ public class WaitingListController extends MainNavigator implements Initializabl
 	}
 
 	private WaitingList parseWaitingListRow(Map<String, Object> row) {
-		WaitingList item = new WaitingList();
+        WaitingList item = new WaitingList();
 
-		if (row.get("waiting_id") != null)
-			item.setWaitingId(((Number) row.get("waiting_id")).intValue());
+        if (row.get("waiting_id") != null)
+            item.setWaitingId(((Number) row.get("waiting_id")).intValue());
 
-		if (row.get("customer_id") != null)
-			item.setCustomerId(((Number) row.get("customer_id")).intValue());
+        if (row.get("customer_id") != null)
+            item.setCustomerId(((Number) row.get("customer_id")).intValue());
 
-		if (row.get("number_of_guests") != null)
-			item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
+        if (row.get("number_of_guests") != null)
+            item.setNumberOfGuests(((Number) row.get("number_of_guests")).intValue());
 
-		if (row.get("confirmation_code") != null)
-			item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
+        if (row.get("confirmation_code") != null)
+            item.setConfirmationCode(((Number) row.get("confirmation_code")).intValue());
 
-		// --- 2. טיפול בתאריך (enter_time) ---
-		if (row.get("enter_time") != null) {
-			Object timeObj = row.get("enter_time");
-			if (timeObj instanceof java.sql.Timestamp) {
-				item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
-			} else if (timeObj instanceof java.util.Date) {
-				item.setEnterTime((java.util.Date) timeObj);
-			}
-		}
+        if (row.get("enter_time") != null) {
+            Object timeObj = row.get("enter_time");
+            if (timeObj instanceof java.sql.Timestamp) {
+                item.setEnterTime(new java.util.Date(((java.sql.Timestamp) timeObj).getTime()));
+            } else if (timeObj instanceof java.util.Date) {
+                item.setEnterTime((java.util.Date) timeObj);
+            }
+        }
+        
+        
+        if (row.get("reservation_date") != null) {
+            Object resDateObj = row.get("reservation_date");
+            if (resDateObj instanceof java.sql.Timestamp) {
+                item.setReservationDate(new java.util.Date(((java.sql.Timestamp) resDateObj).getTime()));
+            } else if (resDateObj instanceof java.util.Date) {
+                item.setReservationDate((java.util.Date) resDateObj);
+            }
+        }
 
-		Customer customer = new Customer();
+        Customer customer = new Customer();
+        if (row.get("customer_id") != null)
+            customer.setCustomerId(((Number) row.get("customer_id")).intValue());
+        if (row.get("customer_name") != null)
+            customer.setName((String) row.get("customer_name"));
+        if (row.get("email") != null)
+            customer.setEmail((String) row.get("email"));
+        if (row.get("phone_number") != null)
+            customer.setPhoneNumber((String) row.get("phone_number"));
 
-		if (row.get("customer_id") != null)
-			customer.setCustomerId(((Number) row.get("customer_id")).intValue());
+        Object subCode = row.get("subscriber_code");
+        if (subCode != null) {
+            customer.setSubscriberCode(((Number) subCode).intValue());
+        } else {
+            customer.setSubscriberCode(0);
+        }
 
-		if (row.get("customer_name") != null)
-			customer.setName((String) row.get("customer_name"));
+        if (row.get("in_waiting_list") != null) {
+             item.setInWaitingList(((Number) row.get("in_waiting_list")).intValue());
+        }
 
-		if (row.get("email") != null)
-			customer.setEmail((String) row.get("email"));
+        item.setCustomer(customer);
 
-		if (row.get("phone_number") != null)
-			customer.setPhoneNumber((String) row.get("phone_number"));
-
-		Object subCode = row.get("subscriber_code");
-		if (subCode != null) {
-			customer.setSubscriberCode(((Number) subCode).intValue());
-		} else {
-			customer.setSubscriberCode(0);
-		}
-
-		item.setCustomer(customer);
-
-		return item;
-	}
+        return item;
+    }
 
 	private void handleUpdateResponse(Response res) {
 		if (res.getStatus() == Response.ResponseStatus.SUCCESS) {

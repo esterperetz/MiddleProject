@@ -775,7 +775,6 @@ public class OrderDAO {
 	}
 
 
-
 	public List<Integer> getActiveOrderSizes(Date requestedDate) throws SQLException {
 		List<Integer> activeSizes = new ArrayList<>();
 

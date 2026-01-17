@@ -105,7 +105,9 @@
 }
 
 .table-view .column-header-background {
-    -fx-background-color: transparent;
+    -fx-background-color: #252526 !important;
+    -fx-background-insets: 0 !important;
+    -fx-padding: 0 !important;
     -fx-border-width: 0 0 2px 0;
     -fx-border-color: linear-gradient(to right, transparent, #D4AF37, transparent);
 }
@@ -141,34 +143,81 @@
     /* Increased from 14px */
 }
 
-/* Custom ScrollBar - Minimalist */
+/* Selected Row Styling - Crucial for User Feedback */
+.table-row-cell:selected {
+    -fx-background-color: rgba(212, 175, 55, 0.4) !important;
+    /* Gold selection */
+    -fx-background-insets: 0 !important;
+    -fx-background-radius: 0 !important;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #FFFFFF !important;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.05);
+}
+
+.table-row-cell:selected:hover {
+    -fx-background-color: rgba(212, 175, 55, 0.5) !important;
+}
+
+/* Fix for White Lines/Backgrounds - Comprehensive Override */
+.table-view .virtual-flow .scroll-bar:vertical,
+.table-view .virtual-flow .scroll-bar:vertical .track,
+.table-view .virtual-flow .scroll-bar:vertical .track-background,
+.table-view .virtual-flow .scroll-bar:horizontal,
+.table-view .virtual-flow .scroll-bar:horizontal .track,
+.table-view .virtual-flow .scroll-bar:horizontal .track-background,
+.table-view .corner {
+    -fx-background-color: transparent !important;
+    -fx-background-insets: 0 !important;
+}
+
+.table-view .column-header-background .filler {
+    -fx-background-color: #252526 !important;
+    -fx-background-insets: 0 !important;
+}
+
+/* Custom ScrollBar - Minimalist & Integrated */
 .scroll-bar:horizontal,
 .scroll-bar:vertical {
-    -fx-background-color: transparent;
+    -fx-background-color: transparent !important;
+    -fx-block-increment: 10;
 }
 
 .increment-button,
 .decrement-button {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-background-color: transparent !important;
+    -fx-border-color: transparent !important;
+    -fx-padding: 0;
 }
 
 .scroll-bar:horizontal .track,
 .scroll-bar:vertical .track {
-    -fx-background-color: transparent;
-    -fx-border-color: transparent;
+    -fx-background-color: transparent !important;
+    -fx-border-color: transparent !important;
     -fx-background-radius: 0em;
+    -fx-box-border: transparent !important;
 }
 
 .scroll-bar:horizontal .thumb,
 .scroll-bar:vertical .thumb {
-    -fx-background-color: #444;
+    -fx-background-color: #555;
     -fx-background-radius: 5em;
+    -fx-background-insets: 2 !important;
 }
 
 .scroll-bar:horizontal .thumb:hover,
 .scroll-bar:vertical .thumb:hover {
     -fx-background-color: #D4AF37;
+}
+
+/* Ensure empty parts of the table are transparent */
+.table-view .virtual-flow .clipped-container {
+    -fx-background-color: transparent !important;
 }
 
 /* Action Buttons - Premium Metallic */

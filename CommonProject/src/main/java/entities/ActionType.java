@@ -15,7 +15,7 @@ public enum ActionType implements Serializable {
     DELETE,
     LOGIN,
     LOGOUT,
-
+    
     // employee
     REGISTER_EMPLOYEE,
     REGISTER_SUBSCRIBER,
@@ -37,6 +37,7 @@ public enum ActionType implements Serializable {
     EXIT_WAITING_LIST,
     PROMOTE_TO_ORDER,
     IDENTIFY_AT_TERMINAL,
+    GET_WAITING_LIST_BY_DATE,
     // Table & Billing management
     UPDATE_CHECKOUT,
     UPDATE_ORDER_STATUS, // Change status to SEATED, etc.

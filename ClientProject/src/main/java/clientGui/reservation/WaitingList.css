@@ -1,4 +1,4 @@
-/* WaitingList.css - High Class Premium Theme */
+/* WaitingList.css - High Class Premium Theme (Fixed Layout) */
 
 .root {
     -fx-background-color: #0d0d0d;
@@ -27,33 +27,55 @@
     -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.3), 10, 0, 0, 0);
 }
 
+/* --- TableView Styling Fixes --- */
+
 .table-view {
     -fx-background-color: transparent;
     -fx-border-color: rgba(212, 175, 55, 0.3);
     -fx-border-width: 1px;
     -fx-font-family: "Montserrat", sans-serif;
     -fx-font-size: 16px;
+    /* ביטול גבולות דיפולטיביים שגורמים לכפילויות */
+    -fx-table-cell-border-color: transparent;
+    -fx-padding: 0;
 }
 
+/* Header Area */
 .table-view .column-header-background {
     -fx-background-color: #1e1e1e;
     -fx-border-color: #D4AF37;
-    -fx-border-width: 0 0 2px 0;
+    -fx-border-width: 0 0 2px 0; /* קו זהב תחתון לכותרת */
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-size: 45px; /* גובה הכותרת */
+    /* קו מפריד אנכי דק ועדין בין הכותרות */
+    -fx-border-color: transparent rgba(255, 255, 255, 0.1) transparent transparent;
+    -fx-border-width: 0 1px 0 0;
 }
 
 .table-view .column-header .label {
     -fx-text-fill: #D4AF37;
     -fx-font-weight: bold;
     -fx-font-size: 18px;
+    -fx-alignment: CENTER_LEFT;
 }
 
+/* Cells (The Data) */
 .table-view .table-cell {
     -fx-text-fill: #ecf0f1;
-    -fx-alignment: CENTER-LEFT;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 0 10px;
+    /* הקו האנכי שחייב להתאים לכותרת - זה מה שמיישר את הטבלה */
+    -fx-border-color: transparent rgba(255, 255, 255, 0.1) transparent transparent;
+    -fx-border-width: 0 1px 0 0;
 }
 
+/* Rows */
 .table-row-cell {
     -fx-background-color: transparent;
+    /* קו תחתון עדין לכל שורה */
     -fx-border-color: transparent transparent rgba(255, 255, 255, 0.05) transparent;
 }
 
@@ -64,9 +86,37 @@
 .table-row-cell:selected {
     -fx-background-color: rgba(212, 175, 55, 0.3);
     -fx-text-fill: white;
+    -fx-table-cell-border-color: transparent; 
 }
 
-/* Filter Container */
+/* --- התיקון לקו העקום למטה --- */
+/* הגדרה לשורות ריקות כדי שהקווים ימשיכו ישר למטה */
+.table-row-cell:empty .table-cell {
+    -fx-border-color: transparent rgba(255, 255, 255, 0.1) transparent transparent;
+    -fx-border-width: 0 1px 0 0;
+}
+
+/* ביטול הקו בעמודה האחרונה כדי שלא יראה מוזר בצד */
+.table-view .table-cell:last-visible, 
+.table-view .column-header:last-visible {
+    -fx-border-width: 0;
+}
+
+/* --- Scrollbar Styling (Premium Look) --- */
+.table-view .scroll-bar:vertical,
+.table-view .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+}
+.table-view .scroll-bar .thumb {
+    -fx-background-color: #555;
+    -fx-background-radius: 5em;
+}
+.table-view .scroll-bar .track {
+    -fx-background-color: rgba(255,255,255,0.05);
+}
+
+/* --- Buttons & Filters (Kept exactly as you had them) --- */
+
 .filter-container {
     -fx-background-color: rgba(255, 255, 255, 0.05);
     -fx-background-radius: 10;
@@ -103,23 +153,6 @@
 .action-button:hover {
     -fx-background-color: #F4C430;
     -fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.4), 10, 0, 0, 0);
-}
-
-.confirm-button {
-    -fx-background-color: linear-gradient(to bottom, #D4AF37, #B8860B);
-}
-
-.delete-button {
-    -fx-background-color: transparent;
-    -fx-border-color: #c0392b;
-    -fx-text-fill: #c0392b;
-    -fx-border-width: 1px;
-}
-
-.delete-button:hover {
-    -fx-background-color: rgba(192, 57, 43, 0.1);
-    -fx-text-fill: #e74c3c;
-    -fx-border-color: #e74c3c;
 }
 
 .back-button {

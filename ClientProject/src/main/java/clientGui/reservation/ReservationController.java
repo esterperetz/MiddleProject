@@ -50,7 +50,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	private Employee connectedEmployee;
 	private Customer connectedCustomer;
-	private int subCode;
+	private Integer subCode;
 	private boolean isEmployeeMode = false;
 	private CustomerType isSubscriber;
 
@@ -262,6 +262,11 @@ public class ReservationController extends MainNavigator implements MessageListe
 				if (result.isPresent() && result.get() == ButtonType.OK) {
 					wlItem.setReservationDate(newOrder.getOrderDate());
 					waitingListLogic.enterToWaitingList(wlItem);
+					SubscriberOptionController sub = super.loadScreen("user/SubscriberOption", event, this.clientUi);
+					if(sub!=null)
+						sub.initData(clientUi, isSubscriber, subCode, connectedCustomer);
+					else
+						System.out.println("Error  move to to screen  fromReservationController to SubscriberOptionController after get order to waitingList");
 				}
 				return;
 			}
@@ -454,7 +459,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 		} else {
 			SubscriberOptionController controller = super.loadScreen("user/SubscriberOption", event, this.clientUi);
 			if (controller != null) {
-
 				controller.initData(clientUi, isSubscriber, subCode, connectedCustomer);
 			} else {
 				System.err.println("Error: Could not load SubscriberController.");
