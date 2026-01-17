@@ -2,7 +2,6 @@ package server.controller;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import DAO.CustomerDAO;
 import DAO.EmployeeDAO;
@@ -59,44 +58,6 @@ public class EmployeeController {
         }
     }
 
-<<<<<<< HEAD
-    private void processRegisterSubscriber(Request req, ConnectionToClient client) throws SQLException {
-    	int code;
-		boolean isUnique = false;
-		Customer customer = (Customer) req.getPayload();
-		
-		Customer existing = customerDAO.getCustomerByEmail(customer.getEmail());
-		if (customer.getType() == CustomerType.SUBSCRIBER && existing != null) {
-			try {
-				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-						Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return;
-		}
-		
-		do {
-			code = 10000 + (int) (Math.random() * 90000);
-			if ( customerDAO.getCustomerBySubscriberCode(code) == null) {
-					isUnique = true;
-				}
-		} while (!isUnique);
-				customer.setSubscriberCode(code);
-				boolean success = employeeDAO.createSubscriber(customer);
-				if(success) {
-					try {
-						EmailService.sendEmailToSubscriber(customer);
-						System.out.println(EmailService.getContent());
-						client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
-							Response.ResponseStatus.SUCCESS, "Created Subscriber with id: " + customer.getCustomerId(), customer));
-						sendCustomerToAllClients();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-=======
     /**
      * Handles the registration of a new subscriber.
      * Generates a unique subscriber code, creates the record in the DB,
@@ -109,7 +70,6 @@ public class EmployeeController {
         int code;
         boolean isUnique = false;
         Customer customer = (Customer) req.getPayload();
->>>>>>> branch 'main' of https://github.com/esterperetz/MiddleProject.git
 
         Customer existing = customerDAO.getCustomerByEmail(customer.getEmail());
         if (customer.getType() == CustomerType.SUBSCRIBER && existing != null) {
@@ -153,23 +113,6 @@ public class EmployeeController {
         }
     }
 
-<<<<<<< HEAD
-		if (success) {
-			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
-					"Success: Employee updated.", null));
-		} else {
-			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
-					"Error: Failed to update subsEmployeecriber.", null));
-		}
-	}
-	
-	private void sendCustomerToAllClients() throws SQLException, IOException {
-		List<Customer> list = customerDAO.getAllCustomers();
-		Router.sendToAllClients(
-				new Response(ResourceType.CUSTOMER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
-
-	}
-=======
     /**
      * Handles employee login.
      * Authenticates credentials against the database.
@@ -183,7 +126,6 @@ public class EmployeeController {
         Employee credentials = (Employee) req.getPayload();
         try {
             Employee authorized = employeeDAO.login(credentials.getUserName(), credentials.getPassword());
->>>>>>> branch 'main' of https://github.com/esterperetz/MiddleProject.git
 
             if (authorized != null) {
                 client.sendToClient(new Response(ResourceType.EMPLOYEE, ActionType.LOGIN,
