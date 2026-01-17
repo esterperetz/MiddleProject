@@ -9,6 +9,7 @@ import entities.Order;
 /**
  * Background thread for sending reminders to customers 2 hours before their
  * reservation.
+ * Takes care of querying the database periodically and triggering the EmailService.
  */
 public class ReminderThread extends Thread {
 
@@ -21,6 +22,10 @@ public class ReminderThread extends Thread {
     // Remind 2 hours ahead (120 minutes)
     private static final int MINUTES_AHEAD = 120;
 
+    /**
+     * Main execution loop of the thread.
+     * checks for reminders every minute until the thread is stopped.
+     */
     @Override
     public void run() {
         System.out.println("ReminderThread started. Checking for reservations in " + MINUTES_AHEAD + " minutes.");
@@ -37,6 +42,10 @@ public class ReminderThread extends Thread {
         }
     }
 
+    /**
+     * Core logic method.
+     * Fetches orders that require a reminder, sends the email, and updates the DB.
+     */
     private void processReminders() {
         try {
             // Get orders scheduled for ~2 hours from now that haven't been reminded
@@ -44,12 +53,10 @@ public class ReminderThread extends Thread {
 
             if (!orders.isEmpty()) {
                 System.out.println("[ReminderThread] Found " + orders.size() + " orders to remind.");
-              
             }
 
             for (Order order : orders) {
                 // Send actual email via EmailService
-            	 
                 EmailService.sendReminder(order);
                 System.out.println(EmailService.getContent());
                 System.out.println("[ReminderThread] Sent reminder to order: " + order.getOrderNumber());
@@ -64,6 +71,9 @@ public class ReminderThread extends Thread {
 
     // Removed local sendReminder simulation method as it is no longer used
 
+    /**
+     * Stops the thread safely.
+     */
     public void stopThread() {
         this.running = false;
         this.interrupt();

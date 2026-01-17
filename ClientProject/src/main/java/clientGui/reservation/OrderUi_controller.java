@@ -258,9 +258,10 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                 break;
             case CREATE:
             case UPDATE:
-            case DELETE:
-                // Currently just placeholders or logic handled by refresh
+            case DELETE:   
                 break;
+            case REGISTER_SUBSCRIBER:
+            	handleRegisterResponse(res.getMessage_from_server());
             case GET_BY_ID:
                 System.out.println("Received order: " + res.getData());
                 break;
@@ -270,7 +271,13 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         }
     }
 
-    /**
+    private void handleRegisterResponse(String data) {
+    	
+			Alarm.showAlert("From Server", data , Alert.AlertType.INFORMATION);
+		
+	}
+
+	/**
      * Logic for parsing the list of orders from the server.
      */
     @SuppressWarnings("unchecked")

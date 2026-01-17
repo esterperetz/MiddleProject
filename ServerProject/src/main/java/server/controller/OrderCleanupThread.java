@@ -1,8 +1,9 @@
 package server.controller;
 
-import java.sql.SQLException;
+
 import java.util.Date;
 import java.util.List;
+
 import DAO.OrderDAO;
 import DAO.WaitingListDAO;
 import entities.ActionType;
@@ -12,17 +13,24 @@ import entities.Response;
 import entities.Customer;
 
 /**
- * Background thread that runs every minute to check for late orders.
- * According to requirements, if a customer is more than 15 minutes late,
- * the reservation is automatically cancelled.
+ * Background thread that runs periodically to maintain order integrity.
+ * 
+ * It performs two main tasks:
+ * 1. Cancels orders that are more than 15 minutes late.
+ * 2. Automatically checks out orders that have been seated for more than 2 hours.
  */
 public class OrderCleanupThread extends Thread {
+    
     private final OrderDAO orderDao = new OrderDAO();
     private final WaitingListDAO waitingListDao = new WaitingListDAO();
     private final DAO.TableDAO tableDao = new DAO.TableDAO();
     private final DAO.CustomerDAO customerDao = new DAO.CustomerDAO();
     private boolean running = true;
 
+    /**
+     * Main execution loop.
+     * Runs every 60 seconds to perform cleanup tasks.
+     */
     @Override
     public void run() {
         while (running) {
@@ -40,6 +48,10 @@ public class OrderCleanupThread extends Thread {
         }
     }
 
+    /**
+     * Identifies orders that have exceeded the 15-minute arrival window.
+     * Handles cancellation logic and notifies customers via email.
+     */
     private void checkAndCancelLateOrders() {
         try {
             // Fetch only APPROVED orders
@@ -52,27 +64,26 @@ public class OrderCleanupThread extends Thread {
             for (Order order : activeOrders) {
                 long orderTime = order.getOrderDate().getTime();
                 long diffInMinutes = (now - orderTime) / 60000;
-                
+
                 if (diffInMinutes > 15) {
                     System.out.println("System: Auto-cancelling late order #" + order.getOrderNumber());
-                    order.setCustomer(customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId())); 
-                
+                    order.setCustomer(customerDao.getCustomerByCustomerId(order.getCustomer().getCustomerId()));
+
                     if (order.getOrderStatus() == Order.OrderStatus.PENDING) {
                         boolean isTrue = waitingListDao.getWaitingOrderByConfirmationCode(order.getConfirmationCode());
                         if (isTrue) {
-                        	EmailService.sendCancelation(order.getCustomer(), order);
+                            EmailService.sendCancelation(order.getCustomer(), order);
                             System.out.println(EmailService.getContent());
-
                         }
 
-                    }else {
+                    } else {
+                        // Handle APPROVED orders
                         EmailService.sendCancelation(order.getCustomer(), order);
                         System.out.println(EmailService.getContent());
                         order.setOrderStatus(Order.OrderStatus.CANCELLED);
                         orderDao.updateOrder(order);
                         hasChanges = true;
                     }
-                  
                 }
             }
 
@@ -86,6 +97,10 @@ public class OrderCleanupThread extends Thread {
         }
     }
 
+    /**
+     * Automatically processes checkout for orders that have been seated 
+     * for the duration of the dining limit (2 hours).
+     */
     private void autoCheckOutSeatedOrders() {
         try {
             List<Order> seatedOrders = orderDao.getOrdersByStatus(Order.OrderStatus.SEATED);
@@ -117,12 +132,12 @@ public class OrderCleanupThread extends Thread {
                                 tableDao.updateTableStatus(order.getTableNumber(), 0);
                             }
 
-                            if(finalPrice == 0.0) {
-                            	order.setTotalPrice(199.99);
+                            if (finalPrice == 0.0) {
+                                order.setTotalPrice(199.99);
                             }
                             order.setTotalPrice(finalPrice);
                             order.setLeavingTime(new Date());
-                            
+
                             EmailService.sendReceipt(fullCustomer, order);
                             System.out.println(EmailService.getContent());
                             hasChanges = true;
@@ -141,6 +156,9 @@ public class OrderCleanupThread extends Thread {
         }
     }
 
+    /**
+     * Stops the thread safely.
+     */
     public void stopThread() {
         this.running = false;
         this.interrupt();

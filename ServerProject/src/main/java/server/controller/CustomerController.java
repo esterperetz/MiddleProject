@@ -14,10 +14,21 @@ import entities.Response;
 import entities.Table;
 import ocsf.server.ConnectionToClient;
 
+/**
+ * Controller class responsible for managing Customer and Subscriber data.
+ * Handles registration, retrieval, and updates of customer profiles.
+ */
 public class CustomerController {
 
-	private final CustomerDAO CustomerDAO = new CustomerDAO();
-
+    private final CustomerDAO CustomerDAO = new CustomerDAO();
+    /**
+     * Main handler for Customer requests.
+     * Routes the request based on the ActionType to the appropriate method.
+     *
+     * @param req    The request object.
+     * @param client The client connection.
+     * @throws SQLException If a database error occurs.
+     */
 	public void handle(Request req, ConnectionToClient client) throws SQLException {
 		if (req.getResource() != ResourceType.CUSTOMER) {
 			try {
@@ -30,25 +41,25 @@ public class CustomerController {
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 
-		try {
-			switch (action) {
-			case REGISTER_CUSTOMER:
-				registerCustomer(req, client);
-				break;
+        try {
+            switch (action) {
+                case REGISTER_CUSTOMER:
+                    registerCustomer(req, client);
+                    break;
 
-			case GET_BY_ID:
-				getSubscriberById(req, client);
-				break;
+                case GET_BY_ID:
+                    getSubscriberById(req, client);
+                    break;
 
-			case GET_ALL:
-				getAllSubscribers(req, client);
-				break;
+                case GET_ALL:
+                    getAllSubscribers(req, client);
+                    break;
 
-			case UPDATE:
-				updateSubscriber(req, client);
-				break;
-			case CHECK_QR_CODE:
-				break;
+                case UPDATE:
+                    updateSubscriber(req, client);
+                    break;
+                case CHECK_QR_CODE:
+                    break;
 
 			default:
 				client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
@@ -62,7 +73,16 @@ public class CustomerController {
 		}
 	}
 
-///need to be checked
+    ///need to be checked
+    /**
+     * Registers a new customer in the database.
+     * Checks if the email already exists for subscribers before creation.
+     *
+     * @param req    The request containing the new Customer object.
+     * @param client The client connection.
+     * @throws IOException  If an I/O error occurs.
+     * @throws SQLException If a database error occurs.
+     */
 	private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Customer newCub = (Customer) req.getPayload();
 
@@ -86,6 +106,14 @@ public class CustomerController {
 					Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
 		}
 	}
+	   /**
+     * Retrieves a subscriber by their Subscriber Code (ID).
+     *
+     * @param req    The request containing the ID.
+     * @param client The client connection.
+     * @throws IOException  If an I/O error occurs.
+     * @throws SQLException If a database error occurs.
+     */
 
 	private void getSubscriberById(Request req, ConnectionToClient client) throws IOException, SQLException {
 		int id = req.getId();
@@ -99,7 +127,14 @@ public class CustomerController {
 					"Error: Subscriber not found.", null));
 		}
 	}
-
+	  /**
+     * Retrieves all customers/subscribers from the database.
+     *
+     * @param req    The request object.
+     * @param client The client connection.
+     * @throws IOException  If an I/O error occurs.
+     * @throws SQLException If a database error occurs.
+     */
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
 		List<Customer> list = CustomerDAO.getAllCustomers();
 		client.sendToClient(
@@ -107,9 +142,17 @@ public class CustomerController {
 		sendCustomerToAllClients();
 	}
 
-	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
-		Customer subToUpdate = (Customer) req.getPayload();
-		boolean success = CustomerDAO.updateCustomerDetails(subToUpdate);
+	 /**
+     * Updates an existing subscriber's details.
+     *
+     * @param req    The request containing the updated Customer object.
+     * @param client The client connection.
+     * @throws IOException  If an I/O error occurs.
+     * @throws SQLException If a database error occurs.
+     */
+    private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
+        Customer subToUpdate = (Customer) req.getPayload();
+        boolean success = CustomerDAO.updateCustomerDetails(subToUpdate);
 
 		if (success) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
@@ -121,6 +164,10 @@ public class CustomerController {
 		}
 	}
 
+    /**
+     * Helper method to broadcast the updated list of customers to all clients.
+     * Note: Sends the data under ResourceType.ORDER (preserved from original code).
+     */
 	private void sendCustomerToAllClients() throws SQLException, IOException {
 		List<Customer> list = CustomerDAO.getAllCustomers();
 		Router.sendToAllClients(

@@ -1,15 +1,22 @@
 package entities;
 
+/**
+ * Enumeration representing the different types of customers in the system.
+ * 
+ * Distinguishes between a 'REGULAR' customer and a 'SUBSCRIBER' (who may be entitled to discounts).
+ */
 public enum CustomerType {
-	
-	    REGULAR("REGULAR"),    // לקוח מזדמן/רגיל
-	    SUBSCRIBER("SUBSCRIBER");// לקוח רשום כמנוי
-	    private String str;
-	    
-	    private CustomerType(String str) {
-	    	this.str = str;
-	    }
-	    public String getString() {
-	    	return str;
-	    }
+
+    REGULAR("REGULAR"),
+    SUBSCRIBER("SUBSCRIBER");
+
+    private String str;
+
+    private CustomerType(String str) {
+        this.str = str;
+    }
+
+    public String getString() {
+        return str;
+    }
 }

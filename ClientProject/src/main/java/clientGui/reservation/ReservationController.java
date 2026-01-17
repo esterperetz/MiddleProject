@@ -364,6 +364,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 	}
 
 	private void handleCustomerResponse(Response res) {
+		System.out.println("HERE");
 		if (res.getAction() == ActionType.GET_BY_ID) {
 			Customer customer = (Customer) res.getData();
 			if (res.getStatus() == ResponseStatus.SUCCESS && customer != null) {
@@ -382,11 +383,14 @@ public class ReservationController extends MainNavigator implements MessageListe
 		} else if (res.getAction() == ActionType.REGISTER_CUSTOMER) {
 			// Logic for when Employee creates a new user, then we immediately place the
 			// order
+		
 			if (res.getStatus() == ResponseStatus.SUCCESS && pendingOrder != null) {
 				Customer createdCus = (Customer) res.getData();
 				pendingOrder.getCustomer().setCustomerId(createdCus.getCustomerId());
 				orderLogic.createOrder(pendingOrder);
 				pendingOrder = null; // Clear
+			}else {
+				Alarm.showAlert("Server Message", res.getMessage_from_server(), Alert.AlertType.INFORMATION);
 			}
 		}
 	}

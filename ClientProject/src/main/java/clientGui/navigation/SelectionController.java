@@ -7,12 +7,14 @@ import java.util.ResourceBundle;
 import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.reservation.OrderUi_controller;
 import clientGui.user.SubscriberLoginController;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
 import entities.Customer;
 import entities.CustomerType;
+import entities.Employee;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -54,9 +56,11 @@ public class SelectionController extends MainNavigator implements  MessageListen
     @FXML
     void pressRepresentorOfTheResturant(ActionEvent event) {
         System.out.println("Navigating to Restaurant Representative screen...");
-        // כאן אתה מעביר לשם של קובץ ה-FXML הבא (למשל "ResturantScreen")
         
-        super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
+        ManagerOptionsController controller = super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
+        if (controller != null) {
+            controller.initData(new Employee(),clientUi, null);
+        }
     }
 
     @FXML
@@ -75,7 +79,6 @@ public class SelectionController extends MainNavigator implements  MessageListen
         if (controller != null) {
             controller.initData(clientUi, CustomerType.REGULAR, 0,new Customer());
         }
-        //super.loadScreen("user/SubscriberOption", event,clientUi);
     }
     
     /**

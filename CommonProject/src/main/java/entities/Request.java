@@ -20,15 +20,7 @@ public class Request implements Serializable {
     private final ActionType action;     // GET_ALL / CREATE / ...
     private final Integer id;            // Identifier (orderId, userId, etc.)
     private final Object payload;        // The body of the request (e.g., Order, User)
-    //need to change the name payload
-    /**
-     * Creates a new Request object.
-     *
-     * @param resource The resource type to access (ORDER, USER, etc.)
-     * @param action   The action to perform (GET, CREATE, UPDATE...)
-     * @param id       Optional ID for actions that require one
-     * @param payload  Extra data sent with the request (may be null)
-     */
+ 
     public Request(ResourceType resource, ActionType action,
                    Integer id, Object payload) {
         this.resource = resource;
