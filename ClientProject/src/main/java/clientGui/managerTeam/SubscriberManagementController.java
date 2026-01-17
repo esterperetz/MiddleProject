@@ -101,7 +101,6 @@ public class SubscriberManagementController extends MainNavigator implements Ini
                                 if (res.getData() instanceof List) {
                                     List<Customer> data = (List<Customer>) res.getData();
                                     subscriberList.setAll(data);
-//                                    refreshSubscribers();
                                     
                                 }
                             }
