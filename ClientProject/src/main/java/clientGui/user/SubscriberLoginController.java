@@ -64,31 +64,40 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 
 	@Override
 	public void onMessageReceive(Object msg) {
-		try {
-			if (msg instanceof Response) {
-				Response res = (Response) msg;
-					boolean isSuccess = res.getStatus().name().equals("SUCCESS");
-					Platform.runLater(() -> {
-						if (isSuccess) {
-							System.out.println(res.getStatus().name());
-							customer = (Customer) res.getData();
-							SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
-									currentEvent, clientUi);
-							if (controller != null) {
-								controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode,customer);
+	    Platform.runLater(() -> {
+	        try {
+	            if (msg instanceof Response) {
+	                Response res = (Response) msg;
 
-							}
-						} else {
-							Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code",
-									Alert.AlertType.ERROR);
-						}
+	                if (res.getResource() == entities.ResourceType.CUSTOMER) {
+	                    
+	                    switch (res.getAction()) {
+	                        case GET_BY_ID:
+	                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+	                                if (res.getData() instanceof Customer) {
+	                                    System.out.println(res.getStatus().name());
+	                                    this.customer = (Customer) res.getData();
 
-					});
+	                                    SubscriberOptionController controller = super.loadScreen("user/SubscriberOption",
+	                                            currentEvent, clientUi);
+	                                    if (controller != null) {
+	                                        controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode, customer);
+	                                    }
+	                                }
+	                            } else {
+	                                Alarm.showAlert("Invalid Subscriber code", "Please enter a valid code", Alert.AlertType.ERROR);
+	                            }
+	                            break;
 
-			}
-		} catch (Exception e) {
-			System.out.println("two ");
-		}
+	                        default:
+	                            break;
+	                    }
+	                }
+	            }
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    });
 	}
 
 	public void move() {
@@ -96,12 +105,12 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 	}
 
 	@FXML
-	void openScanner(ActionEvent event) { 
+	void openScanner(ActionEvent event) {
 		BarcodeScannerController controller = super.loadScreen("user/BarcodeScanner", event, clientUi);
-	    
-	    if (controller != null) {
-	        controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode, customer);
-	    }
+
+		if (controller != null) {
+			controller.initData(clientUi, CustomerType.SUBSCRIBER, lastEnteredSubCode, customer);
+		}
 	}
 
 	@FXML
@@ -111,11 +120,11 @@ public class SubscriberLoginController extends MainNavigator implements MessageL
 		super.loadScreen("navigation/SelectionScreen", event, clientUi);
 	}
 
-	public void initData(ClientUi clientUi, CustomerType isSubscriber, Integer subId,Customer customer) {
-		this.isSubscriber =  isSubscriber;
+	public void initData(ClientUi clientUi, CustomerType isSubscriber, Integer subId, Customer customer) {
+		this.isSubscriber = isSubscriber;
 		this.subId = subId;
 		this.customer = customer;
-		
+
 	}
 
 }

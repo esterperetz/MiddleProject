@@ -3,6 +3,7 @@ package server.controller;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import DAO.CustomerDAO;
 import DAO.OrderDAO;
@@ -182,7 +183,9 @@ public class TableController {
 
     private void sendTablesToAllClients() throws SQLException, IOException {
         List<Table> tables = tableDAO.getAllTables();
-        Request updateMsg = new Request(ResourceType.TABLE, ActionType.GET_ALL, null, tables);
-        Router.sendToAllClients(updateMsg);
+    	Router.sendToAllClients(
+				new Response(ResourceType.TABLE, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, tables));
+	
     }
+    
 }

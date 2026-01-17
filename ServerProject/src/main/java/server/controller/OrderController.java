@@ -159,6 +159,7 @@ public class OrderController {
 		if (subOrders != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
 					Response.ResponseStatus.SUCCESS, null, subOrders));
+			sendHistoryOrdersToAllClients();
 			return;
 		}
 		client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
@@ -228,7 +229,7 @@ public class OrderController {
 
 				if (finalCustomer == null) {
 					dataToUse.setType(CustomerType.REGULAR);
-					customerDao.createCustomer(dataToUse);
+					//customerDao.createCustomer(dataToUse);
 					finalCustomer = customerDao.getCustomerByEmail(dataToUse.getEmail());
 				}
 			}
@@ -415,7 +416,7 @@ public class OrderController {
 
 	private boolean isValidOrder(List<Integer> table_list, List<Integer> orders, List<Integer> futerOrder) {
 		if (table_list.size() < orders.size()) {
-			System.out.println("The size of lists are different!!");
+//			System.out.println("The size of lists are different!!");
 			return false;
 		}
 
@@ -648,6 +649,13 @@ public class OrderController {
 		Router.sendToAllClients(
 				new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
 	}
+	private void sendHistoryOrdersToAllClients() {
+		List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();
+		Router.sendToAllClients(
+				new Response(ResourceType.ORDER, ActionType.GET_ALL_BY_SUBSCRIBER_ID, Response.ResponseStatus.SUCCESS, null, orders));
+	}
+	
+
 
 	/**
 	 * Generates a unique 4-digit confirmation code by ensuring it doesn't collide

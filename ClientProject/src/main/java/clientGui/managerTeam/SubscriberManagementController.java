@@ -14,118 +14,139 @@ import entities.Customer;
 import entities.CustomerType;
 import entities.Employee;
 import entities.Response;
+import entities.ResourceType;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.Alert;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 
 public class SubscriberManagementController extends MainNavigator implements Initializable, MessageListener<Object> {
 
-	@FXML
-	private VBox subscribersContainer; 
+    // --- FXML Elements for Table ---
+    @FXML
+    private TableView<Customer> subscriberTable;
+    @FXML
+    private TableColumn<Customer, Integer> colId;
+    @FXML
+    private TableColumn<Customer, String> colName;
+    @FXML
+    private TableColumn<Customer, String> colPhone;
+    @FXML
+    private TableColumn<Customer, String> colEmail;
+    @FXML
+    private TableColumn<Customer, String> colType;
 
-	private UserLogic userLogic;
-	private Employee connectedEmployee;
-	private Employee.Role role;
+    // --- Data & Logic ---
+    private ClientUi clientUi;
+    private Employee connectedEmployee;
+    private Employee.Role role;
+    private UserLogic userLogic;
+    
+    private ObservableList<Customer> subscriberList = FXCollections.observableArrayList();
 
-	@Override
-	public void initialize(URL location, ResourceBundle resources) {
-	}
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        colId.setCellValueFactory(new PropertyValueFactory<>("subscriberCode")); 
+        colName.setCellValueFactory(new PropertyValueFactory<>("name"));
+        colPhone.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        colEmail.setCellValueFactory(new PropertyValueFactory<>("email"));
+        colType.setCellValueFactory(new PropertyValueFactory<>("type"));
 
-	public void initData(Employee emp, ClientUi clientUi, Employee.Role role) {
-		this.clientUi = clientUi;
-		this.connectedEmployee = emp;
-		this.role = role;
-		this.userLogic = new UserLogic(clientUi);
+        subscriberTable.setItems(subscriberList);
 
-		userLogic.getAllSubscribers();
-	}
+        subscriberTable.setRowFactory(tv -> {
+            javafx.scene.control.TableRow<Customer> row = new javafx.scene.control.TableRow<>();
+            row.setOnMouseClicked(mouseEvent -> {
+                if (!row.isEmpty() && mouseEvent.getButton() == MouseButton.PRIMARY 
+                     && mouseEvent.getClickCount() == 2) {
+                    Customer clickedRow = row.getItem();
+                    ActionEvent fakeEvent = new ActionEvent(subscriberTable, null);
+                    openSubscriberHistory(clickedRow, fakeEvent);
+                }
+            });
+            return row;
+        });
+    }
 
-	@Override
-	public void onMessageReceive(Object msg) {
-		if (!(msg instanceof Response))
-			return;
-		Response res = (Response) msg;
+    public void initData(Employee emp, ClientUi clientUi, Employee.Role role) {
+        this.clientUi = clientUi;
+        this.connectedEmployee = emp;
+        this.role = role;
+        this.userLogic = new UserLogic(clientUi);
 
-		Platform.runLater(() -> {
-			if (res.getResource() == entities.ResourceType.CUSTOMER && res.getAction() == ActionType.GET_ALL) {
+        refreshSubscribers();
+    }
 
-				if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
-					if (res.getData() instanceof List) {
-						List<Customer> data = (List<Customer>) res.getData();
-						updateSubscriberList(data);
-					}
-				} else {
-					Label errorLbl = new Label("Failed to load: " + res.getMessage_from_server());
-					errorLbl.setStyle("-fx-text-fill: red;");
-					subscribersContainer.getChildren().add(errorLbl);
-				}
-			}
-		});
-	}
+    private void refreshSubscribers() {
+        userLogic.getAllSubscribers();
+    }
 
-	private void updateSubscriberList(List<Customer> subscribers) {
-		subscribersContainer.getChildren().clear(); // ניקוי
+    @Override
+    public void onMessageReceive(Object msg) {
+        Platform.runLater(() -> {
+            if (msg instanceof Response) {
+                Response res = (Response) msg;
+                
+                if (res.getResource() == ResourceType.CUSTOMER) {
+                    switch (res.getAction()) {
+                        case GET_ALL:
+                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                                if (res.getData() instanceof List) {
+                                    List<Customer> data = (List<Customer>) res.getData();
+                                    subscriberList.setAll(data);
+//                                    refreshSubscribers();
+                                    
+                                }
+                            }
+                            break;
 
-		if (subscribers.isEmpty()) {
-			Label emptyLbl = new Label("No subscribers found.");
-			emptyLbl.setStyle("-fx-text-fill: gray; -fx-font-size: 14px;");
-			subscribersContainer.getChildren().add(emptyLbl);
-			return;
-		}
+                        case REGISTER_CUSTOMER:
+                        case UPDATE:
+                            if (res.getStatus() == Response.ResponseStatus.SUCCESS) {
+                                showAlert("Success", (String) res.getMessage_from_server());
+                                refreshSubscribers();
+                            } else {
+                                showAlert("Error", (String) res.getMessage_from_server());
+                            }
+                            break;
 
-		for (Customer c : subscribers) {
-			Button subBtn = createSubscriberButton(c);
-			subscribersContainer.getChildren().add(subBtn);
-		}
-	}
+                        default:
+                            break;
+                    }
+                }
+            }
+        });
+    }
 
-	private Button createSubscriberButton(Customer c) {
-		String btnText = String.format("Name: %-20s | ID: %-10s | Phone: %s", c.getName(), c.getCustomerId(),
-				c.getPhoneNumber());
+    
+    private void openSubscriberHistory(Customer selectedCustomer, ActionEvent event) {
+        SubscriberHistoryController subHistoryController = super.loadScreen("user/SubscriberHistory", event, clientUi);
+        
+        if(subHistoryController != null) {
+            int subId = selectedCustomer.getSubscriberCode();
+            
+            CustomerType type = CustomerType.SUBSCRIBER; 
+            
+            subHistoryController.initData(subId, type, connectedEmployee, selectedCustomer);
+        }
+    }
 
-		Button btn = new Button(btnText);
-		btn.setPrefWidth(800);
-		btn.setPrefHeight(50);
+    @FXML
+    void goBackBtn(ActionEvent event) {
+        ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
+        if (controller != null) {
+            controller.initData(connectedEmployee, clientUi, role);
+        }
+    }
 
-		btn.setStyle("-fx-background-color: #383838; " + "-fx-text-fill: white; " + "-fx-border-color: #D4AF37; "
-				+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
-				+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20;");
-
-		btn.setOnMouseEntered(e -> btn
-				.setStyle("-fx-background-color: #555; " + "-fx-text-fill: white; " + "-fx-border-color: #F4C430; "
-						+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
-						+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20; "
-						+ "-fx-effect: dropshadow(three-pass-box, rgba(212, 175, 55, 0.4), 10, 0, 0, 0);"));
-
-		btn.setOnMouseExited(e -> btn
-				.setStyle("-fx-background-color: #383838; " + "-fx-text-fill: white; " + "-fx-border-color: #D4AF37; "
-						+ "-fx-border-radius: 5; " + "-fx-background-radius: 5; " + "-fx-alignment: CENTER_LEFT; "
-						+ "-fx-font-size: 16px; " + "-fx-padding: 0 0 0 20;"));
-
-		btn.setOnAction(event -> {
-			openSubscriberHistory(c, event);
-		});
-
-		return btn;
-	}
-
-	private void openSubscriberHistory(Customer selectedCustomer, ActionEvent event) {
-		SubscriberHistoryController controller = super.loadScreen("user/SubscriberHistory", event, clientUi);
-		if (controller != null) {
-			controller.initData(selectedCustomer.getSubscriberCode(), CustomerType.SUBSCRIBER, connectedEmployee,
-					selectedCustomer);
-		}
-	}
-
-	@FXML
-	void goBackBtn(ActionEvent event) {
-		ManagerOptionsController controller = super.loadScreen("managerTeam/EmployeeOption", event, clientUi);
-		if (controller != null) {
-			controller.initData(connectedEmployee, clientUi, role);
-		}
-	}
+    private void showAlert(String title, String content) {
+        entities.Alarm.showAlert(title, content, Alert.AlertType.INFORMATION);
+    }
 }

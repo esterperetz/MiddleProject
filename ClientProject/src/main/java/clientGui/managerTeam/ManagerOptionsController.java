@@ -304,10 +304,10 @@ public class ManagerOptionsController extends MainNavigator implements Initializ
                 LocalTime localOpen = LocalTime.parse(openTimeStr, formatter);
                 LocalTime localClose = LocalTime.parse(closeTimeStr, formatter);
 
-                if (localClose.isBefore(localOpen)) {
-                    setStatus("Closing time cannot be before opening time.", true);
-                    return;
-                }
+//                if (localClose.isBefore(localOpen)) {
+//                    setStatus("Closing time cannot be before opening time.", true);
+//                    return;
+//                }
 
                 sqlOpenTime = Time.valueOf(localOpen);
                 sqlCloseTime = Time.valueOf(localClose);

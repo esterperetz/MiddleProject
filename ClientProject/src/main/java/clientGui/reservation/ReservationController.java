@@ -139,27 +139,30 @@ public class ReservationController extends MainNavigator implements MessageListe
 	}
 
 	private void setupUIForClient() {
-		if (subscriberIdField != null) {
-			subscriberIdField.setVisible(false);
-			subscriberIdField.setManaged(false);
-		}
+	    if (subscriberIdField != null) {
+	        subscriberIdField.setVisible(false);
+	        subscriberIdField.setManaged(false);
+	    }
 
-		if (lblSubCode != null) {
-			lblSubCode.setVisible(false);
-			lblSubCode.setManaged(false);
-		}
-		System.out.println("hello " + connectedCustomer);
+	    if (lblSubCode != null) {
+	        lblSubCode.setVisible(false);
+	        lblSubCode.setManaged(false);
+	    }
 
-		if (this.isSubscriber == CustomerType.SUBSCRIBER) {
-			System.out.println("in the if 1");
-			this.verifiedSubscriber = connectedCustomer;
-			this.isSubscriberVerified = true;
-			checkSubscriberId();
+	    if (this.isSubscriber == CustomerType.SUBSCRIBER && connectedCustomer != null) {
+	        this.verifiedSubscriber = connectedCustomer;
+	        this.isSubscriberVerified = true;
 
-			// fillAndLockFields(connectedCustomer);
-		} else {
-			enableClientFields();
-		}
+	        fillAndLockFields(connectedCustomer); 
+	        
+	    } else {
+	        if (connectedCustomer != null) {
+	            nameField.setText(connectedCustomer.getName());
+	            phoneField.setText(connectedCustomer.getPhoneNumber());
+	            emailField.setText(connectedCustomer.getEmail());
+	        }
+	        enableClientFields();
+	    }
 	}
 
 	// --- Logic Methods ---
@@ -186,25 +189,25 @@ public class ReservationController extends MainNavigator implements MessageListe
 	}
 
 	private void checkSubscriberId() {
-		System.out.println("in method ");
-		String idStr = subscriberIdField.getText().trim();
-		if (idStr.isEmpty() && !isSubscriberVerified) {
-			System.out.println("sdfsdf");
-			isSubscriberVerified = false;
-			verifiedSubscriber = null;
-			enableClientFields();
-			return;
-		}
-		try {
-			System.out.println("in the try");
-			int subCode = this.subCode;
-			if (isEmployeeMode) {
-				subCode = Integer.parseInt(idStr);
-			}
-			userLogic.getSubscriberById(subCode);
-		} catch (NumberFormatException e) {
-			errorLabel.setText("ID must be numbers only");
-		}
+	    String idStr = subscriberIdField.getText().trim();
+
+	    if (idStr.isEmpty()) {
+	        isSubscriberVerified = false;
+	        verifiedSubscriber = null;
+	        enableClientFields(); 
+	        errorLabel.setText("");
+	        return;
+	    }
+
+	    try {
+	        int subCode = this.subCode;
+	        if (isEmployeeMode) {
+	            subCode = Integer.parseInt(idStr);
+	        }
+	        userLogic.getSubscriberById(subCode);
+	    } catch (NumberFormatException e) {
+	        errorLabel.setText("ID must be numbers only");
+	    }
 	}
 
 	@FXML
@@ -228,14 +231,12 @@ public class ReservationController extends MainNavigator implements MessageListe
 				return;
 			}
 
-			// הכנת נתוני זמן
 			LocalDate localDate = datePicker.getValue();
 			LocalTime localTime = LocalTime.parse(selectedTime);
 			LocalDateTime ldt = LocalDateTime.of(localDate, localTime);
 			java.sql.Timestamp finalResTime = java.sql.Timestamp.valueOf(ldt);
 			java.sql.Timestamp now = new java.sql.Timestamp(System.currentTimeMillis());
 
-			// זיהוי הלקוח
 			Customer customerForOrder;
 
 			if (isSubscriberVerified && verifiedSubscriber != null) {
@@ -244,7 +245,6 @@ public class ReservationController extends MainNavigator implements MessageListe
 				customerForOrder = new Customer(null, null, nameField.getText(), phoneField.getText(),
 						emailField.getText(), CustomerType.REGULAR);
 
-				// בדיקת null לפני שימוש בשדה המנוי
 				if (isEmployeeMode && subscriberIdField != null && !subscriberIdField.getText().isEmpty()) {
 					try {
 						customerForOrder.setSubscriberCode(Integer.parseInt(subscriberIdField.getText()));

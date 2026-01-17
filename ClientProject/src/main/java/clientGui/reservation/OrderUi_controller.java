@@ -176,7 +176,6 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                 }
             }
 
-            // --- 2. Status Filter (הלוגיקה הקיימת לסינון לפי סטטוס) ---
             if (cmbStatusFilter != null && cmbStatusFilter.getValue() != null) {
                 String selectedStatus = cmbStatusFilter.getValue();
                 if (!"ALL".equals(selectedStatus)) {

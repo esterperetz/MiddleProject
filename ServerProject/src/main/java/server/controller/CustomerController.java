@@ -11,6 +11,7 @@ import entities.CustomerType;
 import entities.Request;
 import entities.ResourceType;
 import entities.Response;
+import entities.Table;
 import ocsf.server.ConnectionToClient;
 
 public class CustomerController {
@@ -25,7 +26,7 @@ public class CustomerController {
 				e.printStackTrace();
 			}
 			return;
-		} 
+		}
 		ActionType action = req.getAction();
 		System.out.println("SubscriberController handling action: " + action);
 
@@ -60,8 +61,7 @@ public class CustomerController {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 ///need to be checked
 	private void registerCustomer(Request req, ConnectionToClient client) throws IOException, SQLException {
 		Customer newCub = (Customer) req.getPayload();
@@ -71,6 +71,7 @@ public class CustomerController {
 		if (newCub.getType() == CustomerType.SUBSCRIBER && existing != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_SUBSCRIBER,
 					Response.ResponseStatus.ERROR, "Error: Email already exists.", null));
+			
 			return;
 		}
 
@@ -79,6 +80,7 @@ public class CustomerController {
 			// Updated to camelCase
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
 					Response.ResponseStatus.SUCCESS, "Customer_id" + newCub.getCustomerId(), newCub));
+			sendCustomerToAllClients();
 		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.REGISTER_CUSTOMER,
 					Response.ResponseStatus.ERROR, "Error: Failed to create subscriber in DB.", null));
@@ -91,6 +93,7 @@ public class CustomerController {
 		if (sub != null) {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.SUCCESS,
 					"id:" + id, sub));
+			sendCustomerToAllClients();
 		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.GET_BY_ID, Response.ResponseStatus.NOT_FOUND,
 					"Error: Subscriber not found.", null));
@@ -100,8 +103,8 @@ public class CustomerController {
 	private void getAllSubscribers(Request req, ConnectionToClient client) throws IOException, SQLException {
 		List<Customer> list = CustomerDAO.getAllCustomers();
 		client.sendToClient(
-				new Response(req.getResource(), ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
-		sendOrdersToAllClients();
+				new Response(ResourceType.CUSTOMER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+		sendCustomerToAllClients();
 	}
 
 	private void updateSubscriber(Request req, ConnectionToClient client) throws IOException, SQLException {
@@ -111,15 +114,17 @@ public class CustomerController {
 		if (success) {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.SUCCESS,
 					"Success: Subscriber updated.", null));
+			sendCustomerToAllClients();
 		} else {
 			client.sendToClient(new Response(req.getResource(), ActionType.UPDATE, Response.ResponseStatus.ERROR,
 					"Error: Failed to update subscriber.", null));
 		}
 	}
-	
-	private void sendOrdersToAllClients() {
+
+	private void sendCustomerToAllClients() throws SQLException, IOException {
 		List<Customer> list = CustomerDAO.getAllCustomers();
 		Router.sendToAllClients(
-				new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+				new Response(ResourceType.CUSTOMER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, list));
+
 	}
 }
