@@ -67,17 +67,17 @@
 				<TableView fx:id="orderTable" editable="true" VBox.vgrow="ALWAYS">
 					<columns>
 						<TableColumn fx:id="Order_numberColumn" text="#" prefWidth="40.0" />
-						<TableColumn fx:id="clientNameColumn" text="Client Name" prefWidth="150.0" />
-						<TableColumn fx:id="clientPhoneColumn" text="Phone" prefWidth="110.0" />
-						<TableColumn fx:id="clientEmailColumn" text="Email" prefWidth="180.0" />
-						<TableColumn fx:id="customer_idColumn" text="Cus. ID" prefWidth="80.0" />
-						<TableColumn fx:id="DateColumn" text="Date" prefWidth="100.0" />
+						<TableColumn fx:id="clientNameColumn" text="Client Name" prefWidth="160.0" />
+						<TableColumn fx:id="clientPhoneColumn" text="Phone" prefWidth="120.0" />
+						<TableColumn fx:id="clientEmailColumn" text="Email" prefWidth="190.0" />
+						<TableColumn fx:id="customer_idColumn" text="Cus. ID" prefWidth="70.0" />
+						<TableColumn fx:id="DateColumn" text="Date" prefWidth="110.0" />
 						<TableColumn fx:id="arrivalTimeColumn" text="Time" prefWidth="70.0" />
-						<TableColumn fx:id="itemColumn" text="Guests" prefWidth="60.0" />
+						<TableColumn fx:id="itemColumn" text="Guests" prefWidth="70.0" />
 						<TableColumn fx:id="totalPriceColumn" text="Price" prefWidth="80.0" />
-						<TableColumn fx:id="statusColumn" text="Status" prefWidth="100.0" />
-						<TableColumn fx:id="confirmation_codeColumn" text="Code" prefWidth="70.0" />
-						<TableColumn fx:id="date_of_placing_orderColumn" text="Created On" prefWidth="110.0" />
+						<TableColumn fx:id="statusColumn" text="Status" prefWidth="140.0" />
+						<TableColumn fx:id="confirmation_codeColumn" text="Code" prefWidth="80.0" />
+						<TableColumn fx:id="date_of_placing_orderColumn" text="Created On" prefWidth="200.0" />
 					</columns>
 					<columnResizePolicy>
 						<!-- <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /> -->
