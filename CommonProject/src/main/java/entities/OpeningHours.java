@@ -5,92 +5,93 @@ import java.sql.Time;
 import java.util.Calendar;
 import java.util.Date;
 
+/**
+ * Entity class representing the opening hours of the restaurant.
+ * 
+ * This entity handles both recurring weekly schedules (based on Day of Week)
+ * and specific special dates (overriding the regular schedule).
+ */
 public class OpeningHours implements Serializable {
-	
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private int id;
-	private Date dateOfWeek; // 1-7 (Sun-Sat)
-	private Date specialDate; // Specific date override
-	private Time openTime;
-	private Time closeTime;
-	private boolean isClosed;
-	private Integer dayOfWeek;
-	private String description;
-	
-	public OpeningHours(Date dateOfWeek, Date specialDate, Time openTime, Time closeTime, boolean isClosed) {
-		this.isClosed = isClosed;
-		this.dateOfWeek = dateOfWeek;
-		this.specialDate = specialDate;
-		this.openTime = openTime;
-		this.closeTime = closeTime;
-		this.dayOfWeek = specialDate == null ? getDayOfWeek(dateOfWeek) : getDayOfWeek(specialDate);
-		
+    private int id;
+    private Date dateOfWeek;
+    private Date specialDate;
+    private Time openTime;
+    private Time closeTime;
+    private boolean isClosed;
+    private Integer dayOfWeek;
+    private String description;
 
-	}
+    public OpeningHours(Date dateOfWeek, Date specialDate, Time openTime, Time closeTime, boolean isClosed) {
+        this.isClosed = isClosed;
+        this.dateOfWeek = dateOfWeek;
+        this.specialDate = specialDate;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.dayOfWeek = specialDate == null ? getDayOfWeek(dateOfWeek) : getDayOfWeek(specialDate);
+    }
 
-	public OpeningHours(int id,Integer dayOfWeek, Date specialDate, Time openTime, Time closeTime, boolean isClosed) {
-		this.id = id;
-		this.dayOfWeek = dayOfWeek;
-		this.specialDate = specialDate;
-		this.openTime = openTime;
-		this.closeTime = closeTime;
-		this.isClosed = isClosed;
-	}
+    public OpeningHours(int id, Integer dayOfWeek, Date specialDate, Time openTime, Time closeTime, boolean isClosed) {
+        this.id = id;
+        this.dayOfWeek = dayOfWeek;
+        this.specialDate = specialDate;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.isClosed = isClosed;
+    }
 
-	// Getters and Setters
-	public int getId() {
-		return id;
-	}
-	
-	public void setDescription(String data) {
-		this.description = data;
-	}
+    // Getters and Setters
+    public int getId() {
+        return id;
+    }
 
-	public void setId(int id) {
-		this.id = id;
-	}
+    public void setDescription(String data) {
+        this.description = data;
+    }
 
-	public Date getDateOfWeek() {
-		return dateOfWeek;
-	}
-	
-	public Integer getDayOfWeek() {
-		return dayOfWeek;
-	}
+    public void setId(int id) {
+        this.id = id;
+    }
 
-	public Date getSpecialDate() {
-		return specialDate;
-	}
+    public Date getDateOfWeek() {
+        return dateOfWeek;
+    }
 
-	public Time getOpenTime() {
-		return openTime;
-	}
-	
-	public int getDayOfWeek(Date dateOfWeek) {
-	    Calendar cal = Calendar.getInstance();
-	    cal.setTime(dateOfWeek);
-	    
-	    // ב-Calendar, הקבוע SUNDAY הוא 1 באופן אוטומטי
-	    int dayNumber = cal.get(Calendar.DAY_OF_WEEK);
-	    
-	    return dayNumber; 
-	    // תוצאה: ראשון=1, שני=2 ... שבת=7
-	}
+    public Integer getDayOfWeek() {
+        return dayOfWeek;
+    }
 
-	public Time getCloseTime() {
-		return closeTime;
-	}
+    public Date getSpecialDate() {
+        return specialDate;
+    }
 
-	public boolean isClosed() {
-		return isClosed;
-	}
-	
-	@Override
-	public String toString() {
-		return "OpeningHours [id=" + id + ", dateOfWeek=" + dateOfWeek + ", specialDate=" + specialDate + ", openTime="
-				+ openTime + ", closeTime=" + closeTime + ", isClosed=" + isClosed + ", dayOfWeek=" + dayOfWeek
-				+ ", description=" + description + "]";
-	}
+    public Time getOpenTime() {
+        return openTime;
+    }
+
+    public int getDayOfWeek(Date dateOfWeek) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(dateOfWeek);
+
+        int dayNumber = cal.get(Calendar.DAY_OF_WEEK);
+
+        return dayNumber;
+    }
+
+    public Time getCloseTime() {
+        return closeTime;
+    }
+
+    public boolean isClosed() {
+        return isClosed;
+    }
+
+    @Override
+    public String toString() {
+        return "OpeningHours [id=" + id + ", dateOfWeek=" + dateOfWeek + ", specialDate=" + specialDate + ", openTime="
+                + openTime + ", closeTime=" + closeTime + ", isClosed=" + isClosed + ", dayOfWeek=" + dayOfWeek
+                + ", description=" + description + "]";
+    }
 }

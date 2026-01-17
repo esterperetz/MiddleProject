@@ -12,6 +12,11 @@ import entities.ResourceType;
 import entities.Response;
 import ocsf.server.ConnectionToClient;
 
+/**
+ * Controller class responsible for handling report-related requests.
+ * It interacts with the ReportDAO to fetch statistical data and aggregates
+ * it into a response for the client.
+ */
 public class ReportController {
 
     private final ReportDAO reportDao = new ReportDAO();
@@ -20,6 +25,9 @@ public class ReportController {
      * Handles incoming report requests.
      * Aggregates hashmaps (data) from multiple DAO methods into a single response
      * hashmap.
+     *
+     * @param req    The request object containing the action and payload.
+     * @param client The client connection to send the response to.
      */
     public void handle(Request req, ConnectionToClient client) {
         // Validate action type
@@ -46,6 +54,15 @@ public class ReportController {
         }
     }
 
+    /**
+     * Processes the monthly report request.
+     * Parses the date filter (MM/YYYY) and fetches various statistics.
+     *
+     * @param req    The request object.
+     * @param client The client connection.
+     * @throws SQLException If a database error occurs.
+     * @throws IOException  If an I/O error occurs.
+     */
     private void handleGetMonthlyReport(Request req, ConnectionToClient client) throws SQLException, IOException {
         String filter = (String) req.getPayload();
         Integer month = null;
