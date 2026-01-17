@@ -8,12 +8,14 @@ import client.ChatClient;
 import clientGui.navigation.MainNavigator;
 import clientGui.navigation.SelectionController;
 import clientGui.reservation.OrderUi_controller;
+import entities.Alarm;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
@@ -32,13 +34,13 @@ public class LoginController extends MainNavigator {
     private void onConnect(ActionEvent event) {
     	String ip = txtIp.getText().trim();
 
+
         if (ip.isEmpty()) {
-            lblStatus.setText("Please enter server IP");
+            Alarm.showAlert("Input Error", "IP is empty , please enter server IP", AlertType.ERROR);
             return;
         }
 
         try {
-            // 1. יצירת החיבור
             ClientUi clientUi = new ClientUi(ip);
             
             if (clientUi != null) { 
@@ -46,21 +48,19 @@ public class LoginController extends MainNavigator {
             	javafx.scene.Node source = (javafx.scene.Node) event.getSource();
                 Stage stage = (Stage) source.getScene().getWindow();
             	setStage(stage);
-                // הערה: כדאי להוסיף בדיקה ב-ClientUi אם החיבור לשרת באמת הצליח
                 
                 lblStatus.setText("Login succeeded!");
 
-                // 2. מעבר למסך הבא באמצעות הנביגטור והעברת ה-ClientUi
                super.loadScreen("navigation/SelectionScreen",event,clientUi);
                 
             }
             else {
-                lblStatus.setText("Login failed (clientUi is null)");
-            }
+            	lblStatus.setText("Login failed (clientUi is null)");
+                Alarm.showAlert("Connection Error", "Client Creation Failed \n clientUi object is null.", AlertType.ERROR);            }
             
         } catch (Exception e) {
-            e.printStackTrace();
-            lblStatus.setText("Login failed: " + e.getMessage() +" please enter a valid IP address.");
+            // כאן השינוי העיקרי: הצגת ה-Alert
+            Alarm.showAlert("Connection Error Login Failed", "Could not connect to server:" + e.getMessage() + "\nPlease check the IP address.",AlertType.ERROR);
         }
     }
 
