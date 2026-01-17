@@ -60,7 +60,7 @@ public class LoginController extends MainNavigator {
             
         } catch (Exception e) {
             e.printStackTrace();
-            lblStatus.setText("Login failed: " + e.getMessage());
+            lblStatus.setText("Login failed: " + e.getMessage() +" please enter a valid IP address.");
         }
     }
 

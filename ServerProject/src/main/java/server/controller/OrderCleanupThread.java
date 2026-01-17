@@ -117,9 +117,12 @@ public class OrderCleanupThread extends Thread {
                                 tableDao.updateTableStatus(order.getTableNumber(), 0);
                             }
 
-                            // 4. object update and receipt change
+                            if(finalPrice == 0.0) {
+                            	order.setTotalPrice(199.99);
+                            }
                             order.setTotalPrice(finalPrice);
                             order.setLeavingTime(new Date());
+                            
                             EmailService.sendReceipt(fullCustomer, order);
                             System.out.println(EmailService.getContent());
                             hasChanges = true;

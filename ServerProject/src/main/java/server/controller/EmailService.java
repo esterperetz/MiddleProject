@@ -319,7 +319,7 @@ public class EmailService {
 
         plainTextBody = String.format(
                 "Hello %s,\n\n" + "Thank you for dining with us at BISTRO!\n\n" + "--- Receipt Details ---\n"
-                        + "Order Number: %d\n" + "Date: %s\n" + "Total Price: $%.2f\n\n"
+                        + "Order Number: %d\n" + "Date: %s\n" + "Total Price: $%.2f$\n\n"
                         + "We hope to see you again soon!\n" + "Bistro Team.",
                 fullCustomer.getName(), order.getOrderNumber(),
                 order.getOrderDate() != null ? dateFormat.format(order.getOrderDate()) : "N/A", order.getTotalPrice());
