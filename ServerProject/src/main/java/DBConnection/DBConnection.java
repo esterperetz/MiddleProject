@@ -249,7 +249,7 @@ public class DBConnection {
 	    try {
 	        stmt = con.createStatement();
 
-	        // --- 1. טבלת השגרה (Weekly Schedule) ---
+	        // (Weekly Schedule)
 	        String sqlWeekly = "CREATE TABLE IF NOT EXISTS opening_hours (" +
 	                "day_of_week INT NOT NULL, " +
 	                "open_time TIME, " +
@@ -259,7 +259,7 @@ public class DBConnection {
 	                ");";
 	        stmt.executeUpdate(sqlWeekly);
 
-	        // --- 2. טבלת החריגים (Special Events) ---
+	        //(Special Events)
 	        String sqlSpecial = "CREATE TABLE IF NOT EXISTS special_events (" +
 	                "event_date DATE NOT NULL, " +
 	                "open_time TIME, " +
@@ -300,7 +300,6 @@ public class DBConnection {
 			if (rs.next()) {
 				int rowCount = rs.getInt(1);
 				if (rowCount > 0) {
-					// אם יש כבר שורות, אנחנו לא עושים כלום ויוצאים
 					System.out.println("Opening hours data already exists. Skipping insert.");
 					return;
 				}

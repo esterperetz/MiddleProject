@@ -118,12 +118,24 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
         date_of_placing_orderColumn.setCellValueFactory(
                 cellData -> new ReadOnlyObjectWrapper<>((cellData.getValue()).getDateOfPlacingOrder()));
 
+        date_of_placing_orderColumn.setCellFactory(column -> new javafx.scene.control.TableCell<Order, Date>() {
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null || empty) {
+                    setText(null);
+                } else {
+                    setText(new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(item));
+                }
+            }
+        });
+
         setupEditableColumns();
 
         // Setup Status ComboBox
         if (cmbStatusFilter != null) {
             cmbStatusFilter.setItems(FXCollections.observableArrayList(
-                    "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED","PAID"));
+                    "ALL", "PENDING", "APPROVED", "SEATED", "CANCELLED", "PAID"));
             cmbStatusFilter.getSelectionModel().select("ALL");
         }
 
@@ -142,7 +154,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
     }
 
     private void updateFilter() {
-    	filteredData.setPredicate(order -> {
+        filteredData.setPredicate(order -> {
             // --- 1. Date Filter (Local) ---
             if (filterDatePicker.getValue() != null) {
                 if (order.getOrderDate() == null)
@@ -175,7 +187,7 @@ public class OrderUi_controller extends MainNavigator implements MessageListener
                 }
             }
 
-            return true; 
+            return true;
         });
 
         if (filteredData.isEmpty()) {

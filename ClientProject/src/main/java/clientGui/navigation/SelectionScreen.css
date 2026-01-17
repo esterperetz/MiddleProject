@@ -188,8 +188,71 @@
 /* .filter-pill { ... } */
 
 /* Seamless DatePicker inside Filter Area */
-.date-picker {
+/* DatePicker Popup - Dark & Gold Theme */
+.date-picker-popup {
+    -fx-background-color: #1A1A1B;
+    -fx-border-color: #D4AF37;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.6), 10, 0, 0, 5);
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #252526;
+}
+
+.date-picker-popup .content {
+    -fx-background-color: #1A1A1B;
+    -fx-border-color: transparent;
+}
+
+.date-picker-popup .calendar-grid {
+    -fx-background-color: #1A1A1B;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #D4AF37;
+    -fx-font-weight: bold;
+    -fx-font-family: "Playfair Display", serif;
     -fx-font-size: 14px;
+}
+
+.date-picker-popup .spinner .button .left-arrow,
+.date-picker-popup .spinner .button .right-arrow {
+    -fx-background-color: #D4AF37;
+}
+
+.date-picker-popup .spinner .button:hover .left-arrow,
+.date-picker-popup .spinner .button:hover .right-arrow {
+    -fx-background-color: #F4C430;
+}
+
+.date-picker-popup .day-name-cell,
+.date-picker-popup .week-number-cell {
+    -fx-text-fill: #bdc3c7;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .day-cell {
+    -fx-text-fill: #E1E1E1;
+    -fx-background-color: transparent;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: rgba(212, 175, 55, 0.2);
+    -fx-text-fill: #F4C430;
+    -fx-cursor: hand;
+}
+
+.date-picker-popup .day-cell:selected {
+    -fx-background-color: #D4AF37;
+    -fx-text-fill: #1A1A1B;
+    -fx-font-weight: bold;
+}
+
+.date-picker-popup .today {
+    -fx-border-color: #D4AF37;
+    -fx-border-width: 1px;
+    -fx-border-radius: 3px;
 }
 
 

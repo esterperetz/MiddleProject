@@ -20,7 +20,7 @@
 
 
 <ScrollPane fx:id="rootPane" fitToWidth="true" styleClass="main-background"
-	stylesheets="@../managerTeam/EmployeeOption.css"
+	stylesheets="@EmployeeOption.css"
 	xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
 	fx:controller="clientGui.managerTeam.ManagerOptionsController">
 
@@ -36,11 +36,11 @@
 						<VBox alignment="CENTER_LEFT" spacing="5.0"
 							HBox.hgrow="ALWAYS">
 							<Label fx:id="lblDashboardTitle" styleClass="main-title"
-								text="Manager Dashboard" />
+								text="Manager Dashboard" wrapText="true"
+                                style="-fx-font-size: 60px; -fx-text-fill: #F4C430; -fx-font-family: 'Playfair Display'; -fx-font-weight: 900; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.7), 10, 0, 3, 3);"/>
 							<Label fx:id="lblDashboardSubtitle" styleClass="sub-label"
 								text="Manage restaurant operations, orders, and settings" />
 						</VBox>
-						<Region HBox.hgrow="ALWAYS" />
 						<Button onAction="#goBackBtn" styleClass="back-button"
 							text="SIGN OUT / BACK" />
 					</children>
