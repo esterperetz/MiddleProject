@@ -2,6 +2,7 @@ package clientGui.reservation;
 
 import client.MessageListener;
 import clientGui.ClientUi;
+import clientGui.managerTeam.ManagerOptionsController;
 import clientGui.navigation.MainNavigator;
 import clientGui.user.SubscriberOptionController;
 import clientLogic.OrderLogic;
@@ -50,7 +51,7 @@ public class ReservationController extends MainNavigator implements MessageListe
 
 	private Employee connectedEmployee;
 	private Customer connectedCustomer;
-	private Integer subCode;
+	private int subCode;
 	private boolean isEmployeeMode = false;
 	private CustomerType isSubscriber;
 
@@ -262,11 +263,24 @@ public class ReservationController extends MainNavigator implements MessageListe
 				if (result.isPresent() && result.get() == ButtonType.OK) {
 					wlItem.setReservationDate(newOrder.getOrderDate());
 					waitingListLogic.enterToWaitingList(wlItem);
-					SubscriberOptionController sub = super.loadScreen("user/SubscriberOption", event, this.clientUi);
-					if(sub!=null)
-						sub.initData(clientUi, isSubscriber, subCode, connectedCustomer);
-					else
-						System.out.println("Error  move to to screen  fromReservationController to SubscriberOptionController after get order to waitingList");
+					if (isEmployeeMode == true) {
+						ManagerOptionsController m = super.loadScreen("managerTeam/EmployeeOption", event,
+								this.clientUi);
+						if (m != null)
+							m.initData(connectedEmployee,clientUi, connectedEmployee.getRole());
+						else
+							System.out.println(
+									"Error  move to to screen  fromReservationController to ManagerOptionsController after get order to waitingList");
+
+					} else {
+						SubscriberOptionController sub = super.loadScreen("user/SubscriberOption", event,
+								this.clientUi);
+						if (sub != null)
+							sub.initData(clientUi, isSubscriber, subCode, connectedCustomer);
+						else
+							System.out.println(
+									"Error  move to to screen  fromReservationController to SubscriberOptionController after get order to waitingList");
+					}
 				}
 				return;
 			}
@@ -294,16 +308,16 @@ public class ReservationController extends MainNavigator implements MessageListe
 		Platform.runLater(() -> {
 			try {
 				switch (res.getResource()) {
-					case ORDER:
-						handleOrderResponse(res);
-						break;
-					case CUSTOMER:
-						handleCustomerResponse(res);
-						break;
-					case WAITING_LIST:
-						handleWaitingListResponse(res);
-					default:
-						break;
+				case ORDER:
+					handleOrderResponse(res);
+					break;
+				case CUSTOMER:
+					handleCustomerResponse(res);
+					break;
+				case WAITING_LIST:
+					handleWaitingListResponse(res);
+				default:
+					break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
