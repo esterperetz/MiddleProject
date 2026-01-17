@@ -182,6 +182,8 @@ public class OrderController {
         if (subOrders != null) {
             client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
                     Response.ResponseStatus.SUCCESS, null, subOrders));
+            System.out.println("fhfhfh");
+            sendOrdersToAllClients(cusId.getCustomerId());
             return;
         }
         client.sendToClient(new Response(req.getResource(), ActionType.GET_ALL_BY_SUBSCRIBER_ID,
@@ -294,6 +296,7 @@ public class OrderController {
                     client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
                             Response.ResponseStatus.SUCCESS, "Order created successfully!", order));
                     sendOrdersToAllClients();
+                    sendOrdersToAllClients(finalCustomer.getCustomerId());
                     return true;
                 } else {
                     client.sendToClient(new Response(ResourceType.ORDER, ActionType.CREATE,
@@ -462,10 +465,10 @@ public class OrderController {
      * Validation logic to ensure tables can accommodate the sorted list of orders.
      */
     private boolean isValidOrder(List<Integer> table_list, List<Integer> orders, List<Integer> futerOrder) {
-        if (table_list.size() < orders.size()) {
-            System.out.println("The size of lists are different!!");
-            return false;
-        }
+//        if (table_list.size() < orders.size()) {
+////            System.out.println("The size of lists are different!!");
+//            return false;
+//        }
 
         table_list.sort(Comparator.reverseOrder());// 2
         orders.sort(Comparator.reverseOrder());// 2
@@ -710,6 +713,11 @@ public class OrderController {
         List<Map<String, Object>> orders = orderdao.getAllOrdersWithCustomers();
         Router.sendToAllClients(
                 new Response(ResourceType.ORDER, ActionType.GET_ALL, Response.ResponseStatus.SUCCESS, null, orders));
+    }
+    private void sendOrdersToAllClients(int cusId) throws SQLException {
+    	 List<Order> subOrders = orderdao.getOrdersByCustomerId(cusId);
+        Router.sendToAllClients(
+                new Response(ResourceType.ORDER, ActionType.GET_ALL_BY_SUBSCRIBER_ID, Response.ResponseStatus.SUCCESS, null, subOrders));
     }
 
     /**

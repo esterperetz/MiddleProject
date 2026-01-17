@@ -8,6 +8,7 @@ import client.MessageListener;
 import clientGui.BaseController;
 import clientGui.ClientUi;
 import clientGui.managerTeam.ManagerOptionsController;
+import clientGui.managerTeam.RestaurantLoginController;
 import clientGui.reservation.OrderUi_controller;
 import clientGui.user.SubscriberLoginController;
 import clientGui.user.SubscriberOptionController;
@@ -57,7 +58,7 @@ public class SelectionController extends MainNavigator implements  MessageListen
     void pressRepresentorOfTheResturant(ActionEvent event) {
         System.out.println("Navigating to Restaurant Representative screen...");
         
-        ManagerOptionsController controller = super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
+        RestaurantLoginController controller = super.loadScreen("managerTeam/RestaurantLogin", event,clientUi); 
         if (controller != null) {
             controller.initData(new Employee(),clientUi, null);
         }
