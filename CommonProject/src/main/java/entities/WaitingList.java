@@ -3,99 +3,120 @@ package entities;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * Entity class representing an entry in the Waiting List.
+ * 
+ * This object holds information about a customer waiting for a table,
+ * including the requested time, party size, and their status in the queue.
+ * It implements Serializable to allow transfer between client and server.
+ */
 public class WaitingList implements Serializable {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private Integer waitingId;
-	private Integer customerId;
+    private Integer waitingId;
+    private Integer customerId;
 
-	private int numberOfGuests;
-	private Date enterTime;
-	private int confirmationCode;
-	private Customer customer;
-	private Date reservationDate;
+    private int numberOfGuests;
+    private Date enterTime;
+    private int confirmationCode;
+    private Customer customer;
+    private Date reservationDate;
 
-	private int inWaitingList;
+    // Acts as a status flag (1 = active in list, 0 = removed/promoted)
+    private int inWaitingList;
 
-	public WaitingList() {
-		
-	}
-	public WaitingList(Integer waitingId, Integer customerId,
-			int numberOfGuests, Date enterTime, int confirmationCode,Customer customer) {
-		this.waitingId = waitingId;
-		this.customerId = customerId;
-		this.numberOfGuests = numberOfGuests;
-		this.enterTime = enterTime;
-		this.confirmationCode = confirmationCode;
-		this.customer = customer;
-	}
+    /**
+     * Default constructor.
+     */
+    public WaitingList() {
 
-	public Customer getCustomer() {
-		return customer;
-	}
-	
-	public void setReservationDate(Date date) {
-		this.reservationDate = date;
-	}
-	public Date getReservationDate() {
-		return this.reservationDate;
-	}
+    }
 
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
+ 
+    public WaitingList(Integer waitingId, Integer customerId,
+            int numberOfGuests, Date enterTime, int confirmationCode, Customer customer) {
+        this.waitingId = waitingId;
+        this.customerId = customerId;
+        this.numberOfGuests = numberOfGuests;
+        this.enterTime = enterTime;
+        this.confirmationCode = confirmationCode;
+        this.customer = customer;
+    }
 
-	// Getters and Setters
-	public Integer getWaitingId() {
-		return waitingId;
-	}
+    // --- Getters and Setters ---
 
-	public void setWaitingId(Integer waitingId) {
-		this.waitingId = waitingId;
-	}
+    public Customer getCustomer() {
+        return customer;
+    }
 
-	public Integer getCustomerId() {
-		return customerId;
-	}
+    public void setCustomer(Customer customer) {
+        this.customer = customer;
+    }
 
-	public void setCustomerId(Integer customerId) {
-		this.customerId = customerId;
-	}
+    public void setReservationDate(Date date) {
+        this.reservationDate = date;
+    }
 
-	public int getNumberOfGuests() {
-		return numberOfGuests;
-	}
+    public Date getReservationDate() {
+        return this.reservationDate;
+    }
 
-	public void setNumberOfGuests(int numberOfGuests) {
-		this.numberOfGuests = numberOfGuests;
-	}
+    public Integer getWaitingId() {
+        return waitingId;
+    }
 
-	public Date getEnterTime() {
-		return enterTime;
-	}
+    public void setWaitingId(Integer waitingId) {
+        this.waitingId = waitingId;
+    }
 
-	public void setEnterTime(Date enterTime) {
-		this.enterTime = enterTime;
-	}
+    public Integer getCustomerId() {
+        return customerId;
+    }
 
-	public int getConfirmationCode() {
-		return confirmationCode;
-	}
+    public void setCustomerId(Integer customerId) {
+        this.customerId = customerId;
+    }
 
-	public void setConfirmationCode(int confirmationCode) {
-		this.confirmationCode = confirmationCode;
-	}
+    public int getNumberOfGuests() {
+        return numberOfGuests;
+    }
 
-	@Override
-	public String toString() {
-		return "WaitingList [guests=" + numberOfGuests + ", code=" + confirmationCode + "]" + " date: " + reservationDate;
-	}
-	public void setInWaitingList(int val) {
-		this.inWaitingList = val;
-		
-	}
-	public int getInWaitingList() {
-		return inWaitingList;
-	}
+    public void setNumberOfGuests(int numberOfGuests) {
+        this.numberOfGuests = numberOfGuests;
+    }
 
+    public Date getEnterTime() {
+        return enterTime;
+    }
+
+    public void setEnterTime(Date enterTime) {
+        this.enterTime = enterTime;
+    }
+
+    public int getConfirmationCode() {
+        return confirmationCode;
+    }
+
+    public void setConfirmationCode(int confirmationCode) {
+        this.confirmationCode = confirmationCode;
+    }
+
+    /**
+     * Sets the status of the entry in the waiting list.
+     * Usually 1 for active, 0 for removed/promoted.
+     *
+     * @param val The status value.
+     */
+    public void setInWaitingList(int val) {
+        this.inWaitingList = val;
+    }
+
+    public int getInWaitingList() {
+        return inWaitingList;
+    }
+
+    @Override
+    public String toString() {
+        return "WaitingList [guests=" + numberOfGuests + ", code=" + confirmationCode + "]" + " date: " + reservationDate;
+    }
 }
