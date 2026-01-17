@@ -253,6 +253,14 @@
     -fx-background-color: transparent;
 }
 
+/* Hide days from other months completely */
+.date-picker-popup .day-cell.previous-month,
+.date-picker-popup .day-cell.next-month {
+    -fx-text-fill: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
 .date-picker-popup .day-cell:hover {
     -fx-background-color: rgba(212, 175, 55, 0.2);
     -fx-text-fill: #F4C430;
